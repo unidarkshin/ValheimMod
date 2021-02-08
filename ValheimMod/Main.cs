@@ -41,13 +41,13 @@ namespace ValheimMod
 
             //AllocConsole();
 
-            //_player = Player.m_localPlayer;
+            _player = Player.m_localPlayer;
 
-            foreach (Player pl in Player.GetAllPlayers())
+            /*foreach (Player pl in Player.GetAllPlayers())
             {
                 if (pl.GetPlayerName().ToLower() == "scumpty tumpty")
                     _player = pl;
-            }
+            }*/
 
             //_player = Player.GetAllPlayers();
 
