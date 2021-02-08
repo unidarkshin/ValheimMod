@@ -13,7 +13,7 @@ namespace ValheimMod
 {
     class Main : MonoBehaviour
     {
-        public DateTime otime;
+        public float otime;
         public static int wsl;
         public static int wsxp;
 
@@ -41,11 +41,13 @@ namespace ValheimMod
 
             //AllocConsole();
 
+            _player = Player.m_localPlayer;
+
             path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
             //path = Application.persistentDataPath;
 
-            filename = path + "/VM_Data.txt";
+            filename = path + $"/{_player.GetPlayerName()}_VM_Data.txt";
 
             //File.WriteAllText(filename, $"0,0");
 
@@ -54,7 +56,7 @@ namespace ValheimMod
 
             //_player = FindObjectsOfType<Player>()[0];
 
-            _player = Player.m_localPlayer;
+            
 
 
             FileStream fs;
@@ -87,8 +89,8 @@ namespace ValheimMod
                     }
                     else
                     {
-                        wsl = 0;
-                        wsxp = 0;
+                        wsl = 1;
+                        wsxp = 1;
                     }
 
                     break;
@@ -100,8 +102,8 @@ namespace ValheimMod
                 //ZLog.Log((object)("  failed to load " + path));
                 //return (ZPackage)null;
 
-                wsl = 0;
-                wsxp = 0;
+                wsl = 1;
+                wsxp = 1;
             }
 
             /*if (false) {
@@ -132,7 +134,7 @@ namespace ValheimMod
             //wsl = 0;
             //wsxp = 0;
 
-            otime = DateTime.Now;
+            otime = Time.time;
 
             //h = new Harmony("vmp");
 
@@ -142,9 +144,16 @@ namespace ValheimMod
         }
         public void Update()
         {
-            if ((DateTime.Now - otime).TotalSeconds >= 30)
+            if ((Time.time - otime) >= 30)
             {
-                wsxp += (int)Math.Round((_player.GetInventory().GetTotalWeight() / _player.GetMaxCarryWeight()) * (float)wsl);
+                float ratio = (_player.GetInventory().GetTotalWeight() / _player.GetMaxCarryWeight());
+
+                if (ratio > 1.0f)
+                {
+                    ratio = 1.0f;
+                }
+
+                wsxp = wsxp + 1 + (int)(ratio * (float)wsl);
 
                 checkForLevelUp();
 
@@ -171,7 +180,7 @@ namespace ValheimMod
 
                 fs.Write(bytes, 0, bytes.Length);
 
-                otime = DateTime.Now;
+                otime = Time.time;
 
                 //Console.print($"Level {wsl}, XP {wsxp}");
             }
@@ -204,7 +213,7 @@ namespace ValheimMod
                 {
                     //typeof(Chat).GetMethod("AddString", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { $"Weight level: {wsl}, Weight XP: {wsxp}" });
                     List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
-                    cbt.Add($"Weight level: {wsl}, Weight XP: {wsxp}");
+                    cbt.Add($"Weight level: {wsl}, Weight XP: {wsxp}, Required XP: {requiredXP()}");
                     typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Chat.instance, cbt);
                     typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] {});
                     //Reflection.GetMethod(Game1.currentLocation, "isMonsterDamageApplicable").Invoke<bool>(who, character, true)
@@ -225,12 +234,24 @@ namespace ValheimMod
 
         private void checkForLevelUp()
         { 
-            int rxp = (10 + (wsl * wsl * wsl));
+            int rxp = requiredXP();
             if (wsxp >= rxp)
             {
                 wsl += 1;
                 wsxp = wsxp - rxp;
             }
+        }
+
+        public int requiredXP()
+        {
+            int extra = (int)(0.25 * wsl);
+
+            if (extra < 1)
+            {
+                extra = 1;
+            }
+
+            return ((10 * wsl) + (wsl * wsl * extra));
         }
 
         public void OnGUI()

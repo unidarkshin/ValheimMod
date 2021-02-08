@@ -94,7 +94,6 @@ C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\UnityEngine.Vid
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\UnityEngine.VRModule.dll
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\UnityEngine.XRModule.dll
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\0Harmony.xml
-C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.csprojAssemblyReference.cache
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.csproj.CoreCompileInputs.cache
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.csproj.CopyComplete
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.dll
