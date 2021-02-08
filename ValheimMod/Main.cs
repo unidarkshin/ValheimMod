@@ -75,7 +75,8 @@ namespace ValheimMod
 
             //_player = FindObjectsOfType<Player>()[0];
 
-
+            int twsl = 1;
+            int twsxp = 1;
 
 
             FileStream fs;
@@ -101,15 +102,15 @@ namespace ValheimMod
 
                         if (data.Length >= 2 && int.TryParse(data[0], out int level) && int.TryParse(data[1], out int xp))
                         {
-                            wsl = level;
-                            wsxp = xp;
+                            twsl = level;
+                            twsxp = xp;
                         }
 
                     }
                     else
                     {
-                        wsl = 1;
-                        wsxp = 1;
+                        //wsl = 1;
+                        //wsxp = 1;
                     }
 
                     break;
@@ -121,8 +122,8 @@ namespace ValheimMod
                 //ZLog.Log((object)("  failed to load " + path));
                 //return (ZPackage)null;
 
-                wsl = 1;
-                wsxp = 1;
+                //wsl = 1;
+                //wsxp = 1;
             }
 
             /*if (false) {
@@ -181,6 +182,11 @@ namespace ValheimMod
             {
 
             }
+
+            wsl = twsl;
+            wsxp = twsxp;
+
+            _player.m_maxCarryWeight = 300f + (5f * (float)wsl);
         }
 
         public void VMU()
@@ -279,11 +285,11 @@ namespace ValheimMod
             
             if (Input.GetKeyDown(KeyCode.K))
             {
-                _player.SetHealth(_player.GetHealth() + 1);
+                //_player.SetHealth(_player.GetHealth() + 1);
                 //_player.m_maxCarryWeight = 
-                wsl += 1;
+                //wsl += 1;
             }
-
+            
             if (Input.GetKeyDown(KeyCode.L))
             {
                 //_player.SetHealth(_player.GetHealth() - 1);
@@ -350,7 +356,7 @@ namespace ValheimMod
 
 
                     if (oms.TryGetValue(item.m_itemData.m_shared.m_name, out int ms))
-                        item.m_itemData.m_shared.m_maxStackSize = ms * (1 + (wsl/10));
+                        item.m_itemData.m_shared.m_maxStackSize = ms * (1 + (wsl / 10));
 
 
                 }
