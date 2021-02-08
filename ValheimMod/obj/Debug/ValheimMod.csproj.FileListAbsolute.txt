@@ -98,4 +98,11 @@ C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.cspr
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.csproj.CopyComplete
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.dll
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.pdb
-C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.csprojAssemblyReference.cache
+C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\Microsoft.CSharp.dll
+C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\System.Configuration.dll
+C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\System.Data.DataSetExtensions.dll
+C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\System.Data.dll
+C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\System.dll
+C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\System.Net.Http.dll
+C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\System.Xml.dll
+C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\System.Xml.Linq.dll

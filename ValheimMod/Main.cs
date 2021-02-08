@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,7 +15,15 @@ namespace ValheimMod
     class Main : MonoBehaviour
     {
         public float otime;
-        public static int wsl;
+
+        private int WSL;
+        public int wsl {
+            get { return WSL; }
+            set {
+                WSL = value;
+                updateStacks();
+            }
+        }
         public static int wsxp;
 
         Harmony h;
@@ -24,15 +33,17 @@ namespace ValheimMod
         string path;
         string filename;
 
+        Dictionary<string, int> oms = new Dictionary<string, int>();
+
         /*[DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AllocConsole();*/
-        
+
 
         public static void GMCW(ref float __result)
         {
 
-            __result += ((float)wsl * 5f);
+            //__result += ((float)wsl * 5f);
         }
 
         public void Start()
@@ -64,7 +75,7 @@ namespace ValheimMod
 
             //_player = FindObjectsOfType<Player>()[0];
 
-            
+
 
 
             FileStream fs;
@@ -149,11 +160,83 @@ namespace ValheimMod
             Type[] types1 = { };
 
             //h.Patch(typeof(Player).GetMethod("GetMaxCarryWeight"), postfix: new HarmonyMethod(typeof(Main), nameof(this.GMCW)));
+
+            //InvokeRepeating("VMU", 30.0f, 30.0f);
+            try
+            {
+
+                foreach (GameObject go in ObjectDB.instance.m_items)
+                {
+
+                    
+                    ItemDrop item = go.GetComponent<ItemDrop>();
+
+                    if (!oms.ContainsKey(item.m_itemData.m_shared.m_name))
+                    oms.Add(item.m_itemData.m_shared.m_name, item.m_itemData.m_shared.m_maxStackSize);
+                    
+                }
+
+            }
+            catch
+            {
+
+            }
         }
+
+        public void VMU()
+        {
+
+            float ratio = (_player.GetInventory().GetTotalWeight() / _player.GetMaxCarryWeight());
+
+            if (ratio > 1.0f)
+            {
+                ratio = 1.0f;
+            }
+
+            wsxp = wsxp + 1 + (int)(ratio * (float)wsl);
+
+            checkForLevelUp();
+
+
+            _player.m_maxCarryWeight = 300f + (5f * (float)wsl);
+
+            //File.WriteAllText(filename, $"{wsl},{wsxp}");
+
+            //File.Create(filename);
+
+
+            /*using (System.IO.StreamWriter file =
+        new System.IO.StreamWriter(filename, false))
+            {
+                file.WriteLine($"{wsl},{wsxp}");
+            */
+
+            //ZPackage z = new ZPackage();
+
+            FileStream fs = File.OpenWrite(filename);
+
+            string data = $"{wsl},{wsxp}";
+            byte[] bytes = Encoding.UTF8.GetBytes(data);
+
+            fs.Write(bytes, 0, bytes.Length);
+
+            otime = Time.time;
+
+            //Console.print($"Level {wsl}, XP {wsxp}");
+
+
+
+        }
+
+        float elapsed = 0f;
         public void Update()
         {
-            if ((Time.time - otime) >= 30)
+            elapsed += Time.deltaTime;
+
+            if (elapsed >= 30.0f)
             {
+                elapsed = 0f;
+
                 float ratio = (_player.GetInventory().GetTotalWeight() / _player.GetMaxCarryWeight());
 
                 if (ratio > 1.0f)
@@ -178,7 +261,7 @@ namespace ValheimMod
                 {
                     file.WriteLine($"{wsl},{wsxp}");
                 */
-
+                
                 //ZPackage z = new ZPackage();
 
                 FileStream fs = File.OpenWrite(filename);
@@ -189,15 +272,16 @@ namespace ValheimMod
                 fs.Write(bytes, 0, bytes.Length);
 
                 otime = Time.time;
-
+                //frame = Time.frameCount;
                 //Console.print($"Level {wsl}, XP {wsxp}");
+                
             }
-
+            
             if (Input.GetKeyDown(KeyCode.K))
             {
-                //_player.SetHealth(_player.GetHealth() - 1);
+                _player.SetHealth(_player.GetHealth() + 1);
                 //_player.m_maxCarryWeight = 
-                //wsl += 1;
+                wsl += 1;
             }
 
             if (Input.GetKeyDown(KeyCode.L))
@@ -223,7 +307,8 @@ namespace ValheimMod
                     List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
                     cbt.Add($"Weight level: {wsl}, Weight XP: {wsxp}, Required XP: {requiredXP()}");
                     typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Chat.instance, cbt);
-                    typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] {});
+                    typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { });
+                    Chat.instance.m_chatWindow.gameObject.SetActive(true);
                     //Reflection.GetMethod(Game1.currentLocation, "isMonsterDamageApplicable").Invoke<bool>(who, character, true)
                 }
                 catch
@@ -241,12 +326,48 @@ namespace ValheimMod
         }
 
         private void checkForLevelUp()
-        { 
+        {
             int rxp = requiredXP();
             if (wsxp >= rxp)
             {
                 wsl += 1;
                 wsxp = wsxp - rxp;
+
+                
+            }
+        }
+
+        private void updateStacks()
+        {
+            try
+            {
+
+                foreach (GameObject go in ObjectDB.instance.m_items)
+                {
+
+
+                    ItemDrop item = go.GetComponent<ItemDrop>();
+
+
+                    if (oms.TryGetValue(item.m_itemData.m_shared.m_name, out int ms))
+                        item.m_itemData.m_shared.m_maxStackSize = ms * (1 + (wsl/10));
+
+
+                }
+
+                List<ItemDrop.ItemData> items = _player.GetInventory().GetAllItems();
+
+                foreach (ItemDrop.ItemData item in items)
+                {
+                    if (oms.TryGetValue(item.m_shared.m_name, out int ms))
+                        item.m_shared.m_maxStackSize = ms * (1 + (wsl / 10));
+                    
+                }
+                typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player.GetInventory(), items);
+            }
+            catch
+            {
+
             }
         }
 
@@ -264,7 +385,7 @@ namespace ValheimMod
 
         public void OnGUI()
         {
-            
+
             //GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, 150f, 50f), "GAME INJECTED"); // Should work and when injected you will see this text in the middle of the screen
         }
         private Player _player;
