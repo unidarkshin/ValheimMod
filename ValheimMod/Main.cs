@@ -205,19 +205,24 @@ namespace ValheimMod
 
         float elapsed = 0f;
         float elapsed2 = 0f;
+        float elapsed3 = 0f;
         bool cs = false;
         public void Update()
         {
+            if(cs)
+            elapsed3 += Time.deltaTime;
+
             if (_player.IsDead() && !cs)
             {
                 _player = new Player();
                 //_player.m_name = "RS";
                 cs = true;
             }
-            else if (cs && !Player.m_localPlayer.IsDead())
+            else if (cs && elapsed3 > 20f && !Player.m_localPlayer.IsDead())
             {
                 _player = Player.m_localPlayer;
                 cs = false;
+                elapsed3 = 0f;
             }
 
             try
