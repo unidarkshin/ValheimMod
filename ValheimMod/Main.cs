@@ -205,6 +205,7 @@ namespace ValheimMod
         float elapsed2 = 0f;
         public void Update()
         {
+            
             try { 
             
             elapsed += Time.deltaTime;
@@ -370,8 +371,9 @@ namespace ValheimMod
             }
             catch
             {
-                _player = Player.m_localPlayer;
+                //_player = Player.m_localPlayer;
             }
+    
         }
 
         private void checkForLevelUp()
