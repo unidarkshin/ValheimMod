@@ -211,12 +211,13 @@ namespace ValheimMod
             if (_player.IsDead() && !cs)
             {
                 _player = new Player();
-                _player.m_name = "RS";
+                //_player.m_name = "RS";
                 cs = true;
             }
             else if (cs && !Player.m_localPlayer.IsDead())
             {
                 _player = Player.m_localPlayer;
+                cs = false;
             }
 
             try
