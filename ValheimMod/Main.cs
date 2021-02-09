@@ -27,7 +27,7 @@ namespace ValheimMod
                 updateStacks();
             }
         }
-        public static int wsxp;
+        public int wsxp;
 
         Harmony h;
 
@@ -48,12 +48,28 @@ namespace ValheimMod
 
             //__result += ((float)wsl * 5f);
         }
+        public static void RP(ref Player __result, Vector3 spawnPoint)
+        {
+            _player = __result;
+            cs = false;
+
+            //__result += ((float)wsl * 5f);
+        }
+        public static void DDM(long sender, ref HitData hit)
+        {
+            hit.m_damage.m_damage += 100f;
+            _player.Message(MessageHud.MessageType.TopLeft, $"VM DDM: {hit.m_damage.m_damage}", 0, (Sprite)null);
+            //__result += ((float)wsl * 5f);
+        }
 
         public void Start()
         {
             //M = this;
 
             //AllocConsole();
+
+            int twsl = 1;
+            int twsxp = 1;
 
             try
             {
@@ -82,8 +98,7 @@ namespace ValheimMod
 
                 //_player = FindObjectsOfType<Player>()[0];
 
-                int twsl = 1;
-                int twsxp = 1;
+                
 
 
                 FileStream fs;
@@ -102,15 +117,15 @@ namespace ValheimMod
                     {
                         string[] data;
                         string s = Encoding.UTF8.GetString(buf, 0, c);
-
+                        _player.Message(MessageHud.MessageType.TopLeft, $"VM ReadFile: {s}", 0, (Sprite)null);
                         if (s.Contains(","))
                         {
                             data = s.Split(',');
 
                             if (data.Length >= 2 && int.TryParse(data[0], out int level) && int.TryParse(data[1], out int xp))
                             {
-                                twsl = level;
-                                twsxp = xp;
+                                wsl = level;
+                                wsxp = xp;
                             }
 
                         }
@@ -123,15 +138,20 @@ namespace ValheimMod
                         break;
                     }
 
+                    fs.Close();
+
                 }
-                catch
+                catch (Exception ex)
                 {
                     //ZLog.Log((object)("  failed to load " + path));
                     //return (ZPackage)null;
 
                     //wsl = 1;
                     //wsxp = 1;
+
+                    _player.Message(MessageHud.MessageType.TopLeft, $"VM Error reading file data: {ex.Message}", 0, (Sprite)null);
                 }
+
 
                 /*if (false) {
 
@@ -163,11 +183,15 @@ namespace ValheimMod
 
                 otime = Time.time;
 
-                //h = new Harmony("vmp");
+                h = new Harmony("vmp");
 
                 Type[] types1 = { };
 
                 //h.Patch(typeof(Player).GetMethod("GetMaxCarryWeight"), postfix: new HarmonyMethod(typeof(Main), nameof(this.GMCW)));
+
+                //h.Patch(typeof(Game).GetMethod("SpawnPlayer"), postfix: new HarmonyMethod(typeof(Main), nameof(this.RP)));
+
+                h.Patch(typeof(Destructible).GetMethod("RPC_Damage"), prefix: new HarmonyMethod(typeof(Main), nameof(this.DDM)));
 
                 //InvokeRepeating("VMU", 30.0f, 30.0f);
                 try
@@ -178,7 +202,7 @@ namespace ValheimMod
 
 
                         ItemDrop item = go.GetComponent<ItemDrop>();
-                        
+
                         if (!oms.ContainsKey(item.m_itemData.m_shared.m_name))
                             oms.Add(item.m_itemData.m_shared.m_name, item.m_itemData.m_shared.m_maxStackSize);
 
@@ -190,8 +214,8 @@ namespace ValheimMod
 
                 }
 
-                wsl = twsl;
-                wsxp = twsxp;
+                //wsl = twsl;
+                //wsxp = twsxp;
 
                 _player.m_maxCarryWeight = 300f + (5f * (float)wsl);
             }
@@ -206,20 +230,28 @@ namespace ValheimMod
         float elapsed = 0f;
         float elapsed2 = 0f;
         float elapsed3 = 0f;
-        bool cs = false;
+        public static bool cs = false;
+        public bool us = false;
+        //Player _playert;
         public void Update()
         {
-            if(cs)
-            elapsed3 += Time.deltaTime;
+            if (cs)
+                elapsed3 += Time.deltaTime;
+
+            if (cs && !us)
+                us = true;
 
             if (_player.IsDead() && !cs)
             {
+                _player = UnityEngine.Object.Instantiate<GameObject>(Game.instance.m_playerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity).GetComponent<Player>();
+                //_player.gameObject.
                 //_player = new Player();
                 //_player.m_name = "RS";
                 cs = true;
             }
             else if (cs && elapsed3 > 20f)
             {
+                //ZNetScene.instance.Destroy(_player.gameObject);
                 _player = Player.m_localPlayer;
                 cs = false;
                 elapsed3 = 0f;
@@ -229,6 +261,11 @@ namespace ValheimMod
             {
                 if (!cs)
                 {
+                    if (us)
+                    {
+                        updateStacks();
+                        us = false;
+                    }
 
                     elapsed += Time.deltaTime;
                     elapsed2 += Time.deltaTime;
@@ -269,12 +306,17 @@ namespace ValheimMod
 
                         //ZPackage z = new ZPackage();
 
-                        FileStream fs = File.OpenWrite(filename);
+                        //FileStream fs = File.OpenWrite(filename);
+
+                        FileStream fs = new FileStream(filename, FileMode.Truncate, FileAccess.Write);
+
 
                         string data = $"{wsl},{wsxp}";
                         byte[] bytes = Encoding.UTF8.GetBytes(data);
 
                         fs.Write(bytes, 0, bytes.Length);
+
+                        fs.Close();
 
                         otime = Time.time;
                         //frame = Time.frameCount;
@@ -390,6 +432,7 @@ namespace ValheimMod
                     }
                 }
 
+
             }
             catch
             {
@@ -406,7 +449,7 @@ namespace ValheimMod
                     }
                 }*/
 
-                
+
             }
 
         }
@@ -421,7 +464,7 @@ namespace ValheimMod
                     wsl += 1;
                     wsxp = wsxp - rxp;
 
-
+                    _player.Message(MessageHud.MessageType.TopLeft, $"You leveled up your weight skill to {wsl}!", 0, (Sprite)null);
                 }
             }
             catch
@@ -466,21 +509,16 @@ namespace ValheimMod
 
         public int requiredXP()
         {
-            try
-            {
-                int extra = (int)(0.25 * wsl);
 
-                if (extra < 1)
-                {
-                    extra = 1;
-                }
+            int extra = (int)(0.25 * wsl);
 
-                return ((10 * wsl) + (wsl * wsl * extra));
-            }
-            catch
+            if (extra < 1)
             {
-                return 999999;
+                extra = 1;
             }
+
+            return ((10 * wsl) + (wsl * wsl * extra));
+
         }
 
         public void OnGUI()
@@ -488,7 +526,7 @@ namespace ValheimMod
 
             //GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, 150f, 50f), "GAME INJECTED"); // Should work and when injected you will see this text in the middle of the screen
         }
-        private Player _player;
+        private static Player _player;
     }
 
 }
