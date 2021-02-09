@@ -17,9 +17,11 @@ namespace ValheimMod
         public float otime;
 
         private int WSL;
-        public int wsl {
+        public int wsl
+        {
             get { return WSL; }
-            set {
+            set
+            {
                 WSL = value;
                 updateStacks();
             }
@@ -169,12 +171,12 @@ namespace ValheimMod
                 foreach (GameObject go in ObjectDB.instance.m_items)
                 {
 
-                    
+
                     ItemDrop item = go.GetComponent<ItemDrop>();
 
                     if (!oms.ContainsKey(item.m_itemData.m_shared.m_name))
-                    oms.Add(item.m_itemData.m_shared.m_name, item.m_itemData.m_shared.m_maxStackSize);
-                    
+                        oms.Add(item.m_itemData.m_shared.m_name, item.m_itemData.m_shared.m_maxStackSize);
+
                 }
 
             }
@@ -269,7 +271,7 @@ namespace ValheimMod
                 {
                     file.WriteLine($"{wsl},{wsxp}");
                 */
-                
+
                 //ZPackage z = new ZPackage();
 
                 FileStream fs = File.OpenWrite(filename);
@@ -282,7 +284,7 @@ namespace ValheimMod
                 otime = Time.time;
                 //frame = Time.frameCount;
                 //Console.print($"Level {wsl}, XP {wsxp}");
-                
+
             }
 
             if (elapsed2 >= 30.0f)
@@ -292,33 +294,46 @@ namespace ValheimMod
 
                 try
                 {
-                    
-                    Character[] chars = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
 
-                    if (chars.Length > 0)
+                    Character[] chars = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
+                    List<Character> chars2 = new List<Character>();
+
+                    foreach (Character ch in chars)
                     {
-                        Character c = chars[UnityEngine.Random.Range(0, chars.Length - 1)];
+                        if (ch.IsMonsterFaction())
+                            chars2.Add(ch);
+                    }
+
+                    if (chars2.Count > 0)
+                    {
+                        Character c = chars2[UnityEngine.Random.Range(0, chars2.Count - 1)];
+
+
                         c.SetLevel(UnityEngine.Random.Range(1, 30));
                         c.m_name += $" (VMM: {c.GetLevel()})";
+
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
 
-                    
+                    List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
+                    cbt.Add($"VM Error (Enemy Modifiers): {ex.Message}");
+                    typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Chat.instance, cbt);
+                    typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { });
                 }
-                
 
-                
+
+
             }
-            
+
             if (Input.GetKeyDown(KeyCode.K))
             {
                 //_player.SetHealth(_player.GetHealth() + 1);
                 //_player.m_maxCarryWeight = 
                 //wsl += 1;
             }
-            
+
             if (Input.GetKeyDown(KeyCode.L))
             {
                 //_player.SetHealth(_player.GetHealth() - 1);
@@ -337,8 +352,8 @@ namespace ValheimMod
                 typeof(EnvMan).GetField("m_wind", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, tmw);
                 */
 
-                
-                
+
+
             }
 
             if (Input.GetKeyDown(KeyCode.O))
@@ -383,7 +398,7 @@ namespace ValheimMod
                 wsl += 1;
                 wsxp = wsxp - rxp;
 
-                
+
             }
         }
 
@@ -411,7 +426,7 @@ namespace ValheimMod
                 {
                     if (oms.TryGetValue(item.m_shared.m_name, out int ms))
                         item.m_shared.m_maxStackSize = ms * (1 + (wsl / 10));
-                    
+
                 }
                 typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player.GetInventory(), items);
             }
