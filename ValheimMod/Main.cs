@@ -14,6 +14,7 @@ namespace ValheimMod
 {
     class Main : MonoBehaviour
     {
+        public string pln;
         public float otime;
 
         private int WSL;
@@ -58,6 +59,7 @@ namespace ValheimMod
             {
 
                 _player = Player.m_localPlayer;
+                pln = _player.GetPlayerName();
 
                 /*foreach (Player pl in Player.GetAllPlayers())
                 {
@@ -199,181 +201,193 @@ namespace ValheimMod
             }
         }
 
-        
+
 
         float elapsed = 0f;
         float elapsed2 = 0f;
         public void Update()
         {
-            
-            try { 
-            
-            elapsed += Time.deltaTime;
-            elapsed2 += Time.deltaTime;
 
-            
+            try
+            {
 
-                    if (elapsed >= 30.0f)
+                elapsed += Time.deltaTime;
+                elapsed2 += Time.deltaTime;
+
+
+
+                if (elapsed >= 30.0f)
+                {
+                    elapsed = 0f;
+
+
+                    //_player = Player.m_localPlayer;
+
+                    float ratio = (_player.GetInventory().GetTotalWeight() / _player.GetMaxCarryWeight());
+
+                    if (ratio > 1.0f)
                     {
-                        elapsed = 0f;
+                        ratio = 1.0f;
+                    }
+
+                    wsxp = wsxp + 1 + (int)(ratio * (float)wsl);
+
+                    checkForLevelUp();
 
 
-                        //_player = Player.m_localPlayer;
+                    _player.m_maxCarryWeight = 300f + (5f * (float)wsl);
 
-                        float ratio = (_player.GetInventory().GetTotalWeight() / _player.GetMaxCarryWeight());
+                    //File.WriteAllText(filename, $"{wsl},{wsxp}");
 
-                        if (ratio > 1.0f)
+                    //File.Create(filename);
+
+
+                    /*using (System.IO.StreamWriter file =
+                new System.IO.StreamWriter(filename, false))
+                    {
+                        file.WriteLine($"{wsl},{wsxp}");
+                    */
+
+                    //ZPackage z = new ZPackage();
+
+                    FileStream fs = File.OpenWrite(filename);
+
+                    string data = $"{wsl},{wsxp}";
+                    byte[] bytes = Encoding.UTF8.GetBytes(data);
+
+                    fs.Write(bytes, 0, bytes.Length);
+
+                    otime = Time.time;
+                    //frame = Time.frameCount;
+                    //Console.print($"Level {wsl}, XP {wsxp}");
+
+
+                }
+
+                if (elapsed2 >= 30.0f)
+                {
+                    elapsed2 = 0f;
+
+
+                    try
+                    {
+
+                        Character[] chars = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
+                        List<Character> chars2 = new List<Character>();
+
+                        foreach (Character ch in chars)
                         {
-                            ratio = 1.0f;
+                            if (ch.IsMonsterFaction() && !ch.m_name.Contains("VMM"))
+                                chars2.Add(ch);
+
                         }
 
-                        wsxp = wsxp + 1 + (int)(ratio * (float)wsl);
-
-                        checkForLevelUp();
-
-
-                        _player.m_maxCarryWeight = 300f + (5f * (float)wsl);
-
-                        //File.WriteAllText(filename, $"{wsl},{wsxp}");
-
-                        //File.Create(filename);
-
-
-                        /*using (System.IO.StreamWriter file =
-                    new System.IO.StreamWriter(filename, false))
+                        if (chars2.Count > 0)
                         {
-                            file.WriteLine($"{wsl},{wsxp}");
-                        */
+                            Character c = chars2[UnityEngine.Random.Range(0, chars2.Count - 1)];
 
-                        //ZPackage z = new ZPackage();
+                            int lvl = UnityEngine.Random.Range(1, 6);
+                            c.SetLevel(lvl);
+                            c.m_name += $" (VMM: {lvl})";
 
-                        FileStream fs = File.OpenWrite(filename);
-
-                        string data = $"{wsl},{wsxp}";
-                        byte[] bytes = Encoding.UTF8.GetBytes(data);
-
-                        fs.Write(bytes, 0, bytes.Length);
-
-                        otime = Time.time;
-                        //frame = Time.frameCount;
-                        //Console.print($"Level {wsl}, XP {wsxp}");
-
-
-                    }
-
-                    if (elapsed2 >= 30.0f)
-                    {
-                        elapsed2 = 0f;
-
-
-                        try
-                        {
-
-                            Character[] chars = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
-                            List<Character> chars2 = new List<Character>();
-
-                            foreach (Character ch in chars)
-                            {
-                                if (ch.IsMonsterFaction() && !ch.m_name.Contains("VMM"))
-                                    chars2.Add(ch);
-
-                            }
-
-                            if (chars2.Count > 0)
-                            {
-                                Character c = chars2[UnityEngine.Random.Range(0, chars2.Count - 1)];
-
-                                int lvl = UnityEngine.Random.Range(1, 6);
-                                c.SetLevel(lvl);
-                                c.m_name += $" (VMM: {lvl})";
-
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-
-                            /*List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
-                            cbt.Add($"VM Error (Enemy Modifiers): {ex.Message}");
-                            typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Chat.instance, cbt);
-                            typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { });*/
-
-                            _player.Message(MessageHud.MessageType.TopLeft, $"VM Error(Enemy Modifiers): {ex.Message}", 0, (Sprite)null);
-                        }
-
-
-
-                    }
-
-                    if (Input.GetKeyDown(KeyCode.K))
-                    {
-                        //_player.SetHealth(_player.GetHealth() + 1);
-                        //_player.m_maxCarryWeight = 
-                        //wsl += 1;
-                    }
-
-                    if (Input.GetKeyDown(KeyCode.L))
-                    {
-                        //_player.SetHealth(_player.GetHealth() - 1);
-                        //_player.m_maxCarryWeight = 
-                        //wsxp += 1;
-
-                        /*object tm_wind = typeof(EnvMan).GetField("m_wind", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(EnvMan.instance);
-
-                        Vector4 tmw = new Vector4();
-
-                        if (tm_wind is Vector4 tm_w)
-                            tmw = tm_w;
-
-                        tmw.w = UnityEngine.Random.Range(5.0f, 25.0f);
-
-                        typeof(EnvMan).GetField("m_wind", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, tmw);
-                        */
-
-
-
-                    }
-
-                    if (Input.GetKeyDown(KeyCode.O))
-                    {
-                        _player.SetHealth(_player.GetHealth() - 1);
-                        //Console.print("You subtracted health.");
-                    }
-
-                    if (Input.GetKeyDown(KeyCode.P))
-                    {
-                        //_player.SetHealth(_player.GetHealth() + 1);
-
-                        try
-                        {
-                            //typeof(Chat).GetMethod("AddString", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { $"Weight level: {wsl}, Weight XP: {wsxp}" });
-                            /*List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
-                            cbt.Add($"Weight level: {wsl}, Weight XP: {wsxp}, Required XP: {requiredXP()}");
-                            typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Chat.instance, cbt);
-                            typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { });
-                            Chat.instance.m_chatWindow.gameObject.SetActive(true);
-                            //Reflection.GetMethod(Game1.currentLocation, "isMonsterDamageApplicable").Invoke<bool>(who, character, true)*/
-
-                            _player.Message(MessageHud.MessageType.TopLeft, $"Weight level: {wsl}, Weight XP: {wsxp}, Required XP: {requiredXP()}", 0, (Sprite)null);
-                        }
-                        catch
-                        {
-                        _player = GameObject.FindObjectsOfType<Player>()[0];
                         }
                     }
-
-
-                    if (Input.GetKeyDown(KeyCode.Delete)) // Will just unload our DLL
+                    catch (Exception ex)
                     {
-                        Loader.Unload();
+
+                        /*List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
+                        cbt.Add($"VM Error (Enemy Modifiers): {ex.Message}");
+                        typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Chat.instance, cbt);
+                        typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { });*/
+
+                        _player.Message(MessageHud.MessageType.TopLeft, $"VM Error(Enemy Modifiers): {ex.Message}", 0, (Sprite)null);
                     }
 
-                
+
+
+                }
+
+                if (Input.GetKeyDown(KeyCode.K))
+                {
+                    //_player.SetHealth(_player.GetHealth() + 1);
+                    //_player.m_maxCarryWeight = 
+                    //wsl += 1;
+                }
+
+                if (Input.GetKeyDown(KeyCode.L))
+                {
+                    //_player.SetHealth(_player.GetHealth() - 1);
+                    //_player.m_maxCarryWeight = 
+                    //wsxp += 1;
+
+                    /*object tm_wind = typeof(EnvMan).GetField("m_wind", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(EnvMan.instance);
+
+                    Vector4 tmw = new Vector4();
+
+                    if (tm_wind is Vector4 tm_w)
+                        tmw = tm_w;
+
+                    tmw.w = UnityEngine.Random.Range(5.0f, 25.0f);
+
+                    typeof(EnvMan).GetField("m_wind", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, tmw);
+                    */
+
+
+
+                }
+
+                if (Input.GetKeyDown(KeyCode.O))
+                {
+                    _player.SetHealth(_player.GetHealth() - 1);
+                    //Console.print("You subtracted health.");
+                }
+
+                if (Input.GetKeyDown(KeyCode.P))
+                {
+                    //_player.SetHealth(_player.GetHealth() + 1);
+
+                    try
+                    {
+                        //typeof(Chat).GetMethod("AddString", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { $"Weight level: {wsl}, Weight XP: {wsxp}" });
+                        /*List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
+                        cbt.Add($"Weight level: {wsl}, Weight XP: {wsxp}, Required XP: {requiredXP()}");
+                        typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Chat.instance, cbt);
+                        typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { });
+                        Chat.instance.m_chatWindow.gameObject.SetActive(true);
+                        //Reflection.GetMethod(Game1.currentLocation, "isMonsterDamageApplicable").Invoke<bool>(who, character, true)*/
+
+                        _player.Message(MessageHud.MessageType.TopLeft, $"Weight level: {wsl}, Weight XP: {wsxp}, Required XP: {requiredXP()}", 0, (Sprite)null);
+                    }
+                    catch
+                    {
+                        
+                    }
+                }
+
+
+                if (Input.GetKeyDown(KeyCode.Delete)) // Will just unload our DLL
+                {
+                    Loader.Unload();
+                }
+
+
             }
             catch
             {
                 //_player = Player.m_localPlayer;
+
+                Player[] pls = GameObject.FindObjectsOfType<Player>();
+
+                foreach (Player pl in pls)
+                {
+                    if (pl.GetPlayerName() == pln)
+                    {
+                        _player = pl;
+                        break;
+                    }
+                }
             }
-    
+
         }
 
         private void checkForLevelUp()
