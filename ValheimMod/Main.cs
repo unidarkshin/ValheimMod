@@ -218,7 +218,7 @@ namespace ValheimMod
                 //_player.m_name = "RS";
                 cs = true;
             }
-            else if (cs && elapsed3 > 20f && !Player.m_localPlayer.IsDead())
+            else if (cs && elapsed3 > 20f)
             {
                 _player = Player.m_localPlayer;
                 cs = false;
