@@ -243,12 +243,17 @@ namespace ValheimMod
             elapsed += Time.deltaTime;
             elapsed2 += Time.deltaTime;
 
+            
+
             if (elapsed >= 30.0f)
             {
                 elapsed = 0f;
 
-                float ratio = (_player.GetInventory().GetTotalWeight() / _player.GetMaxCarryWeight());
+                if (_player.IsDead())
+                    _player = Player.m_localPlayer;
 
+                float ratio = (_player.GetInventory().GetTotalWeight() / _player.GetMaxCarryWeight());
+                
                 if (ratio > 1.0f)
                 {
                     ratio = 1.0f;
@@ -308,19 +313,21 @@ namespace ValheimMod
                     {
                         Character c = chars2[UnityEngine.Random.Range(0, chars2.Count - 1)];
 
-
-                        c.SetLevel(UnityEngine.Random.Range(1, 30));
-                        c.m_name += $" (VMM: {c.GetLevel()})";
+                        int lvl = UnityEngine.Random.Range(1, 6);
+                        c.SetLevel(lvl);
+                        c.m_name += $" (VMM: {lvl})";
 
                     }
                 }
                 catch (Exception ex)
                 {
 
-                    List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
+                    /*List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
                     cbt.Add($"VM Error (Enemy Modifiers): {ex.Message}");
                     typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Chat.instance, cbt);
-                    typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { });
+                    typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { });*/
+
+                    _player.Message(MessageHud.MessageType.TopLeft, $"VM Error(Enemy Modifiers): {ex.Message}", 0, (Sprite)null);
                 }
 
 
@@ -369,12 +376,14 @@ namespace ValheimMod
                 try
                 {
                     //typeof(Chat).GetMethod("AddString", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { $"Weight level: {wsl}, Weight XP: {wsxp}" });
-                    List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
+                    /*List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
                     cbt.Add($"Weight level: {wsl}, Weight XP: {wsxp}, Required XP: {requiredXP()}");
                     typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Chat.instance, cbt);
                     typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { });
                     Chat.instance.m_chatWindow.gameObject.SetActive(true);
-                    //Reflection.GetMethod(Game1.currentLocation, "isMonsterDamageApplicable").Invoke<bool>(who, character, true)
+                    //Reflection.GetMethod(Game1.currentLocation, "isMonsterDamageApplicable").Invoke<bool>(who, character, true)*/
+
+                    _player.Message(MessageHud.MessageType.TopLeft, $"Weight level: {wsl}, Weight XP: {wsxp}, Required XP: {requiredXP()}", 0, (Sprite)null);
                 }
                 catch
                 {
