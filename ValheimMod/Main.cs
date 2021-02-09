@@ -54,199 +54,163 @@ namespace ValheimMod
 
             //AllocConsole();
 
-            _player = Player.m_localPlayer;
-
-            /*foreach (Player pl in Player.GetAllPlayers())
-            {
-                if (pl.GetPlayerName().ToLower() == "scumpty tumpty")
-                    _player = pl;
-            }*/
-
-            //_player = Player.GetAllPlayers();
-
-            path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-
-            //path = Application.persistentDataPath;
-
-            filename = path + $"/{_player.GetPlayerName()}_VM_Data.txt";
-
-            //File.WriteAllText(filename, $"0,0");
-
-            //File.Create(filename);
-
-
-            //_player = FindObjectsOfType<Player>()[0];
-
-            int twsl = 1;
-            int twsxp = 1;
-
-
-            FileStream fs;
             try
             {
-                fs = File.OpenRead(filename);
 
-                //StreamReader sr = new StreamReader(fs);
+                _player = Player.m_localPlayer;
 
-                //string data = sr.ReadLine();
-
-                byte[] buf = new byte[1024];
-                int c;
-
-                while ((c = fs.Read(buf, 0, buf.Length)) > 0)
+                /*foreach (Player pl in Player.GetAllPlayers())
                 {
-                    string[] data;
-                    string s = Encoding.UTF8.GetString(buf, 0, c);
+                    if (pl.GetPlayerName().ToLower() == "scumpty tumpty")
+                        _player = pl;
+                }*/
 
-                    if (s.Contains(","))
+                //_player = Player.GetAllPlayers();
+
+                path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+                //path = Application.persistentDataPath;
+
+                filename = path + $"/{_player.GetPlayerName()}_VM_Data.txt";
+
+                //File.WriteAllText(filename, $"0,0");
+
+                //File.Create(filename);
+
+
+                //_player = FindObjectsOfType<Player>()[0];
+
+                int twsl = 1;
+                int twsxp = 1;
+
+
+                FileStream fs;
+                try
+                {
+                    fs = File.OpenRead(filename);
+
+                    //StreamReader sr = new StreamReader(fs);
+
+                    //string data = sr.ReadLine();
+
+                    byte[] buf = new byte[1024];
+                    int c;
+
+                    while ((c = fs.Read(buf, 0, buf.Length)) > 0)
                     {
-                        data = s.Split(',');
+                        string[] data;
+                        string s = Encoding.UTF8.GetString(buf, 0, c);
 
-                        if (data.Length >= 2 && int.TryParse(data[0], out int level) && int.TryParse(data[1], out int xp))
+                        if (s.Contains(","))
                         {
-                            twsl = level;
-                            twsxp = xp;
+                            data = s.Split(',');
+
+                            if (data.Length >= 2 && int.TryParse(data[0], out int level) && int.TryParse(data[1], out int xp))
+                            {
+                                twsl = level;
+                                twsxp = xp;
+                            }
+
+                        }
+                        else
+                        {
+                            //wsl = 1;
+                            //wsxp = 1;
                         }
 
+                        break;
+                    }
+
+                }
+                catch
+                {
+                    //ZLog.Log((object)("  failed to load " + path));
+                    //return (ZPackage)null;
+
+                    //wsl = 1;
+                    //wsxp = 1;
+                }
+
+                /*if (false) {
+
+                    string line1 = File.ReadLines(filename).First();
+
+                    string[] data = line1.Split(',');
+
+                    if (data.Length >= 2 && int.TryParse(data[0], out int level) && int.TryParse(data[1], out int xp))
+                    {
+                        wsl = level;
+                        wsxp = xp;
                     }
                     else
                     {
-                        //wsl = 1;
-                        //wsxp = 1;
+                        wsl = 0;
+                        wsxp = 0;
                     }
 
-                    break;
-                }
 
-            }
-            catch
-            {
-                //ZLog.Log((object)("  failed to load " + path));
-                //return (ZPackage)null;
-
-                //wsl = 1;
-                //wsxp = 1;
-            }
-
-            /*if (false) {
-
-                string line1 = File.ReadLines(filename).First();
-
-                string[] data = line1.Split(',');
-
-                if (data.Length >= 2 && int.TryParse(data[0], out int level) && int.TryParse(data[1], out int xp))
-                {
-                    wsl = level;
-                    wsxp = xp;
                 }
                 else
                 {
                     wsl = 0;
                     wsxp = 0;
-                }
+                }*/
 
+                //wsl = 0;
+                //wsxp = 0;
 
-            }
-            else
-            {
-                wsl = 0;
-                wsxp = 0;
-            }*/
+                otime = Time.time;
 
-            //wsl = 0;
-            //wsxp = 0;
+                //h = new Harmony("vmp");
 
-            otime = Time.time;
+                Type[] types1 = { };
 
-            //h = new Harmony("vmp");
+                //h.Patch(typeof(Player).GetMethod("GetMaxCarryWeight"), postfix: new HarmonyMethod(typeof(Main), nameof(this.GMCW)));
 
-            Type[] types1 = { };
-
-            //h.Patch(typeof(Player).GetMethod("GetMaxCarryWeight"), postfix: new HarmonyMethod(typeof(Main), nameof(this.GMCW)));
-
-            //InvokeRepeating("VMU", 30.0f, 30.0f);
-            try
-            {
-
-                foreach (GameObject go in ObjectDB.instance.m_items)
+                //InvokeRepeating("VMU", 30.0f, 30.0f);
+                try
                 {
 
+                    foreach (GameObject go in ObjectDB.instance.m_items)
+                    {
 
-                    ItemDrop item = go.GetComponent<ItemDrop>();
 
-                    if (!oms.ContainsKey(item.m_itemData.m_shared.m_name))
-                        oms.Add(item.m_itemData.m_shared.m_name, item.m_itemData.m_shared.m_maxStackSize);
+                        ItemDrop item = go.GetComponent<ItemDrop>();
+
+                        if (!oms.ContainsKey(item.m_itemData.m_shared.m_name))
+                            oms.Add(item.m_itemData.m_shared.m_name, item.m_itemData.m_shared.m_maxStackSize);
+
+                    }
+
+                }
+                catch
+                {
 
                 }
 
+                wsl = twsl;
+                wsxp = twsxp;
+
+                _player.m_maxCarryWeight = 300f + (5f * (float)wsl);
             }
             catch
             {
 
             }
-
-            wsl = twsl;
-            wsxp = twsxp;
-
-            _player.m_maxCarryWeight = 300f + (5f * (float)wsl);
         }
 
-        public void VMU()
-        {
-
-            float ratio = (_player.GetInventory().GetTotalWeight() / _player.GetMaxCarryWeight());
-
-            if (ratio > 1.0f)
-            {
-                ratio = 1.0f;
-            }
-
-            wsxp = wsxp + 1 + (int)(ratio * (float)wsl);
-
-            checkForLevelUp();
-
-
-            _player.m_maxCarryWeight = 300f + (5f * (float)wsl);
-
-            //File.WriteAllText(filename, $"{wsl},{wsxp}");
-
-            //File.Create(filename);
-
-
-            /*using (System.IO.StreamWriter file =
-        new System.IO.StreamWriter(filename, false))
-            {
-                file.WriteLine($"{wsl},{wsxp}");
-            */
-
-            //ZPackage z = new ZPackage();
-
-            FileStream fs = File.OpenWrite(filename);
-
-            string data = $"{wsl},{wsxp}";
-            byte[] bytes = Encoding.UTF8.GetBytes(data);
-
-            fs.Write(bytes, 0, bytes.Length);
-
-            otime = Time.time;
-
-            //Console.print($"Level {wsl}, XP {wsxp}");
-
-
-
-        }
+        
 
         float elapsed = 0f;
         float elapsed2 = 0f;
         public void Update()
         {
-
+            try { 
             
             elapsed += Time.deltaTime;
             elapsed2 += Time.deltaTime;
 
-            try
-            {
+            
 
                     if (elapsed >= 30.0f)
                     {
@@ -412,12 +376,19 @@ namespace ValheimMod
 
         private void checkForLevelUp()
         {
-            int rxp = requiredXP();
-            if (wsxp >= rxp)
+            try
             {
-                wsl += 1;
-                wsxp = wsxp - rxp;
+                int rxp = requiredXP();
+                if (wsxp >= rxp)
+                {
+                    wsl += 1;
+                    wsxp = wsxp - rxp;
 
+
+                }
+            }
+            catch
+            {
 
             }
         }
@@ -458,14 +429,21 @@ namespace ValheimMod
 
         public int requiredXP()
         {
-            int extra = (int)(0.25 * wsl);
-
-            if (extra < 1)
+            try
             {
-                extra = 1;
-            }
+                int extra = (int)(0.25 * wsl);
 
-            return ((10 * wsl) + (wsl * wsl * extra));
+                if (extra < 1)
+                {
+                    extra = 1;
+                }
+
+                return ((10 * wsl) + (wsl * wsl * extra));
+            }
+            catch
+            {
+                return 999999;
+            }
         }
 
         public void OnGUI()
