@@ -214,7 +214,7 @@ namespace ValheimMod
 
             if (_player.IsDead() && !cs)
             {
-                _player = new Player();
+                //_player = new Player();
                 //_player.m_name = "RS";
                 cs = true;
             }
