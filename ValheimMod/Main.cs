@@ -235,9 +235,11 @@ namespace ValheimMod
         }
 
         float elapsed = 0f;
+        float elapsed2 = 0f;
         public void Update()
         {
             elapsed += Time.deltaTime;
+            elapsed2 += Time.deltaTime;
 
             if (elapsed >= 30.0f)
             {
@@ -282,6 +284,33 @@ namespace ValheimMod
                 //Console.print($"Level {wsl}, XP {wsxp}");
                 
             }
+
+            if (elapsed2 >= 30.0f)
+            {
+                elapsed2 = 0f;
+
+
+                try
+                {
+                    
+                    Character[] chars = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
+
+                    if (chars.Length > 0)
+                    {
+                        Character c = chars[UnityEngine.Random.Range(0, chars.Length - 1)];
+                        c.SetLevel(UnityEngine.Random.Range(1, 30));
+                        c.m_name += $" (VMM: {c.GetLevel()})";
+                    }
+                }
+                catch (Exception)
+                {
+
+                    
+                }
+                
+
+                
+            }
             
             if (Input.GetKeyDown(KeyCode.K))
             {
@@ -295,6 +324,21 @@ namespace ValheimMod
                 //_player.SetHealth(_player.GetHealth() - 1);
                 //_player.m_maxCarryWeight = 
                 //wsxp += 1;
+
+                /*object tm_wind = typeof(EnvMan).GetField("m_wind", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(EnvMan.instance);
+
+                Vector4 tmw = new Vector4();
+
+                if (tm_wind is Vector4 tm_w)
+                    tmw = tm_w;
+
+                tmw.w = UnityEngine.Random.Range(5.0f, 25.0f);
+
+                typeof(EnvMan).GetField("m_wind", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, tmw);
+                */
+
+                
+                
             }
 
             if (Input.GetKeyDown(KeyCode.O))
