@@ -357,7 +357,7 @@ namespace ValheimMod
                         }
                         catch
                         {
-
+                        _player = GameObject.FindObjectsOfType<Player>()[0];
                         }
                     }
 
