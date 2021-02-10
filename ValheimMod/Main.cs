@@ -263,8 +263,10 @@ namespace ValheimMod
                 if (_player.GetControlledShip() != null && _player.GetControlledShip().m_backwardForce != 100f)
                 {
                     Ship s = _player.GetControlledShip();
-                    s.m_backwardForce = 100f;
-                    s.m_sailForceFactor = 1.0f;
+                    s.m_backwardForce = 55f;
+                    s.m_sailForceFactor = 0.15f;
+                    s.m_stearForce = 0.75f;
+                    s.m_force = 2.5f;
 
                     _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
                 }
@@ -472,7 +474,7 @@ namespace ValheimMod
                         //Console.print("You subtracted health.");
                     }
 
-                    if (Input.GetKeyDown(KeyCode.Plus))
+                    if (Input.GetKeyDown(KeyCode.I))
                     {
                         if (meaw == false)
                             meaw = true;
