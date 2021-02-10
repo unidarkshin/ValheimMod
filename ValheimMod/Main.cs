@@ -38,7 +38,7 @@ namespace ValheimMod
 
         Dictionary<string, int> oms = new Dictionary<string, int>();
 
-        public bool meaw = false;
+        public static bool meaw = false;
 
         /*[DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -64,6 +64,21 @@ namespace ValheimMod
             //__result += ((float)wsl * 5f);
         }
 
+        public static void CW(
+    Vector3 worldPos,
+    float time,
+    ref float waveSpeed,
+    float waveLength,
+    float waveHeight,
+    Vector2 dir2d,
+    float sharpness)
+        {
+            if (meaw)
+            waveSpeed *= UnityEngine.Random.Range(0.75f, 50.0f);
+            //__result += ((float)wsl * 5f);
+            _player.Message(MessageHud.MessageType.TopLeft, $"Wave upd.", 0, (Sprite)null);
+        }
+
         public void Start()
         {
             //M = this;
@@ -87,7 +102,7 @@ namespace ValheimMod
                 foreach (Player pl in Player.GetAllPlayers())
                 {
                     ZNetView tznv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
-                    if (tznv.GetZDO().GetString("VMMHM") == "true")
+                    if (tznv.GetZDO().GetString("VMMHM") == "True")
                     {
                         count++;
                         break;
@@ -105,7 +120,7 @@ namespace ValheimMod
                 ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
                 znv.GetZDO().Set("VMMHM", $"{meaw}");
 
-                _player.Message(MessageHud.MessageType.TopLeft, $"Host Modifier: {meaw}", 0, (Sprite)null);
+                _player.Message(MessageHud.MessageType.TopLeft, $"Host Modifier: {meaw}, ZNV: {znv.GetZDO().GetString("VMMHM")}.", 0, (Sprite)null);
 
 
                 //_player = Player.GetAllPlayers();
@@ -208,11 +223,11 @@ namespace ValheimMod
 
                 otime = Time.time;
 
-                //h = new Harmony("vmp");
+                h = new Harmony("vmp");
 
                 Type[] types1 = { };
 
-                //h.Patch(typeof(Player).GetMethod("GetMaxCarryWeight"), postfix: new HarmonyMethod(typeof(Main), nameof(this.GMCW)));
+                h.Patch(typeof(WaterVolume).GetMethod("CreateWave"), prefix: new HarmonyMethod(typeof(Main), nameof(this.CW)));
 
                 //h.Patch(typeof(Game).GetMethod("SpawnPlayer"), postfix: new HarmonyMethod(typeof(Main), nameof(this.RP)));
 
@@ -252,8 +267,6 @@ namespace ValheimMod
             }
         }
 
-
-
         float elapsed = 0f;
         float elapsed2 = 0f;
         float elapsed3 = 0f;
@@ -265,15 +278,15 @@ namespace ValheimMod
         {
             try
             {
-                if (_player.GetControlledShip() != null && _player.GetControlledShip().m_backwardForce != 100f)
+                if (_player.GetControlledShip() != null && _player.GetControlledShip().m_backwardForce != 0.75f)
                 {
                     Ship s = _player.GetControlledShip();
-                    //s.m_backwardForce = 50f;
-                    //s.m_sailForceFactor = 0.15f;
+                    s.m_backwardForce = 0.75f;
+                    s.m_sailForceFactor = 0.10f;
                     s.m_stearForce = 0.75f;
                     s.m_force = 0.75f;
 
-                    _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces, Debug: BF; {s.m_backwardForce}, SFF; {s.m_sailForceFactor}", 0, (Sprite)null);
+                    _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
                 }
 
                 elapsed4 += Time.deltaTime;
@@ -514,7 +527,7 @@ namespace ValheimMod
                         foreach (Player pl in Player.GetAllPlayers())
                         {
                             ZNetView tznv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
-                            if (tznv.GetZDO().GetString("VMMHM") == "true")
+                            if (tznv.GetZDO().GetString("VMMHM") == "True")
                             {
                                 count++;
                                 break;
