@@ -106,4 +106,3 @@ C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\System.dll
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\System.Net.Http.dll
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\System.Xml.dll
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\System.Xml.Linq.dll
-C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.csprojAssemblyReference.cache

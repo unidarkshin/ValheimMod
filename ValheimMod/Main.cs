@@ -266,10 +266,10 @@ namespace ValheimMod
                 if (_player.GetControlledShip() != null && _player.GetControlledShip().m_backwardForce != 100f)
                 {
                     Ship s = _player.GetControlledShip();
-                    s.m_backwardForce = 55f;
+                    s.m_backwardForce = 50f;
                     s.m_sailForceFactor = 0.15f;
                     s.m_stearForce = 0.75f;
-                    s.m_force = 2.5f;
+                    s.m_force = 0.75f;
 
                     _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
                 }
