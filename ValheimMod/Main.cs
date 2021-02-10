@@ -82,17 +82,20 @@ namespace ValheimMod
 
 
                 int count = 0;
+                
 
                 foreach (Player pl in Player.GetAllPlayers())
                 {
-                    if (pl.m_name.Contains("VMM"))
+                    ZNetView tznv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
+                    if (tznv.GetZDO().GetString("VMM") == "true")
                     {
                         count++;
                         break;
                     }
                 }
 
-                _player.m_name += "VMM";
+                ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
+                znv.GetZDO().Set("VMM", "true");
 
                 if (count == 0)
                 {
