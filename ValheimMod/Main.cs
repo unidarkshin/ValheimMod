@@ -98,7 +98,7 @@ namespace ValheimMod
 
                 //_player = FindObjectsOfType<Player>()[0];
 
-                
+
 
 
                 FileStream fs;
@@ -117,7 +117,7 @@ namespace ValheimMod
                     {
                         string[] data;
                         string s = Encoding.UTF8.GetString(buf, 0, c);
-                        _player.Message(MessageHud.MessageType.TopLeft, $"VM ReadFile: {s}", 0, (Sprite)null);
+                        //_player.Message(MessageHud.MessageType.TopLeft, $"VM ReadFile: {s}", 0, (Sprite)null);
                         if (s.Contains(","))
                         {
                             data = s.Split(',');
@@ -183,7 +183,7 @@ namespace ValheimMod
 
                 otime = Time.time;
 
-                h = new Harmony("vmp");
+                //h = new Harmony("vmp");
 
                 Type[] types1 = { };
 
@@ -191,7 +191,7 @@ namespace ValheimMod
 
                 //h.Patch(typeof(Game).GetMethod("SpawnPlayer"), postfix: new HarmonyMethod(typeof(Main), nameof(this.RP)));
 
-                h.Patch(typeof(Destructible).GetMethod("RPC_Damage"), prefix: new HarmonyMethod(typeof(Main), nameof(this.DDM)));
+                //h.Patch(typeof(TreeLog).GetMethod("RPC_Damage"), prefix: new HarmonyMethod(typeof(Main), nameof(this.DDM)));
 
                 //InvokeRepeating("VMU", 30.0f, 30.0f);
                 try
@@ -209,15 +209,17 @@ namespace ValheimMod
                     }
 
                 }
-                catch
+                catch (Exception ex)
                 {
-
+                    _player.Message(MessageHud.MessageType.TopLeft, $"VM Error in start: {ex.Message}", 0, (Sprite)null);
                 }
 
                 //wsl = twsl;
                 //wsxp = twsxp;
 
                 _player.m_maxCarryWeight = 300f + (5f * (float)wsl);
+
+
             }
             catch
             {
@@ -230,35 +232,54 @@ namespace ValheimMod
         float elapsed = 0f;
         float elapsed2 = 0f;
         float elapsed3 = 0f;
+        float elapsed4 = 0f;
         public static bool cs = false;
         public bool us = false;
         //Player _playert;
         public void Update()
         {
-            if (cs)
-                elapsed3 += Time.deltaTime;
-
-            if (cs && !us)
-                us = true;
-
-            if (_player.IsDead() && !cs)
-            {
-                _player = UnityEngine.Object.Instantiate<GameObject>(Game.instance.m_playerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity).GetComponent<Player>();
-                //_player.gameObject.
-                //_player = new Player();
-                //_player.m_name = "RS";
-                cs = true;
-            }
-            else if (cs && elapsed3 > 20f)
-            {
-                //ZNetScene.instance.Destroy(_player.gameObject);
-                _player = Player.m_localPlayer;
-                cs = false;
-                elapsed3 = 0f;
-            }
-
             try
             {
+
+                elapsed4 += Time.deltaTime;
+
+                if (elapsed4 >= 300f)
+                {
+                    EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
+                    float rnd = UnityEngine.Random.Range(1.0f, 20.0f);
+                    env.m_windMax = rnd;
+                    
+                    typeof(EnvMan).GetField("m_currentEnv", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, env);
+
+                    elapsed4 = 0f;
+
+                    _player.Message(MessageHud.MessageType.TopLeft, $"The max wind speed has changed: {rnd}", 0, (Sprite)null);
+                }
+
+                if (cs)
+                    elapsed3 += Time.deltaTime;
+
+                if (cs && !us)
+                    us = true;
+
+                if (_player.IsDead() && !cs)
+                {
+                    _player = UnityEngine.Object.Instantiate<GameObject>(Game.instance.m_playerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity).GetComponent<Player>();
+                    //_player.m_name = "temp";
+                    //_player.gameObject.
+                    //_player = new Player();
+                    //_player.m_name = "RS";
+                    cs = true;
+                }
+                else if (cs && elapsed3 > 20f)
+                {
+                    //ZNetScene.instance.Destroy(_player.gameObject);
+                    _player = Player.m_localPlayer;
+                    cs = false;
+                    elapsed3 = 0f;
+                }
+
+
                 if (!cs)
                 {
                     if (us)
