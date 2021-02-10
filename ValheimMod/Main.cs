@@ -38,6 +38,8 @@ namespace ValheimMod
 
         Dictionary<string, int> oms = new Dictionary<string, int>();
 
+        public bool meaw = false;
+
         /*[DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AllocConsole();*/
@@ -77,11 +79,29 @@ namespace ValheimMod
                 _player = Player.m_localPlayer;
                 pln = _player.GetPlayerName();
 
-                /*foreach (Player pl in Player.GetAllPlayers())
+
+
+                int count = 0;
+
+                foreach (Player pl in Player.GetAllPlayers())
                 {
-                    if (pl.GetPlayerName().ToLower() == "scumpty tumpty")
-                        _player = pl;
-                }*/
+                    if (pl.m_name.Contains("VMM"))
+                    {
+                        count++;
+                        break;
+                    }
+                }
+
+                _player.m_name += "VMM";
+
+                if (count == 0)
+                {
+                    meaw = true;
+                    
+                }
+
+                _player.Message(MessageHud.MessageType.TopLeft, $"Host Modifier: {meaw}", 0, (Sprite)null);
+                
 
                 //_player = Player.GetAllPlayers();
 
@@ -240,20 +260,33 @@ namespace ValheimMod
         {
             try
             {
+                if (_player.GetControlledShip() != null && _player.GetControlledShip().m_backwardForce != 100f)
+                {
+                    Ship s = _player.GetControlledShip();
+                    s.m_backwardForce = 100f;
+                    s.m_sailForceFactor = 1.0f;
+
+                    _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
+                }
 
                 elapsed4 += Time.deltaTime;
 
                 if (elapsed4 >= 300f)
                 {
-                    EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
-                    float rnd = UnityEngine.Random.Range(1.0f, 20.0f);
-                    env.m_windMax = rnd;
-                    
-                    typeof(EnvMan).GetField("m_currentEnv", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, env);
+
+                    if (meaw)
+                    {
+                        EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
+                        float rnd = UnityEngine.Random.Range(1.0f, 20.0f);
+                        env.m_windMax = rnd;
+
+                        typeof(EnvMan).GetField("m_currentEnv", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, env);
+                        _player.Message(MessageHud.MessageType.TopLeft, $"The max wind speed has changed: {rnd}", 0, (Sprite)null);
+                    }
 
                     elapsed4 = 0f;
 
-                    _player.Message(MessageHud.MessageType.TopLeft, $"The max wind speed has changed: {rnd}", 0, (Sprite)null);
+                    
                 }
 
                 if (cs)
@@ -264,7 +297,13 @@ namespace ValheimMod
 
                 if (_player.IsDead() && !cs)
                 {
+                    List<ItemDrop.ItemData> items = new List<ItemDrop.ItemData>();
+
+                    typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player.GetInventory(), items);
+
                     _player = UnityEngine.Object.Instantiate<GameObject>(Game.instance.m_playerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity).GetComponent<Player>();
+                    
+
                     //_player.m_name = "temp";
                     //_player.gameObject.
                     //_player = new Player();
@@ -275,6 +314,9 @@ namespace ValheimMod
                 {
                     //ZNetScene.instance.Destroy(_player.gameObject);
                     _player = Player.m_localPlayer;
+                    if (_player.m_name.Contains("VMM"))
+                        _player.m_name += "VMM";
+
                     cs = false;
                     elapsed3 = 0f;
                 }
@@ -353,25 +395,31 @@ namespace ValheimMod
 
                         try
                         {
-
-                            Character[] chars = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
-                            List<Character> chars2 = new List<Character>();
-
-                            foreach (Character ch in chars)
+                            if (meaw)
                             {
-                                if (ch.IsMonsterFaction() && !ch.m_name.Contains("VMM"))
-                                    chars2.Add(ch);
+                                Character[] chars = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
+                                List<Character> chars2 = new List<Character>();
 
-                            }
+                                foreach (Character ch in chars)
+                                {
+                                    if (ch.IsMonsterFaction() && !ch.m_name.Contains("VMM"))
+                                        chars2.Add(ch);
 
-                            if (chars2.Count > 0)
-                            {
-                                Character c = chars2[UnityEngine.Random.Range(0, chars2.Count - 1)];
+                                }
 
-                                int lvl = UnityEngine.Random.Range(1, 6);
-                                c.SetLevel(lvl);
-                                c.m_name += $" (VMM: {lvl})";
+                                if (chars2.Count > 0)
+                                {
+                                    Character c = chars2[UnityEngine.Random.Range(0, chars2.Count - 1)];
 
+                                    int lvl = UnityEngine.Random.Range(1, 6);
+
+                                    if (lvl > c.GetLevel())
+                                    {
+                                        c.SetLevel(lvl);
+                                        c.m_name += $" (VMM: {lvl})";
+                                    }
+
+                                }
                             }
                         }
                         catch (Exception ex)
@@ -421,6 +469,17 @@ namespace ValheimMod
                     if (Input.GetKeyDown(KeyCode.O))
                     {
                         _player.SetHealth(_player.GetHealth() - 1);
+                        //Console.print("You subtracted health.");
+                    }
+
+                    if (Input.GetKeyDown(KeyCode.Plus))
+                    {
+                        if (meaw == false)
+                            meaw = true;
+                        else
+                            meaw = false;
+
+                        _player.Message(MessageHud.MessageType.TopLeft, $"You modified host modifications to {meaw}.", 0, (Sprite)null);
                         //Console.print("You subtracted health.");
                     }
 
