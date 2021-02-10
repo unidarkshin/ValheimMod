@@ -82,29 +82,31 @@ namespace ValheimMod
 
 
                 int count = 0;
-                
+
 
                 foreach (Player pl in Player.GetAllPlayers())
                 {
                     ZNetView tznv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
-                    if (tznv.GetZDO().GetString("VMM") == "true")
+                    if (tznv.GetZDO().GetString("VMMHM") == "true")
                     {
                         count++;
                         break;
                     }
                 }
 
-                ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
-                znv.GetZDO().Set("VMM", "true");
+
 
                 if (count == 0)
                 {
                     meaw = true;
-                    
+
                 }
 
+                ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
+                znv.GetZDO().Set("VMMHM", $"{meaw}");
+
                 _player.Message(MessageHud.MessageType.TopLeft, $"Host Modifier: {meaw}", 0, (Sprite)null);
-                
+
 
                 //_player = Player.GetAllPlayers();
 
@@ -257,7 +259,7 @@ namespace ValheimMod
         float elapsed3 = 0f;
         float elapsed4 = 0f;
         public static bool cs = false;
-        public bool us = false;
+        public bool us = true;
         //Player _playert;
         public void Update()
         {
@@ -266,12 +268,12 @@ namespace ValheimMod
                 if (_player.GetControlledShip() != null && _player.GetControlledShip().m_backwardForce != 100f)
                 {
                     Ship s = _player.GetControlledShip();
-                    s.m_backwardForce = 50f;
-                    s.m_sailForceFactor = 0.15f;
+                    //s.m_backwardForce = 50f;
+                    //s.m_sailForceFactor = 0.15f;
                     s.m_stearForce = 0.75f;
                     s.m_force = 0.75f;
 
-                    _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
+                    _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces, Debug: BF; {s.m_backwardForce}, SFF; {s.m_sailForceFactor}", 0, (Sprite)null);
                 }
 
                 elapsed4 += Time.deltaTime;
@@ -291,7 +293,7 @@ namespace ValheimMod
 
                     elapsed4 = 0f;
 
-                    
+
                 }
 
                 if (cs)
@@ -307,7 +309,7 @@ namespace ValheimMod
                     typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player.GetInventory(), items);
 
                     _player = UnityEngine.Object.Instantiate<GameObject>(Game.instance.m_playerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity).GetComponent<Player>();
-                    
+
 
                     //_player.m_name = "temp";
                     //_player.gameObject.
@@ -400,32 +402,59 @@ namespace ValheimMod
 
                         try
                         {
-                            if (meaw)
+                            //if (meaw)
+                            //{
+                            Character[] chars = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
+                            List<Character> chars2 = new List<Character>();
+
+                            foreach (Character ch in chars)
                             {
-                                Character[] chars = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
-                                List<Character> chars2 = new List<Character>();
 
-                                foreach (Character ch in chars)
+                                ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ch) as ZNetView;
+                                //znv.GetZDO().Set("VMMML", $"{}");
+
+                                if (ch.IsMonsterFaction() && znv.GetZDO().GetString("VMMML") == "")
                                 {
-                                    if (ch.IsMonsterFaction() && !ch.m_name.Contains("VMM"))
-                                        chars2.Add(ch);
-
+                                    chars2.Add(ch);
                                 }
 
-                                if (chars2.Count > 0)
-                                {
-                                    Character c = chars2[UnityEngine.Random.Range(0, chars2.Count - 1)];
 
-                                    int lvl = UnityEngine.Random.Range(1, 6);
-
-                                    if (lvl > c.GetLevel())
-                                    {
-                                        c.SetLevel(lvl);
-                                        c.m_name += $" (VMM: {lvl})";
-                                    }
-
-                                }
                             }
+
+                            if (chars2.Count > 0)
+                            {
+                                Character c = chars2[UnityEngine.Random.Range(0, chars2.Count - 1)];
+
+                                int lvl = UnityEngine.Random.Range(1, 6);
+
+                                if (lvl > c.GetLevel())
+                                {
+                                    c.SetLevel(lvl);
+
+                                    ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
+                                    znv.GetZDO().Set("VMMML", $"{lvl}");
+                                }
+
+                            }
+
+
+                            Character[] chars3 = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
+
+                            foreach (Character ch in chars3)
+                            {
+
+                                ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ch) as ZNetView;
+                                //znv.GetZDO().Set("VMMML", $"{}");
+
+                                if (ch.IsMonsterFaction() && znv.GetZDO().GetString("VMMML") != "" && !ch.m_name.Contains("VMM") && int.TryParse(znv.GetZDO().GetString("VMMML"), out int level))
+                                {
+                                    ch.m_name += $" (VMM: {level})";
+                                }
+
+
+                            }
+
+                            //}
                         }
                         catch (Exception ex)
                         {
@@ -479,12 +508,35 @@ namespace ValheimMod
 
                     if (Input.GetKeyDown(KeyCode.I))
                     {
-                        if (meaw == false)
-                            meaw = true;
-                        else
-                            meaw = false;
+                        int count = 0;
 
-                        _player.Message(MessageHud.MessageType.TopLeft, $"You modified host modifications to {meaw}.", 0, (Sprite)null);
+
+                        foreach (Player pl in Player.GetAllPlayers())
+                        {
+                            ZNetView tznv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
+                            if (tznv.GetZDO().GetString("VMMHM") == "true")
+                            {
+                                count++;
+                                break;
+                            }
+                        }
+
+
+
+                        if (count == 0)
+                        {
+                            meaw = true;
+
+                        }
+                        else
+                        {
+                            meaw = false;
+                        }
+
+                        ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
+                        znv.GetZDO().Set("VMMHM", $"{meaw}");
+
+                        _player.Message(MessageHud.MessageType.TopLeft, $"Host modifications set to {meaw}. Check revealed {count} active host modifiers.", 0, (Sprite)null);
                         //Console.print("You subtracted health.");
                     }
 
