@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace ValheimMod
@@ -64,6 +63,8 @@ namespace ValheimMod
             //__result += ((float)wsl * 5f);
         }
 
+        Type[] cwTypes = { typeof(Vector3), typeof(float), typeof(float), typeof(float), typeof(float), typeof(Vector2), typeof(float) };
+
         public static void CW(
     Vector3 worldPos,
     float time,
@@ -77,6 +78,8 @@ namespace ValheimMod
             waveSpeed *= UnityEngine.Random.Range(0.75f, 50.0f);
             //__result += ((float)wsl * 5f);
             _player.Message(MessageHud.MessageType.TopLeft, $"Wave upd.", 0, (Sprite)null);
+
+            //return true;
         }
 
         public void Start()
@@ -223,12 +226,12 @@ namespace ValheimMod
 
                 otime = Time.time;
 
-                h = new Harmony("vmp");
+                //h = new Harmony("vmp");
 
-                Type[] types1 = { };
+                //Type[] types1 = { };
 
-                h.Patch(typeof(WaterVolume).GetMethod("CreateWave"), prefix: new HarmonyMethod(typeof(Main), nameof(this.CW)));
-
+                //h.Patch(typeof(WaterVolume).GetMethod("CreateWaver"), prefix: new HarmonyMethod(typeof(Main), nameof(this.CW), cwTypes));
+                //h.PatchAll(Assembly.GetExecutingAssembly());
                 //h.Patch(typeof(Game).GetMethod("SpawnPlayer"), postfix: new HarmonyMethod(typeof(Main), nameof(this.RP)));
 
                 //h.Patch(typeof(TreeLog).GetMethod("RPC_Damage"), prefix: new HarmonyMethod(typeof(Main), nameof(this.DDM)));
@@ -297,7 +300,14 @@ namespace ValheimMod
                     if (meaw)
                     {
                         EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
-                        float rnd = UnityEngine.Random.Range(1.0f, 20.0f);
+
+                        float rnd;
+
+                        if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.05f)
+                            rnd = UnityEngine.Random.Range(50f, 150f);
+                        else
+                            rnd = UnityEngine.Random.Range(1.0f, 20.0f);
+
                         env.m_windMax = rnd;
 
                         typeof(EnvMan).GetField("m_currentEnv", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, env);
@@ -355,7 +365,7 @@ namespace ValheimMod
 
 
 
-                    if (elapsed >= 30.0f)
+                    if (elapsed >= 30.0f && _player.GetVelocity().magnitude > 0f)
                     {
                         elapsed = 0f;
 
@@ -370,6 +380,7 @@ namespace ValheimMod
                         }
 
                         wsxp = wsxp + 1 + (int)(ratio * (float)wsl);
+
 
                         checkForLevelUp();
 
@@ -408,7 +419,7 @@ namespace ValheimMod
 
                     }
 
-                    if (elapsed2 >= 30.0f)
+                    if (elapsed2 >= 30.0f * Player.GetAllPlayers().Count)
                     {
                         elapsed2 = 0f;
 
@@ -438,7 +449,7 @@ namespace ValheimMod
                             {
                                 Character c = chars2[UnityEngine.Random.Range(0, chars2.Count - 1)];
 
-                                int lvl = UnityEngine.Random.Range(1, 6);
+                                int lvl = UnityEngine.Random.Range(1, 7);
 
                                 if (lvl > c.GetLevel())
                                 {
@@ -676,8 +687,35 @@ namespace ValheimMod
 
             //GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, 150f, 50f), "GAME INJECTED"); // Should work and when injected you will see this text in the middle of the screen
         }
-        private static Player _player;
+        public static Player _player;
     }
+
+    /*[HarmonyPatch(typeof(WaterVolume), "CreateWave")]
+    static class Application_loadedLevelName_Patch
+    {
+        static void Prefix(
+    Vector3 worldPos,
+    float time,
+    ref float waveSpeed,
+    ref float waveLength,
+    ref float waveHeight,
+    Vector2 dir2d,
+    ref float sharpness)
+        {
+            try
+            {
+                waveSpeed += 50000f;
+                waveHeight += 50000f;
+                waveLength += 50000f;
+                sharpness += 50000f;
+            }
+            catch (Exception e)
+            {
+                //mod.Logger.Error(e.ToString());
+                 
+            }
+        }
+    }*/
 
 }
 
