@@ -570,7 +570,9 @@ namespace ValheimMod
 
                         typeof(EnvMan).GetField("m_wind", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, tmw);
                         */
+                        ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
 
+                        znv.GetZDO().Set("VMMWS", 150.0f);
 
 
                     }
