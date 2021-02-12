@@ -28,12 +28,13 @@ namespace ValheimMod
         }
         public int wsxp;
 
-        Harmony h;
+        //Harmony h;
 
         public Main M;
 
         string path;
         string filename;
+        string errorfile;
 
         Dictionary<string, int> oms = new Dictionary<string, int>();
 
@@ -119,6 +120,10 @@ namespace ValheimMod
                     meaw = true;
 
                 }
+                else
+                {
+                    meaw = false;
+                }
 
                 ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
                 znv.GetZDO().Set("VMMHM", $"{meaw}");
@@ -133,7 +138,7 @@ namespace ValheimMod
                 //path = Application.persistentDataPath;
 
                 filename = path + $"/{_player.GetPlayerName()}_VM_Data.txt";
-
+                errorfile = path + "/VM_Error.txt";
                 //File.WriteAllText(filename, $"0,0");
 
                 //File.Create(filename);
@@ -226,7 +231,18 @@ namespace ValheimMod
 
                 otime = Time.time;
 
-                //h = new Harmony("vmp");
+                //var h = new Harmony("unidarkshin_vm");
+
+                Type[] types1 = { };
+
+                /*h.Patch(
+   original: AccessTools.Method(typeof(Player), "FixedUpdate"),
+   prefix: new HarmonyMethod(typeof(Main), nameof(Main.PFU), types1)
+);
+                h.Patch(
+   original: AccessTools.Method(typeof(WaterVolume), "CreateWave", cwTypes),
+   prefix: new HarmonyMethod(typeof(Main), nameof(Main.CW))
+);*/
 
                 //Type[] types1 = { };
 
@@ -255,6 +271,8 @@ namespace ValheimMod
                 catch (Exception ex)
                 {
                     _player.Message(MessageHud.MessageType.TopLeft, $"VM Error in start: {ex.Message}", 0, (Sprite)null);
+
+                    
                 }
 
                 //wsl = twsl;
@@ -264,10 +282,27 @@ namespace ValheimMod
 
 
             }
-            catch
+            catch (Exception ex)
             {
+                _player.Message(MessageHud.MessageType.TopLeft, $"VM Error in patching: {ex.Message}", 0, (Sprite)null);
 
+                FileStream fs2 = new FileStream(errorfile, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+
+
+                string data = $"\n Error in patching: {ex.Source}, {ex.Message}, {ex.StackTrace}, {ex.InnerException} ";
+                byte[] bytes = Encoding.UTF8.GetBytes(data);
+
+                fs2.Write(bytes, 0, bytes.Length);
+
+                fs2.Close();
             }
+        }
+
+        public static void PFU()
+        {
+            _player.Message(MessageHud.MessageType.TopLeft, $"PL FixedUpdate Patch", 0, (Sprite)null);
+
+            //return true;
         }
 
         float elapsed = 0f;
@@ -281,13 +316,18 @@ namespace ValheimMod
         {
             try
             {
+                if (_player.GetHoveringPiece() != null)
+                {
+                    typeof(Player).GetField("m_placementStatus", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player, 0);
+                }
+
                 if (_player.GetControlledShip() != null && _player.GetControlledShip().m_backwardForce != 0.75f)
                 {
                     Ship s = _player.GetControlledShip();
                     s.m_backwardForce = 0.75f;
                     s.m_sailForceFactor = 0.10f;
                     s.m_stearForce = 0.75f;
-                    s.m_force = 0.75f;
+                    s.m_force = 0.65f;
 
                     _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
                 }
@@ -327,10 +367,11 @@ namespace ValheimMod
 
                 if (_player.IsDead() && !cs)
                 {
-                    List<ItemDrop.ItemData> items = new List<ItemDrop.ItemData>();
+                    //List<ItemDrop.ItemData> items = new List<ItemDrop.ItemData>();
 
-                    typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player.GetInventory(), items);
-
+                    //(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player.GetInventory(), items);
+                    _player.GetInventory().RemoveAll();
+                    
                     _player = UnityEngine.Object.Instantiate<GameObject>(Game.instance.m_playerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity).GetComponent<Player>();
 
 
@@ -344,8 +385,8 @@ namespace ValheimMod
                 {
                     //ZNetScene.instance.Destroy(_player.gameObject);
                     _player = Player.m_localPlayer;
-                    if (_player.m_name.Contains("VMM"))
-                        _player.m_name += "VMM";
+                    //if (_player.m_name.Contains("VMM"))
+                        //_player.m_name += "VMM";
 
                     cs = false;
                     elapsed3 = 0f;
@@ -364,8 +405,11 @@ namespace ValheimMod
                     elapsed2 += Time.deltaTime;
 
 
-
-                    if (elapsed >= 30.0f && _player.GetVelocity().magnitude > 0f)
+                    if (elapsed >= 30.0f && _player.GetVelocity().magnitude == 0f)
+                    {
+                        elapsed = 0f;
+                    }
+                    else if (elapsed >= 30.0f && _player.GetVelocity().magnitude > 0f)
                     {
                         elapsed = 0f;
 
@@ -402,7 +446,7 @@ namespace ValheimMod
 
                         //FileStream fs = File.OpenWrite(filename);
 
-                        FileStream fs = new FileStream(filename, FileMode.Truncate, FileAccess.Write);
+                        FileStream fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite);
 
 
                         string data = $"{wsl},{wsxp}";
@@ -449,14 +493,16 @@ namespace ValheimMod
                             {
                                 Character c = chars2[UnityEngine.Random.Range(0, chars2.Count - 1)];
 
-                                int lvl = UnityEngine.Random.Range(1, 7);
+                                int lvl = UnityEngine.Random.Range(1, 8);
 
                                 if (lvl > c.GetLevel())
                                 {
                                     c.SetLevel(lvl);
+                                    c.m_speed = c.m_speed * (1.0f + (lvl / 10.0f));
 
                                     ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
                                     znv.GetZDO().Set("VMMML", $"{lvl}");
+
                                 }
 
                             }

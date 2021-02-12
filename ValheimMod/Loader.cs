@@ -17,12 +17,13 @@ namespace ValheimMod
 
 
             //Harmony.DEBUG = true;
-            //var h = new Harmony("vmp");
+           /* var h = HarmonyInstance.Create("unidarkshin_vm1");
 
-            
-            //h.PatchAll();
-            
-            
+            h.Patch(
+   original: AccessTools.Method(typeof(WaterVolume), "CreateWave"),
+   prefix: new HarmonyMethod(typeof(WaterVolume_CreateWave_Patch), nameof(WaterVolume_CreateWave_Patch.patch1))
+);*/
+
         }
         public static void Unload()
         {
@@ -37,10 +38,9 @@ namespace ValheimMod
 
     }
 
-    [HarmonyPatch(typeof(WaterVolume), "CreateWave")]
     public static class WaterVolume_CreateWave_Patch
     {
-        public static bool Prefix(
+        public static bool patch1(
     Vector3 worldPos,
     float time,
     ref float waveSpeed,
@@ -55,6 +55,7 @@ namespace ValheimMod
                 waveHeight += 50f;
                 waveLength += 50f;
                 sharpness += 50f;
+                Main._player.Message(MessageHud.MessageType.TopLeft, $"You ran patch createwave!", 0, (Sprite)null);
             }
             catch (Exception e)
             {
@@ -66,7 +67,7 @@ namespace ValheimMod
         }
     }
 
-    [HarmonyPatch(typeof(Player), "FixedUpdate")]
+    //[HarmonyPatch(typeof(Player), "FixedUpdate")]
     public static class Pl_FU_Patch
     {
         public static int count = 0;
