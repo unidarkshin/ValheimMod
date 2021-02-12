@@ -309,6 +309,7 @@ namespace ValheimMod
         float elapsed2 = 0f;
         float elapsed3 = 0f;
         float elapsed4 = 0f;
+        float elapsed5 = 0f;
         public static bool cs = false;
         public bool us = true;
         public Vector3 ovel = new Vector3(0,0,0);
@@ -351,10 +352,13 @@ namespace ValheimMod
                         else
                             rnd = UnityEngine.Random.Range(1.0f, 20.0f);
 
-                        env.m_windMax = rnd;
+                        ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
 
-                        typeof(EnvMan).GetField("m_currentEnv", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, env);
-                        _player.Message(MessageHud.MessageType.TopLeft, $"The max wind speed has changed: {rnd}", 0, (Sprite)null);
+                        znv.GetZDO().Set("VMMWS", rnd);
+                        //env.m_windMax = rnd;
+
+                        //typeof(EnvMan).GetField("m_currentEnv", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, env);
+                        //_player.Message(MessageHud.MessageType.TopLeft, $"The max wind speed has changed: {rnd}", 0, (Sprite)null);
                     }
 
                     elapsed4 = 0f;
@@ -363,7 +367,13 @@ namespace ValheimMod
                 }
 
                 if (cs)
+                {
                     elapsed3 += Time.deltaTime;
+                }
+                else
+                {
+                    elapsed5 += Time.deltaTime;
+                }
 
                 if (cs && !us)
                     us = true;
@@ -517,21 +527,7 @@ namespace ValheimMod
                             }
 
 
-                            Character[] chars3 = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
-
-                            foreach (Character ch in chars3)
-                            {
-
-                                ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ch) as ZNetView;
-                                //znv.GetZDO().Set("VMMML", $"{}");
-
-                                if (ch.IsMonsterFaction() && znv.GetZDO().GetString("VMMML") != "" && !ch.m_name.Contains("VMM") && int.TryParse(znv.GetZDO().GetString("VMMML"), out int level))
-                                {
-                                    ch.m_name += $" (VMM: {level})";
-                                }
-
-
-                            }
+                            
 
                             //}
                         }
@@ -645,6 +641,50 @@ namespace ValheimMod
                     if (Input.GetKeyDown(KeyCode.Delete)) // Will just unload our DLL
                     {
                         Loader.Unload();
+                    }
+
+                    if (elapsed5 >= 20.0f)
+                    {
+                        elapsed5 = 0f;
+
+                        if (!meaw)
+                        {
+                            ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
+
+                            znv.GetZDO().Set("VMMWS", 0);
+                        }
+
+                        foreach (Player pl in Player.GetAllPlayers())
+                        {
+                            ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
+
+                            float rnd = znv.GetZDO().GetFloat("VMMWS");
+
+                            if (rnd != 0)
+                            {
+                                EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
+                                env.m_windMax = rnd;
+
+                                typeof(EnvMan).GetField("m_currentEnv", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, env);
+                                _player.Message(MessageHud.MessageType.TopLeft, $"The max wind speed has changed: {rnd}", 0, (Sprite)null);
+                            }
+                        }
+
+                        Character[] chars3 = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
+
+                        foreach (Character ch in chars3)
+                        {
+
+                            ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ch) as ZNetView;
+                            //znv.GetZDO().Set("VMMML", $"{}");
+
+                            if (ch.IsMonsterFaction() && znv.GetZDO().GetString("VMMML") != "" && !ch.m_name.Contains("VMM") && int.TryParse(znv.GetZDO().GetString("VMMML"), out int level))
+                            {
+                                ch.m_name += $" (VMM: {level})";
+                            }
+
+
+                        }
                     }
                 }
 
