@@ -311,11 +311,14 @@ namespace ValheimMod
         float elapsed4 = 0f;
         public static bool cs = false;
         public bool us = true;
+        public Vector3 ovel = new Vector3(0,0,0);
         //Player _playert;
         public void Update()
         {
             try
             {
+
+
                 if (_player.GetHoveringPiece() != null)
                 {
                     typeof(Player).GetField("m_placementStatus", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player, 0);
@@ -371,7 +374,8 @@ namespace ValheimMod
 
                     //(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player.GetInventory(), items);
                     _player.GetInventory().RemoveAll();
-                    
+                    (typeof(Player).GetField("m_playerProfile", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as PlayerProfile).SavePlayerData(_player);
+
                     _player = UnityEngine.Object.Instantiate<GameObject>(Game.instance.m_playerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity).GetComponent<Player>();
 
 
@@ -395,6 +399,11 @@ namespace ValheimMod
 
                 if (!cs)
                 {
+                    if (ovel.magnitude == 0)
+                    {
+                        ovel = _player.GetVelocity();
+                    }
+
                     if (us)
                     {
                         updateStacks();
@@ -405,14 +414,14 @@ namespace ValheimMod
                     elapsed2 += Time.deltaTime;
 
 
-                    if (elapsed >= 30.0f && _player.GetVelocity().magnitude == 0f)
+                    if (elapsed >= 30.0f && ovel.magnitude == 0f)
                     {
                         elapsed = 0f;
                     }
-                    else if (elapsed >= 30.0f && _player.GetVelocity().magnitude > 0f)
+                    else if (elapsed >= 30.0f && ovel.magnitude > 0f)
                     {
                         elapsed = 0f;
-
+                        ovel = new Vector3(0, 0, 0);
 
                         //_player = Player.m_localPlayer;
 
