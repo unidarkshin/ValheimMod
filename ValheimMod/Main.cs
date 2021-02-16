@@ -48,7 +48,7 @@ namespace ValheimMod
 
         public void Awake()
         {
-            UnityEngine.Debug.Log("Hello, world!");
+            UnityEngine.Debug.LogWarning("Hello, world!");
         }
 
         public static void GMCW(ref float __result)
@@ -63,11 +63,78 @@ namespace ValheimMod
 
             //__result += ((float)wsl * 5f);
         }
-        public static void DDM(long sender, ref HitData hit)
+        public static void DDM(Destructible __instance, long sender, ref HitData hit)
         {
-            hit.m_damage.m_damage += 100f;
-            _player.Message(MessageHud.MessageType.TopLeft, $"VM DDM: {hit.m_damage.m_damage}", 0, (Sprite)null);
-            //__result += ((float)wsl * 5f);
+            try
+            {
+                List<Skills.Skill> gskills = _player.GetSkills().GetSkillList();
+
+                if (__instance.m_destructibleType == DestructibleType.Tree)
+                {
+                    Skills.Skill skl = gskills.Where(sk => sk.m_info.m_skill == Skills.SkillType.WoodCutting).FirstOrDefault();
+
+                    if (skl == null)
+                        return;
+
+                    if (UnityEngine.Random.Range(0.0f, 1.0f) < (skl.m_level * 0.003f))
+                    {
+                        hit.m_damage.m_damage += hit.m_damage.GetTotalDamage();
+                    }
+
+                }
+                else if (__instance.m_destructibleType == DestructibleType.Default)
+                {
+                    Skills.Skill skl = gskills.Where(sk => sk.m_info.m_skill == Skills.SkillType.Pickaxes).FirstOrDefault();
+
+                    if (skl == null)
+                        return;
+
+                    if (UnityEngine.Random.Range(0.0f, 1.0f) < (skl.m_level * 0.003f))
+                    {
+                        hit.m_damage.m_damage += hit.m_damage.GetTotalDamage();
+                    }
+
+                }
+                else if (__instance.m_destructibleType == DestructibleType.Character)
+                {
+                    ItemDrop.ItemData item = _player.GetCurrentWeapon();
+
+                    Skills.Skill skl = gskills.Where(sk => sk.m_info.m_skill == item.m_shared.m_skillType).FirstOrDefault();
+
+                    if (skl == null || (skl.m_info.m_skill == Skills.SkillType.Axes && (item.m_shared.m_name.ToLower().Contains("stone") || item.m_shared.m_name.ToLower().Contains("flint"))))
+                        return;
+
+                    float rnd = UnityEngine.Random.Range(0.0f, 1.0f);
+
+                    if (rnd < (skl.m_level * 0.003f))
+                    {
+                        if (skl.m_info.m_skill == Skills.SkillType.Knives)
+                        {
+                            hit.m_damage.m_damage += (hit.m_damage.GetTotalDamage() * 3);
+                        }
+                        else if (skl.m_info.m_skill == Skills.SkillType.Bows)
+                        {
+                            if (_player.IsSneaking())
+                                hit.m_damage.m_damage += (hit.m_damage.GetTotalDamage() * 3);
+                            else
+                                hit.m_damage.m_damage += hit.m_damage.GetTotalDamage();
+                        }
+                        else
+                        {
+                            hit.m_damage.m_damage += hit.m_damage.GetTotalDamage();
+                        }
+                            
+                    }
+
+                }
+
+                //_player.Message(MessageHud.MessageType.TopLeft, $"VM DDM: {hit.m_damage.m_damage}", 0, (Sprite)null);
+                //__result += ((float)wsl * 5f);
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning(ex.Message);
+            }
         }
 
         Type[] cwTypes = { typeof(Vector3), typeof(float), typeof(float), typeof(float), typeof(float), typeof(Vector2), typeof(float) };
@@ -76,18 +143,20 @@ namespace ValheimMod
     Vector3 worldPos,
     float time,
     ref float waveSpeed,
-    float waveLength,
+    ref float waveLength,
     ref float waveHeight,
     Vector2 dir2d,
-    float sharpness)
+    ref float sharpness)
         {
             try
             {
                 EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
 
 
-                waveSpeed *= UnityEngine.Random.Range(0.75f, env.m_windMax);
-                waveHeight *= UnityEngine.Random.Range(0.75f, env.m_windMax);
+                //waveSpeed *= UnityEngine.Random.Range(0.75f, env.m_windMax);
+                //waveLength *= UnityEngine.Random.Range(0.75f, env.m_windMax);
+                //sharpness *= UnityEngine.Random.Range(0.75f, 0.75f + (env.m_windMax / 2.0f));
+                waveHeight *= env.m_windMax;
 
                 //__result += ((float)wsl * 5f);
                 //_player.Message(MessageHud.MessageType.TopLeft, $"Wave upd.", 0, (Sprite)null);
@@ -96,11 +165,47 @@ namespace ValheimMod
             }
             catch (Exception ex)
             {
-                UnityEngine.Debug.Log($"Error in waves: {ex.Message}");
+                UnityEngine.Debug.LogWarning($"Error in waves: {ex.Message}");
             }
         }
 
-        public void Uninitialize()
+        Type[] calcwtypes = { typeof(Vector3), typeof(float), typeof(Vector4), typeof(float), typeof(float)};
+
+        public static void CW2(
+          Vector3 worldPos,
+          ref float depth,
+          Vector4 wind,
+          float _WaterTime,
+          float waveFactor)
+        {
+            try
+            {
+                EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
+
+                //depth *= env.m_windMax;
+            }
+            catch (Exception)
+            {
+
+                
+            }
+        }
+
+        public static void GWL(Vector3 p, ref float waveFactor)
+        {
+            try
+            {
+                EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
+
+                waveFactor = 1f + (env.m_windMax * 0.06f);
+            }
+            catch
+            {
+                UnityEngine.Debug.LogWarning("Fail in GWL patch.");
+            }
+        }
+
+            public void Uninitialize()
         {
             _player = null;
             pln = "";
@@ -224,8 +329,15 @@ namespace ValheimMod
    prefix: new HarmonyMethod(typeof(Main), nameof(Main.PFU), types1)
 );*/
                 h.Patch(
-   original: AccessTools.Method(typeof(WaterVolume), "CreateWave", cwTypes),
-   prefix: new HarmonyMethod(typeof(Main), nameof(Main.CW))
+   original: AccessTools.Method(typeof(WaterVolume), "GetWaterLevel"),
+   prefix: new HarmonyMethod(typeof(Main), nameof(Main.GWL))
+   //postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
+);
+
+                h.Patch(
+   original: AccessTools.Method(typeof(Destructible), "RPC_Damage"),
+   prefix: new HarmonyMethod(typeof(Main), nameof(Main.DDM))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
 );
 
                 //Type[] types1 = { };
@@ -347,18 +459,23 @@ namespace ValheimMod
                         Skill a = skills.Where(sk => sk.name.ToLower() == "agility").FirstOrDefault();
                         if (a != null)
                         {
-                            a.xp = a.xp + 1 + (int)Mathf.Round(stc * 0.001f * a.level);
+                            int extra = a.level / 2;
+
+                            if (extra < 1)
+                                extra = 1;
+
+                            a.xp = a.xp + 1 + (int)Mathf.Round(stc * 0.000025f * (extra));
                             a.updateEffects();
                         }
 
                         stc = 0f;
                     }
 
-                    if (_player.GetHoveringPiece() != null)
+                    if (_player.GetSelectedPiece() != null)
                     {
                         //typeof(Player).GetField("m_placementStatus", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player, 0);
                         CraftingStation cr = CraftingStation.GetCraftingStation(_player.transform.position);
-
+                        //_player.GetHoveringPiece()
                         if (cr != null && cr.m_rangeBuild != 100f)
                             cr.m_rangeBuild = 100f;
                     }
@@ -369,7 +486,7 @@ namespace ValheimMod
                     {
                         elapsed7 += Time.deltaTime;
 
-                        Skill s = skills.Where(sk => sk.name.ToLower() == "Sailing").FirstOrDefault();
+                        Skill s = skills.Where(sk => sk.name.ToLower() == "sailing").FirstOrDefault();
 
                         if (elapsed7 >= 30f)
                         {
@@ -384,7 +501,8 @@ namespace ValheimMod
                             sh.m_sailForceFactor = (0.05f + (s.level * 0.0005f));
                             sh.m_stearForce = (0.5f + (s.level * 0.005f));
                             sh.m_force = 0.60f;
-
+                            sh.m_waterImpactDamage = 0;
+                            
                             _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
                         }
                     }
@@ -576,7 +694,7 @@ namespace ValheimMod
                                         c.SetLevel(lvl);
                                         c.m_speed = c.m_speed * (1.0f + (lvl / 10.0f));
 
-                                        CharacterDrop component2 = (CharacterDrop)((Component)this).GetComponent<CharacterDrop>();
+                                        CharacterDrop component2 = (CharacterDrop)((Component)c).GetComponent<CharacterDrop>();
 
                                         foreach (CharacterDrop.Drop item in component2.m_drops)
                                         {
@@ -637,9 +755,9 @@ namespace ValheimMod
 
                             typeof(EnvMan).GetField("m_wind", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, tmw);
                             */
-                            //ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
+                            ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
 
-                            //znv.GetZDO().Set("VMMWS", 150.0f);
+                            znv.GetZDO().Set("VMMWS", 200.0f);
 
 
                         }
@@ -798,7 +916,7 @@ namespace ValheimMod
                     }
                 }*/
 
-                UnityEngine.Debug.Log($"Error in Update: {ex.Message}");
+                UnityEngine.Debug.LogWarning($"Error in Update: {ex.Message}");
             }
 
 
@@ -826,16 +944,16 @@ namespace ValheimMod
         {
             if (showSkills)
             {
-                float ox = 0f;
-                float oy = 100f;
+                float ox = 40f;
+                float oy = 140f;
                 float sep = 70f;
-                GUI.Label(new Rect(0f, 100f, 100f, 50f), "Unidarkshin's Valheim Overhaul:");
+                GUI.Label(new Rect(ox, oy, 100f, 50f), "Unidarkshin's Valheim Overhaul:");
 
                 int i = 1;
 
                 foreach (Skill skill in skills)
                 {
-                    GUI.Label(new Rect(ox, oy + (i * sep), 100f, 60f), $"{skill.name} -> \nLevel: {skill.level} \nXP: {skill.xp}");
+                    GUI.Label(new Rect(ox, 40 + oy + (i * sep), 100f, 60f), $"{skill.name} -> \nLevel: {skill.level} \nXP: {skill.xp}/{skill.requiredXP()}");
 
                     i++;
                 }
