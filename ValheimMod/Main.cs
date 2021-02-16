@@ -123,7 +123,7 @@ namespace ValheimMod
                         {
                             hit.m_damage.m_damage += hit.m_damage.GetTotalDamage();
                         }
-                            
+                           
                     }
 
                 }
