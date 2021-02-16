@@ -205,6 +205,158 @@ namespace ValheimMod
             }
         }
 
+        public static bool iscrafting = false;
+        public static ItemDrop.ItemData lastitem = null;
+
+        public static void DC(Player player)
+        {
+            try
+            {
+                iscrafting = true;
+            }
+            catch
+            {
+                UnityEngine.Debug.LogWarning("Fail in DC patch.");
+            }
+        }
+
+        public static void AI(ref ItemDrop.ItemData item)
+        {
+            try
+            {
+                if (!iscrafting)
+                {
+                    return;
+                }
+                else if (item == null)
+                {
+                    iscrafting = false;
+                    return;
+                }
+
+                ItemDrop.ItemData.ItemType it = item.m_shared.m_itemType;
+                int type = 0;
+
+                if (it == ItemDrop.ItemData.ItemType.Bow || it == ItemDrop.ItemData.ItemType.OneHandedWeapon || it == ItemDrop.ItemData.ItemType.TwoHandedWeapon || it == ItemDrop.ItemData.ItemType.Tool)
+                    type = 1;
+                else if (it == ItemDrop.ItemData.ItemType.Chest || it == ItemDrop.ItemData.ItemType.Hands || it == ItemDrop.ItemData.ItemType.Helmet || it == ItemDrop.ItemData.ItemType.Legs || it == ItemDrop.ItemData.ItemType.Shoulder || it == ItemDrop.ItemData.ItemType.Shield)
+                    type = 2;
+
+
+                if (type == 0)
+                {
+                    iscrafting = false;
+                    return;
+                }
+                    
+
+                int r = GenerateItemRarity();
+
+                if (r > 1)
+                {
+                    if (type == 1)
+                    {
+
+                        item.m_shared.m_attackForce *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        item.m_shared.m_backstabBonus *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        item.m_shared.m_blockPower *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        
+
+                        int cbr = UnityEngine.Random.Range(0, 1);
+
+                        if (cbr == 0)
+                            item.m_shared.m_canBeReparied = false;
+                        else
+                            item.m_shared.m_canBeReparied = true;
+
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_blunt += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_damage += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_fire += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_frost += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_lightning += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_pierce += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_poison += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_slash += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_spirit += UnityEngine.Random.Range(0, r);
+
+
+                        item.m_shared.m_damages.Modify(UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
+                        item.m_shared.m_deflectionForce *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        item.m_shared.m_useDurabilityDrain /= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f));
+                        item.m_shared.m_maxDurability *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        item.m_shared.m_movementModifier /= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f));
+                        item.m_shared.m_timedBlockBonus *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+
+                        item.m_shared.m_weight *= 1 + UnityEngine.Random.Range(0.0f, r);
+
+                        
+
+                    }
+                    else if (type == 2)
+                    {
+
+                        item.m_shared.m_armor *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        item.m_shared.m_attackForce *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        item.m_shared.m_backstabBonus *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        item.m_shared.m_blockPower *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+
+                        int cbr = UnityEngine.Random.Range(0, 1);
+
+                        if (cbr == 0)
+                            item.m_shared.m_canBeReparied = false;
+                        else
+                            item.m_shared.m_canBeReparied = true;
+
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_blunt += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_damage += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_fire += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_frost += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_lightning += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_pierce += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_poison += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_slash += UnityEngine.Random.Range(0, r);
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_damages.m_spirit += UnityEngine.Random.Range(0, r);
+
+                        item.m_shared.m_damages.Modify(UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
+                        item.m_shared.m_deflectionForce *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        item.m_shared.m_useDurabilityDrain /= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f));
+                        item.m_shared.m_maxDurability *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        item.m_shared.m_movementModifier /= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f));
+                        item.m_shared.m_timedBlockBonus *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+
+                        item.m_shared.m_weight *= 1 + UnityEngine.Random.Range(0.0f, r);
+
+                    }
+                }
+
+                item.m_shared.m_description += $"\n(UVO: R{r})";
+
+                iscrafting = false;
+            }
+            catch
+            {
+                UnityEngine.Debug.LogWarning("Fail in AI patch.");
+            }
+        }
+
             public void Uninitialize()
         {
             _player = null;
@@ -221,6 +373,28 @@ namespace ValheimMod
             shouldInit = true;
 
             skills = new List<Skill>();
+        }
+
+        public static int GenerateItemRarity()
+        {
+            float rnd = UnityEngine.Random.value;
+
+            int r = 1;
+
+            for (int i = 2; i < 101; i++)
+            {
+                if ((rnd < (1 / (i * i * i))))
+                {
+                    r = i;
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+
+            return r;
         }
 
         public void Initialize()
@@ -340,6 +514,20 @@ namespace ValheimMod
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
 );
 
+                h.Patch(
+   original: AccessTools.Method(typeof(InventoryGui), "DoCrafting"),
+   prefix: new HarmonyMethod(typeof(Main), nameof(Main.DC))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
+);
+
+                Type[] aitypes = { typeof(ItemDrop.ItemData) };
+
+                h.Patch(
+original: AccessTools.Method(typeof(Inventory), "AddItem", aitypes),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.AI))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
+);
+
                 //Type[] types1 = { };
 
                 //h.Patch(typeof(WaterVolume).GetMethod("CreateWaver"), prefix: new HarmonyMethod(typeof(Main), nameof(this.CW), cwTypes));
@@ -436,7 +624,10 @@ namespace ValheimMod
                         Initialize();
                     }
 
-                    if(ostam == -99999f)
+                    if (iscrafting)
+                        iscrafting = false;
+
+                    if (ostam == -99999f)
                     {
                         ostam = _player.GetStamina();
                         stc = 0f;
@@ -474,7 +665,7 @@ namespace ValheimMod
                     if (_player.GetSelectedPiece() != null)
                     {
                         //typeof(Player).GetField("m_placementStatus", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player, 0);
-                        CraftingStation cr = CraftingStation.GetCraftingStation(_player.transform.position);
+                        CraftingStation cr = _player.GetCurrentCraftingStation();
                         //_player.GetHoveringPiece()
                         if (cr != null && cr.m_rangeBuild != 100f)
                             cr.m_rangeBuild = 100f;
