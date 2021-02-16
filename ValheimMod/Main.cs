@@ -77,16 +77,27 @@ namespace ValheimMod
     float time,
     ref float waveSpeed,
     float waveLength,
-    float waveHeight,
+    ref float waveHeight,
     Vector2 dir2d,
     float sharpness)
         {
-            if (meaw)
-                waveSpeed *= UnityEngine.Random.Range(0.75f, 50.0f);
-            //__result += ((float)wsl * 5f);
-            _player.Message(MessageHud.MessageType.TopLeft, $"Wave upd.", 0, (Sprite)null);
+            try
+            {
+                EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
 
-            //return true;
+
+                waveSpeed *= UnityEngine.Random.Range(0.75f, env.m_windMax);
+                waveHeight *= UnityEngine.Random.Range(0.75f, env.m_windMax);
+
+                //__result += ((float)wsl * 5f);
+                //_player.Message(MessageHud.MessageType.TopLeft, $"Wave upd.", 0, (Sprite)null);
+
+                //return true;
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.Log($"Error in waves: {ex.Message}");
+            }
         }
 
         public void Uninitialize()
@@ -204,18 +215,18 @@ namespace ValheimMod
 
                 otime = Time.time;
 
-                //var h = new Harmony("unidarkshin_vm");
+                var h = new Harmony("unidarkshin_vm");
 
                 //Type[] types1 = { };
 
                 /*h.Patch(
    original: AccessTools.Method(typeof(Player), "FixedUpdate"),
    prefix: new HarmonyMethod(typeof(Main), nameof(Main.PFU), types1)
-);
+);*/
                 h.Patch(
    original: AccessTools.Method(typeof(WaterVolume), "CreateWave", cwTypes),
    prefix: new HarmonyMethod(typeof(Main), nameof(Main.CW))
-);*/
+);
 
                 //Type[] types1 = { };
 
@@ -288,6 +299,7 @@ namespace ValheimMod
         float elapsed4 = 0f;
         float elapsed5 = 0f;
         float elapsed6 = 0f;
+        float elapsed7 = 0f;
         float savetime = 0f;
         public static bool cs = false;
         public bool us = true;
@@ -295,6 +307,8 @@ namespace ValheimMod
 
         float stc = 0f;
         float ostam = -99999f;
+
+        bool showSkills = false;
         //Player _playert;
         public void Update()
         {
@@ -342,18 +356,37 @@ namespace ValheimMod
 
                     if (_player.GetHoveringPiece() != null)
                     {
-                        typeof(Player).GetField("m_placementStatus", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player, 0);
+                        //typeof(Player).GetField("m_placementStatus", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player, 0);
+                        CraftingStation cr = CraftingStation.GetCraftingStation(_player.transform.position);
+
+                        if (cr != null && cr.m_rangeBuild != 100f)
+                            cr.m_rangeBuild = 100f;
                     }
 
-                    if (_player.GetControlledShip() != null && _player.GetControlledShip().m_backwardForce != 0.75f)
-                    {
-                        Ship s = _player.GetControlledShip();
-                        s.m_backwardForce = 0.75f;
-                        s.m_sailForceFactor = 0.10f;
-                        s.m_stearForce = 0.75f;
-                        s.m_force = 0.65f;
 
-                        _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
+
+                    if (_player.GetControlledShip() != null)
+                    {
+                        elapsed7 += Time.deltaTime;
+
+                        Skill s = skills.Where(sk => sk.name.ToLower() == "Sailing").FirstOrDefault();
+
+                        if (elapsed7 >= 30f)
+                        {
+                            elapsed7 = 0;
+                            s.xp = s.xp + 1 + (int)Mathf.Round((elapsed7 / 6.0f) * s.level);
+                        }
+
+                        if (_player.GetControlledShip().m_backwardForce != (0.5f + (s.level * 0.005f)))
+                        {
+                            Ship sh = _player.GetControlledShip();
+                            sh.m_backwardForce = (0.5f + (s.level * 0.005f));
+                            sh.m_sailForceFactor = (0.05f + (s.level * 0.0005f));
+                            sh.m_stearForce = (0.5f + (s.level * 0.005f));
+                            sh.m_force = 0.60f;
+
+                            _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
+                        }
                     }
 
                     elapsed4 += Time.deltaTime;
@@ -543,6 +576,16 @@ namespace ValheimMod
                                         c.SetLevel(lvl);
                                         c.m_speed = c.m_speed * (1.0f + (lvl / 10.0f));
 
+                                        CharacterDrop component2 = (CharacterDrop)((Component)this).GetComponent<CharacterDrop>();
+
+                                        foreach (CharacterDrop.Drop item in component2.m_drops)
+                                        {
+                                            item.m_chance = lvl * 0.1f;
+                                            item.m_levelMultiplier = false;
+                                            item.m_amountMax += (lvl * 2);
+
+                                        }
+
                                         ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
                                         znv.GetZDO().Set("VMMML", $"{lvl}");
 
@@ -655,8 +698,13 @@ namespace ValheimMod
                                 Chat.instance.m_chatWindow.gameObject.SetActive(true);
                                 //Reflection.GetMethod(Game1.currentLocation, "isMonsterDamageApplicable").Invoke<bool>(who, character, true)*/
 
-                                Skill w = skills.Where(sk => sk.name.ToLower() == "weight").FirstOrDefault();
-                                _player.Message(MessageHud.MessageType.TopLeft, $"Weight level: {w.level}, Weight XP: {w.xp}, Required XP: {w.requiredXP()}", 0, (Sprite)null);
+                                //Skill w = skills.Where(sk => sk.name.ToLower() == "weight").FirstOrDefault();
+                                //_player.Message(MessageHud.MessageType.TopLeft, $"Weight level: {w.level}, Weight XP: {w.xp}, Required XP: {w.requiredXP()}", 0, (Sprite)null);
+
+                                if (showSkills)
+                                    showSkills = false;
+                                else
+                                    showSkills = true;
                             }
                             catch
                             {
@@ -758,7 +806,7 @@ namespace ValheimMod
 
         public void SaveSkillData()
         {
-            int i = 0;
+            int i = 1;
 
             IniData data = parser.ReadFile(filename);
 
@@ -776,20 +824,23 @@ namespace ValheimMod
 
         public void OnGUI()
         {
-            float ox = 0f;
-            float oy = 100f;
-            float sep = 70f;
-            GUI.Label(new Rect(0f, 100f, 100f, 50f), "Unidarkshin's Valheim Overhaul:");
-
-            int i = 1;
-
-            foreach (Skill skill in skills)
+            if (showSkills)
             {
-                GUI.Label(new Rect(ox, oy + (i * sep), 100f, 60f), $"{skill.name} -> \nLevel: {skill.level} \nXP: {skill.xp}");
+                float ox = 0f;
+                float oy = 100f;
+                float sep = 70f;
+                GUI.Label(new Rect(0f, 100f, 100f, 50f), "Unidarkshin's Valheim Overhaul:");
 
-                i++;
+                int i = 1;
+
+                foreach (Skill skill in skills)
+                {
+                    GUI.Label(new Rect(ox, oy + (i * sep), 100f, 60f), $"{skill.name} -> \nLevel: {skill.level} \nXP: {skill.xp}");
+
+                    i++;
+                }
+                //GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, 150f, 50f), "GAME INJECTED"); // Should work and when injected you will see this text in the middle of the screen
             }
-            //GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, 150f, 50f), "GAME INJECTED"); // Should work and when injected you will see this text in the middle of the screen
         }
 
     }
