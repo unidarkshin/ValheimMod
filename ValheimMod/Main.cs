@@ -347,7 +347,8 @@ namespace ValheimMod
                     }
                 }
 
-                item.m_shared.m_description += $"\n(UVO: R{r})";
+                if (r == 1)
+                    item.m_shared.m_description += $"\n(UVO: R{r})";
 
                 iscrafting = false;
             }
@@ -383,7 +384,7 @@ namespace ValheimMod
 
             for (int i = 2; i < 101; i++)
             {
-                if ((rnd < (1 / (i * i * i))))
+                if ((rnd < (1.0f / (i * i * i))))
                 {
                     r = i;
                 }
@@ -394,6 +395,7 @@ namespace ValheimMod
 
             }
 
+            UnityEngine.Debug.LogWarning($"GIR: rnd={rnd}, r={r}");
             return r;
         }
 
