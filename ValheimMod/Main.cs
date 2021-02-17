@@ -347,7 +347,7 @@ namespace ValheimMod
                     }
                 }
 
-                if (r == 1)
+                if (r != 1)
                     item.m_shared.m_description += $"\n(UVO: R{r})";
 
                 iscrafting = false;
