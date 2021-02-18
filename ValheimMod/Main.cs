@@ -228,7 +228,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                         if (!crafterName.Contains(" (UVO"))
                         {
                             //_player.GetInventory().AddItem(component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y);
-                            typeof(Inventory).GetMethod("AddItem", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(_player.GetInventory(), new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
+                            //typeof(Inventory).GetMethod("AddItem", BindingFlags.NonPublic | BindingFlags.Instance,).Invoke(_player.GetInventory(), new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
+                            AccessTools.Method(typeof(Inventory), "AddItem", new Type[] { typeof(ItemDrop.ItemData), typeof(int), typeof(int), typeof(int) }).Invoke(_player.GetInventory(), new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
                             UnityEngine.Object.Destroy((UnityEngine.Object)gameObject);
 
                         }
@@ -273,7 +274,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
 
                             component.m_itemData.m_shared.m_name += crafterName.Substring(crafterName.IndexOf(" (UVO"));
 
-                            _player.GetInventory().AddItem(component.m_itemData);
+                            //_player.GetInventory().AddItem(component.m_itemData);
+                            AccessTools.Method(typeof(Inventory), "AddItem", new Type[] { typeof(ItemDrop.ItemData), typeof(int), typeof(int), typeof(int) }).Invoke(_player.GetInventory(), new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
 
                             UnityEngine.Object.Destroy((UnityEngine.Object)gameObject);
 
