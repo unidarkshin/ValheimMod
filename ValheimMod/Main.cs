@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using UnityEngine;
+using System.Diagnostics;
 
 namespace ValheimMod
 {
@@ -154,7 +155,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
             }
             catch (Exception ex)
             {
-                UnityEngine.Debug.LogWarning($"ISV ERROR: {ex.Message}, {ex.StackTrace}, {ex.InnerException}, {ex.Source}");
+
+                UnityEngine.Debug.LogWarning($"ISV ERROR: {ex.ToString()}, {GetLineNumber(ex)}, {ex.Message}, {ex.StackTrace}, {ex.InnerException}, {ex.Source}");
 
                 return true;
             }
@@ -164,8 +166,13 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
         {
             try
             {
+                if (_player == null)
+                    return true;
+
                 List<ItemDrop.ItemData> m_inventory = (typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory())) as List<ItemDrop.ItemData>;
                 Action m_onChanged = (typeof(Inventory).GetField("m_onChanged", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory())) as Action;
+
+                UnityEngine.Debug.LogWarning("ILD load start:");
 
                 int num1 = pkg.ReadInt();
                 int num2 = pkg.ReadInt();
@@ -281,10 +288,26 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
             catch (Exception ex)
             {
 
-                UnityEngine.Debug.LogWarning($"ILD ERROR: {ex.Message}, {ex.StackTrace}, {ex.InnerException}, {ex.Source}");
+
+                UnityEngine.Debug.LogWarning($"ILD ERROR: {ex.ToString()}, {GetLineNumber(ex)}, {ex.Message}, {ex.StackTrace}, {ex.InnerException}, {ex.Source}");
 
                 return true;
             }
+        }
+
+        public static int GetLineNumber(Exception ex)
+        {
+            var lineNumber = 0;
+            const string lineSearch = ":line ";
+            var index = ex.StackTrace.LastIndexOf(lineSearch);
+            if (index != -1)
+            {
+                var lineNumberText = ex.StackTrace.Substring(index + lineSearch.Length);
+                if (int.TryParse(lineNumberText, out lineNumber))
+                {
+                }
+            }
+            return lineNumber;
         }
 
         public static int mfatts = 22;
