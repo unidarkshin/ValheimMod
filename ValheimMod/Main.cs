@@ -91,22 +91,29 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ISV))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
 );
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(Inventory), "Load"),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
+);*/
+
+            h.Patch(
+original: AccessTools.Method(typeof(Inventory), "Load"),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD)),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
-        public static bool ISV(ref ZPackage pkg)
+        public static bool ISV(ref Inventory __instance, ref ZPackage pkg)
         {
+            int opos = pkg.GetPos();
 
             try
             {
-                int currentVersion = (int)(typeof(Inventory).GetField("currentVersion", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory()));
-                List<ItemDrop.ItemData> m_inventory = (typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory())) as List<ItemDrop.ItemData>;
+                int currentVersion = (int)(typeof(Inventory).GetField("currentVersion", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance));
+                List<ItemDrop.ItemData> m_inventory = (typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance)) as List<ItemDrop.ItemData>;
 
                 pkg.Write(currentVersion);
                 pkg.Write(m_inventory.Count);
@@ -114,9 +121,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                 {
                     string str = "";
 
-                    if (itemData.m_crafterName.Contains(" (UVO"))
+                    if (itemData.m_shared.m_name.Contains(" (UVO"))
                     {
-                        str = "valid"; //itemData.m_shared.m_name.Substring(itemData.m_shared.m_name.IndexOf(" (UVO"));
+                        str = itemData.m_shared.m_name.Substring(itemData.m_shared.m_name.IndexOf(" (UVO"));
                     }
 
                     if ((UnityEngine.Object)itemData.m_dropPrefab == (UnityEngine.Object)null)
@@ -134,13 +141,14 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                     pkg.Write(itemData.m_variant);
                     pkg.Write(itemData.m_crafterID);
 
-                    if (str.Length == 0)
-                        pkg.Write(itemData.m_crafterName);
+                    if (!str.Contains(" (UVO") || itemData.m_crafterName.Contains(" (UVO"))
+                        pkg.Write(itemData.m_crafterName);                   
                     else
-                        pkg.Write($"{itemData.m_crafterName}");
+                        pkg.Write(itemData.m_crafterName + str);
 
+                    
 
-                    if (str.Length > 0)
+                    if (itemData.m_crafterName.Contains(" (UVO"))
                     {
                         foreach (float atr in getAttr(itemData.m_shared))
                         {
@@ -156,7 +164,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
             catch (Exception ex)
             {
 
-                UnityEngine.Debug.LogWarning($"ISV ERROR: {ex.ToString()}, {GetLineNumber(ex)}, {ex.Message}, {ex.StackTrace}, {ex.InnerException}, {ex.Source}");
+                UnityEngine.Debug.LogWarning($"ISV ERROR: {ex.ToString()}, {LineNumber(ex)}, {ex.Message}, {ex.StackTrace}, {ex.InnerException}, {ex.Source}");
+
+                pkg.SetPos(opos);
 
                 return true;
             }
@@ -164,8 +174,13 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
 
         public static bool ILD(ref Inventory __instance, ref ZPackage pkg)
         {
+            int cle = 177;
+
+            int opos = pkg.GetPos();
+
             try
             {
+                return true;
                 //if (_player == null)
                 //    return true;
                 
@@ -173,7 +188,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                 Action m_onChanged = __instance.m_onChanged; //(typeof(Inventory).GetField("m_onChanged", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory())) as Action;
 
                 UnityEngine.Debug.LogWarning("ILD load start:");
-
+                cle = 191;
                 int num1 = pkg.ReadInt();
                 int num2 = pkg.ReadInt();
                 m_inventory.Clear();
@@ -197,6 +212,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                         crafterID = pkg.ReadLong();
                         crafterName = pkg.ReadString();
                     }
+                    cle = 215;
                     if (name != "")
                     {
 
@@ -217,6 +233,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                             UnityEngine.Object.Destroy((UnityEngine.Object)gameObject);
                             return false;
                         }
+                        cle = 236;
                         component.m_itemData.m_stack = Mathf.Min(stack, component.m_itemData.m_shared.m_maxStackSize);
                         component.m_itemData.m_durability = durability;
                         component.m_itemData.m_equiped = equiped;
@@ -224,14 +241,14 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                         component.m_itemData.m_variant = variant;
                         component.m_itemData.m_crafterID = crafterID;
                         component.m_itemData.m_crafterName = crafterName;
-
-                        if (!crafterName.Contains(" (UVO") || pkg.GetPos() >= pkg.Size() - 23)
+                        cle = 244;
+                        if (!crafterName.Contains(" (UVO") || pkg.GetPos() >= pkg.Size())
                         {
                             //_player.GetInventory().AddItem(component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y);
                             //typeof(Inventory).GetMethod("AddItem", BindingFlags.NonPublic | BindingFlags.Instance,).Invoke(_player.GetInventory(), new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
                             AccessTools.Method(typeof(Inventory), "AddItem", new Type[] { typeof(ItemDrop.ItemData), typeof(int), typeof(int), typeof(int) }).Invoke(__instance, new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
                             UnityEngine.Object.Destroy((UnityEngine.Object)gameObject);
-
+                            cle = 251; 
                         }
                         else
                         {
@@ -244,8 +261,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                             {
                                 attr.Add(pkg.ReadSingle());
                             }
-                            
+
                             repairable = pkg.ReadBool();
+                            //pkg.ReadInt();
 
                             component.m_itemData.m_shared.m_armor = attr[0];
                             component.m_itemData.m_shared.m_attackForce = attr[1];
@@ -275,41 +293,109 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                             component.m_itemData.m_shared.m_name += crafterName.Substring(crafterName.IndexOf(" (UVO"));
 
                             //_player.GetInventory().AddItem(component.m_itemData);
-                            AccessTools.Method(typeof(Inventory), "AddItem", new Type[] { typeof(ItemDrop.ItemData), typeof(int), typeof(int), typeof(int) }).Invoke(_player.GetInventory(), new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
+                            AccessTools.Method(typeof(Inventory), "AddItem", new Type[] { typeof(ItemDrop.ItemData), typeof(int), typeof(int), typeof(int) }).Invoke(__instance, new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
+
+                            string str2 = "ADDINGITEM ATTR:";
+
+                            foreach (float fl in attr)
+                            {
+                                str2 += $" {fl},";
+                            }
+
+                            pkg.SetPos(pkg.GetPos() - 1);
+
+                            str2 += $" {pkg.ReadBool()},";
+
+                            UnityEngine.Debug.LogWarning(str2);
 
                             UnityEngine.Object.Destroy((UnityEngine.Object)gameObject);
 
+                            pkg.SetPos(pkg.GetPos()-((4*22) + 1));
                         }
                     }
                     //_player.GetInvento.AddItem(name, stack, durability, pos, equiped, quality, variant, crafterID, crafterName);
                 }
-                typeof(Inventory).GetMethod("Changed", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(_player.GetInventory(), new object[] { });
-
+                cle = 303;
+                typeof(Inventory).GetMethod("Changed", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { });
+                
                 return false;
             }
             catch (Exception ex)
             {
+                //int ln = 0;
+                /*System.Diagnostics.StackTrace trace = new System.Diagnostics.StackTrace(ex, true);
+                foreach (StackFrame fr in trace.GetFrames())
+                {
+                    if (fr.GetFileLineNumber() != 0)
+                    {
+                        ln = fr.GetFileLineNumber();
+                        break;
+                    }
 
+                }*/
+                
 
-                UnityEngine.Debug.LogWarning($"ILD ERROR: {ex.ToString()}, {GetLineNumber(ex)}, {ex.Message}, {ex.StackTrace}, {ex.InnerException}, {ex.Source}");
+                UnityEngine.Debug.LogWarning($"ILD ERROR: {cle}, {ex.ToString()}, {ex.Message}, {ex.StackTrace}, {ex.InnerException}, {ex.Source}");
+                //UnityEngine.Debug.LogException(ex);
+
+                ile = true;
+
+                pkg.SetPos(opos);
 
                 return true;
             }
         }
 
-        public static int GetLineNumber(Exception ex)
+        public static void ILD2(ref Inventory __instance, ref ZPackage pkg)
         {
-            var lineNumber = 0;
-            const string lineSearch = ":line ";
-            var index = ex.StackTrace.LastIndexOf(lineSearch);
-            if (index != -1)
+            try
             {
-                var lineNumberText = ex.StackTrace.Substring(index + lineSearch.Length);
-                if (int.TryParse(lineNumberText, out lineNumber))
+                if (!ile)
+                    return;
+
+                foreach (ItemDrop.ItemData item in __instance.GetAllItems())
                 {
+                    if(item.m_crafterName.Contains(" (UVO"))
+                    {
+                        string str = item.m_crafterName;
+
+                        item.m_crafterName = item.m_crafterName.Substring(0, item.m_crafterName.IndexOf(" (UVO"));
+
+                        UnityEngine.Debug.LogWarning($"changing craftername for {item.m_shared.m_name}, {str} to {item.m_crafterName}");
+                    }
+                    
                 }
             }
-            return lineNumber;
+            catch (Exception ex)
+            {
+
+                UnityEngine.Debug.LogWarning($"ILD2 ERROR: {ex.ToString()}, {LineNumber(ex)}, {ex.Message}, {ex.StackTrace}, {ex.InnerException}, {ex.Source}");
+            }
+
+            ile = false;
+        }
+
+        public static bool ile = false;
+
+        public static int LineNumber(Exception e)
+        {
+
+            int linenum = 0;
+            try
+            {
+                //linenum = Convert.ToInt32(e.StackTrace.Substring(e.StackTrace.LastIndexOf(":line") + 5));
+
+                //For Localized Visual Studio ... In other languages stack trace  doesn't end with ":Line 12"
+                linenum = Convert.ToInt32(e.StackTrace.Substring(e.StackTrace.LastIndexOf(' ')));
+
+            }
+
+
+            catch
+            {
+                //Stack trace is not available!
+            }
+            return linenum;
         }
 
         public static int mfatts = 22;
@@ -318,28 +404,28 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
         {
             List<float> temp = new List<float>();
 
-            temp.Add(item.m_armor);
-            temp.Add(item.m_attackForce);
-            temp.Add(item.m_backstabBonus);
-            temp.Add(item.m_blockPower);
-            temp.Add(item.m_damages.m_blunt);
-            temp.Add(item.m_damages.m_chop);
-            temp.Add(item.m_damages.m_damage);
-            temp.Add(item.m_damages.m_fire);
-            temp.Add(item.m_damages.m_frost);
-            temp.Add(item.m_damages.m_lightning);
-            temp.Add(item.m_damages.m_pickaxe);
-            temp.Add(item.m_damages.m_pierce);
-            temp.Add(item.m_damages.m_poison);
-            temp.Add(item.m_damages.m_slash);
-            temp.Add(item.m_damages.m_spirit);
-            temp.Add(item.m_deflectionForce);
-            temp.Add(item.m_durabilityDrain);
-            temp.Add(item.m_maxDurability);
-            temp.Add(item.m_movementModifier);
-            temp.Add(item.m_timedBlockBonus);
-            temp.Add(item.m_useDurabilityDrain);
-            temp.Add(item.m_weight);
+            temp.Add(rndf2(item.m_armor));
+            temp.Add(rndf2(item.m_attackForce));
+            temp.Add(rndf2(item.m_backstabBonus));
+            temp.Add(rndf2(item.m_blockPower));
+            temp.Add(rndf2(item.m_damages.m_blunt));
+            temp.Add(rndf2(item.m_damages.m_chop));
+            temp.Add(rndf2(item.m_damages.m_damage));
+            temp.Add(rndf2(item.m_damages.m_fire));
+            temp.Add(rndf2(item.m_damages.m_frost));
+            temp.Add(rndf2(item.m_damages.m_lightning));
+            temp.Add(rndf2(item.m_damages.m_pickaxe));
+            temp.Add(rndf2(item.m_damages.m_pierce));
+            temp.Add(rndf2(item.m_damages.m_poison));
+            temp.Add(rndf2(item.m_damages.m_slash));
+            temp.Add(rndf2(item.m_damages.m_spirit));
+            temp.Add(rndf2(item.m_deflectionForce));
+            temp.Add(rndf2(item.m_durabilityDrain));
+            temp.Add(rndf2(item.m_maxDurability));
+            temp.Add(rndf2(item.m_movementModifier));
+            temp.Add(rndf2(item.m_timedBlockBonus));
+            temp.Add(rndf2(item.m_useDurabilityDrain));
+            temp.Add(rndf2(item.m_weight));
 
 
             return temp;
@@ -555,9 +641,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
                             item.m_shared.m_armor += UnityEngine.Random.Range(0, r);
 
-                        item.m_shared.m_attackForce *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
-                        item.m_shared.m_backstabBonus *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
-                        item.m_shared.m_blockPower *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        item.m_shared.m_attackForce = rndf2(item.m_shared.m_attackForce * (UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f))));
+                        item.m_shared.m_backstabBonus = rndf2(item.m_shared.m_backstabBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+                        item.m_shared.m_blockPower = rndf2(item.m_shared.m_blockPower * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
 
 
                         int cbr = UnityEngine.Random.Range(0, 1);
@@ -587,25 +673,26 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                             item.m_shared.m_damages.m_spirit += UnityEngine.Random.Range(0, r);
 
 
-                        item.m_shared.m_damages.Modify(UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
-                        item.m_shared.m_deflectionForce *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
-                        item.m_shared.m_useDurabilityDrain /= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f));
-                        item.m_shared.m_maxDurability *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
-                        item.m_shared.m_movementModifier /= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f));
-                        item.m_shared.m_timedBlockBonus *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        item.m_shared.m_damages.Modify(rndf2(UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f))));
+                        item.m_shared.m_deflectionForce = rndf2(item.m_shared.m_deflectionForce * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+                        item.m_shared.m_useDurabilityDrain = rndf2(item.m_shared.m_useDurabilityDrain / UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
+                        item.m_shared.m_maxDurability = rndf2(item.m_shared.m_maxDurability * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+                        item.m_shared.m_movementModifier = rndf2(item.m_shared.m_movementModifier / UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
+                        item.m_shared.m_timedBlockBonus = rndf2(item.m_shared.m_timedBlockBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
 
-                        item.m_shared.m_weight *= 1 + UnityEngine.Random.Range(0.0f, r);
-
+                        item.m_shared.m_weight = rndf2(item.m_shared.m_weight * (1 + UnityEngine.Random.Range(0, r)));
+                        item.m_durability = item.m_shared.m_maxDurability;
 
 
                     }
                     else if (type == 2)
                     {
 
-                        item.m_shared.m_armor *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
-                        item.m_shared.m_attackForce *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
-                        item.m_shared.m_backstabBonus *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
-                        item.m_shared.m_blockPower *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                        item.m_shared.m_armor = rndf2(item.m_shared.m_armor * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+                        item.m_shared.m_attackForce = rndf2(item.m_shared.m_attackForce * (UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f))));
+                        item.m_shared.m_backstabBonus = rndf2(item.m_shared.m_backstabBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+                        item.m_shared.m_blockPower = rndf2(item.m_shared.m_blockPower * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+
 
                         int cbr = UnityEngine.Random.Range(0, 1);
 
@@ -633,14 +720,16 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
                             item.m_shared.m_damages.m_spirit += UnityEngine.Random.Range(0, r);
 
-                        item.m_shared.m_damages.Modify(UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
-                        item.m_shared.m_deflectionForce *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
-                        item.m_shared.m_useDurabilityDrain /= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f));
-                        item.m_shared.m_maxDurability *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
-                        item.m_shared.m_movementModifier /= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f));
-                        item.m_shared.m_timedBlockBonus *= UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
 
-                        item.m_shared.m_weight *= 1 + UnityEngine.Random.Range(0.0f, r);
+                        item.m_shared.m_damages.Modify(rndf2(UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f))));
+                        item.m_shared.m_deflectionForce = rndf2(item.m_shared.m_deflectionForce * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+                        item.m_shared.m_useDurabilityDrain = rndf2(item.m_shared.m_useDurabilityDrain / UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
+                        item.m_shared.m_maxDurability = rndf2(item.m_shared.m_maxDurability * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+                        item.m_shared.m_movementModifier = rndf2(item.m_shared.m_movementModifier / UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
+                        item.m_shared.m_timedBlockBonus = rndf2(item.m_shared.m_timedBlockBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+
+                        item.m_shared.m_weight = rndf2(item.m_shared.m_weight * (1 + UnityEngine.Random.Range(0, r)));
+                        item.m_durability = item.m_shared.m_maxDurability;
 
                     }
                 }
@@ -650,7 +739,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                     //globalid += 1;
                     string str = $" (UVO: R{r})";
                     item.m_shared.m_name += str;
-                    item.m_crafterName += str;
+                    //item.m_crafterName += str;
                     //item.m_dropPrefab.name += $" (UVO: R{r}, {globalid})";
 
                     //ObjectDB.instance.m_items.Add(item.m_dropPrefab);
@@ -664,6 +753,12 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
             {
                 UnityEngine.Debug.LogWarning("Fail in AI patch.");
             }
+        }
+
+        public static float rndf2(float val)
+        {
+
+            return (Mathf.Round(val * 100f) / 100f);
         }
 
         public static int globalid = 0;
@@ -1300,7 +1395,18 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
 
                             }
                         }
+                        if (Input.GetKeyDown(KeyCode.U))
+                        {
+                            GameObject itemPrefab = ObjectDB.instance.GetItemPrefab("Wood");
+                            
+                            ZNetView.m_forceDisableInit = true;
+                            GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(itemPrefab);
+                            ZNetView.m_forceDisableInit = false;
+                            ItemDrop component = gameObject.GetComponent<ItemDrop>();
+                            component.m_itemData.m_stack = 999;
 
+                            _player.GetInventory().AddItem(component.m_itemData);
+                        }
 
                         if (Input.GetKeyDown(KeyCode.Delete)) // Will just unload our DLL
                         {
