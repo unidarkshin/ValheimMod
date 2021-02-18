@@ -225,7 +225,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                         component.m_itemData.m_crafterID = crafterID;
                         component.m_itemData.m_crafterName = crafterName;
 
-                        if (!crafterName.Contains(" (UVO") || pkg.GetPos() >= pkg.Size())
+                        if (!crafterName.Contains(" (UVO") || pkg.GetPos() >= pkg.Size() - 23)
                         {
                             //_player.GetInventory().AddItem(component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y);
                             //typeof(Inventory).GetMethod("AddItem", BindingFlags.NonPublic | BindingFlags.Instance,).Invoke(_player.GetInventory(), new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
