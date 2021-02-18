@@ -170,7 +170,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                     return true;
 
                 List<ItemDrop.ItemData> m_inventory = (typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory())) as List<ItemDrop.ItemData>;
-                Action m_onChanged = (typeof(Inventory).GetField("m_onChanged", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory())) as Action;
+                Action m_onChanged = _player.GetInventory().m_onChanged; //(typeof(Inventory).GetField("m_onChanged", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory())) as Action;
 
                 UnityEngine.Debug.LogWarning("ILD load start:");
 
