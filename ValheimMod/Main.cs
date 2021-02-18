@@ -116,7 +116,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
 
                     if (itemData.m_crafterName.Contains(" (UVO"))
                     {
-                        str = itemData.m_shared.m_name.Substring(itemData.m_shared.m_name.IndexOf(" (UVO"));
+                        str = "valid"; //itemData.m_shared.m_name.Substring(itemData.m_shared.m_name.IndexOf(" (UVO"));
                     }
 
                     if ((UnityEngine.Object)itemData.m_dropPrefab == (UnityEngine.Object)null)
@@ -162,15 +162,15 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
             }
         }
 
-        public static bool ILD(ref ZPackage pkg)
+        public static bool ILD(ref Inventory __instance, ref ZPackage pkg)
         {
             try
             {
-                if (_player == null)
-                    return true;
-
-                List<ItemDrop.ItemData> m_inventory = (typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory())) as List<ItemDrop.ItemData>;
-                Action m_onChanged = _player.GetInventory().m_onChanged; //(typeof(Inventory).GetField("m_onChanged", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory())) as Action;
+                //if (_player == null)
+                //    return true;
+                
+                List<ItemDrop.ItemData> m_inventory = (typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance)) as List<ItemDrop.ItemData>;
+                Action m_onChanged = __instance.m_onChanged; //(typeof(Inventory).GetField("m_onChanged", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory())) as Action;
 
                 UnityEngine.Debug.LogWarning("ILD load start:");
 
@@ -229,7 +229,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
                         {
                             //_player.GetInventory().AddItem(component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y);
                             //typeof(Inventory).GetMethod("AddItem", BindingFlags.NonPublic | BindingFlags.Instance,).Invoke(_player.GetInventory(), new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
-                            AccessTools.Method(typeof(Inventory), "AddItem", new Type[] { typeof(ItemDrop.ItemData), typeof(int), typeof(int), typeof(int) }).Invoke(_player.GetInventory(), new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
+                            AccessTools.Method(typeof(Inventory), "AddItem", new Type[] { typeof(ItemDrop.ItemData), typeof(int), typeof(int), typeof(int) }).Invoke(__instance, new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
                             UnityEngine.Object.Destroy((UnityEngine.Object)gameObject);
 
                         }
