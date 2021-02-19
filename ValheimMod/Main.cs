@@ -103,10 +103,32 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD)),
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: AccessTools.Method(typeof(ItemDrop), "DropItem"),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDI))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
-        public static bool ISV(ref Inventory __instance, ref ZPackage pkg)
+        public static void IDI(ref ItemDrop __result, ref ItemDrop.ItemData item)
+        {
+            try
+            {
+
+                __result.m_itemData = item;
+
+            }
+            catch (Exception ex)
+            {
+
+                UnityEngine.Debug.LogWarning("IDI Error: " + ex.ToString());
+
+            }
+        }
+
+            public static bool ISV(ref Inventory __instance, ref ZPackage pkg)
         {
             int opos = pkg.GetPos();
 
