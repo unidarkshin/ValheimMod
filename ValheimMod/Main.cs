@@ -103,16 +103,100 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD)),
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            /*            h.Patch(
+            original: AccessTools.Method(typeof(ItemDrop), "DropItem"),
+            postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDI))
+            //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+            );*/
+
             h.Patch(
-original: AccessTools.Method(typeof(ItemDrop), "DropItem"),
-postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDI))
+original: AccessTools.Method(typeof(ItemDrop), "LoadFromZDO"),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILZDO))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+            h.Patch(
+original: AccessTools.Method(typeof(ItemDrop), "SaveToZDO"),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.ISZDO))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
-        public static void IDI(ref ItemDrop __result, ref ItemDrop.ItemData item)
+        public static void ILZDO(ref ItemDrop.ItemData itemData, ref ZDO zdo)
+        {
+            try
+            {
+                if (!zdo.GetString("crafterName", "").Contains(" (UVO"))
+                    return;
+
+                List<float> battr = getAttr(itemData.m_shared);
+                List<float> attr = new List<float>();
+
+                for (int i = 0; i < battr.Count; i++)
+                {
+                    attr.Add(zdo.GetFloat($"attr{i}", battr[i]));
+                }
+
+                bool repairable = zdo.GetBool($"attr22", itemData.m_shared.m_canBeReparied);
+
+                itemData.m_shared.m_armor = attr[0];
+                itemData.m_shared.m_attackForce = attr[1];
+                itemData.m_shared.m_backstabBonus = attr[2];
+                itemData.m_shared.m_blockPower = attr[3];
+                itemData.m_shared.m_damages.m_blunt = attr[4];
+                itemData.m_shared.m_damages.m_chop = attr[5];
+                itemData.m_shared.m_damages.m_damage = attr[6];
+                itemData.m_shared.m_damages.m_fire = attr[7];
+                itemData.m_shared.m_damages.m_frost = attr[8];
+                itemData.m_shared.m_damages.m_lightning = attr[9];
+                itemData.m_shared.m_damages.m_pickaxe = attr[10];
+                itemData.m_shared.m_damages.m_pierce = attr[11];
+                itemData.m_shared.m_damages.m_poison = attr[12];
+                itemData.m_shared.m_damages.m_slash = attr[13];
+                itemData.m_shared.m_damages.m_spirit = attr[14];
+                itemData.m_shared.m_deflectionForce = attr[15];
+                itemData.m_shared.m_durabilityDrain = attr[16];
+                itemData.m_shared.m_maxDurability = attr[17];
+                itemData.m_shared.m_movementModifier = attr[18];
+                itemData.m_shared.m_timedBlockBonus = attr[19];
+                itemData.m_shared.m_useDurabilityDrain = attr[20];
+                itemData.m_shared.m_weight = attr[21];
+
+                itemData.m_shared.m_canBeReparied = repairable;
+            }
+            catch (Exception ex)
+            {
+
+                UnityEngine.Debug.LogWarning("ILZDO failed: " + ex.ToString());
+            }
+        }
+
+            public static void ISZDO(ref ItemDrop.ItemData itemData, ref ZDO zdo)
+        {
+            try
+            {
+                
+
+                List<float> attr = getAttr(itemData.m_shared);
+
+                for (int i = 0; i < attr.Count; i++)
+                {
+                    zdo.Set($"attr{i}", attr[i]);
+                }
+
+                zdo.Set($"attr22", itemData.m_shared.m_canBeReparied);
+
+                
+            }
+            catch (Exception ex)
+            {
+
+                UnityEngine.Debug.LogWarning("ISZDO failed: " + ex.ToString());
+            }
+        }
+
+            public static void IDI(ref ItemDrop __result, ref ItemDrop.ItemData item)
         {
             try
             {
