@@ -118,7 +118,9 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDI))
             {
 
                 __result.m_itemData = item;
+                AccessTools.Method(typeof(ItemDrop), "Save").Invoke(__result, new object[] { });
 
+                UnityEngine.Debug.LogWarning("Updated and saved " + __result.m_itemData.m_shared.m_name);
             }
             catch (Exception ex)
             {
