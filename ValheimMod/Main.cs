@@ -142,9 +142,14 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
                     pkg.Write(itemData.m_crafterID);
 
                     if (!str.Contains(" (UVO") || itemData.m_crafterName.Contains(" (UVO"))
-                        pkg.Write(itemData.m_crafterName);                   
+                    {
+                        pkg.Write(itemData.m_crafterName);
+                    }
                     else
-                        pkg.Write(itemData.m_crafterName + str);
+                    {
+                        itemData.m_crafterName += str;
+                        pkg.Write(itemData.m_crafterName);
+                    }
 
                     
 
@@ -180,14 +185,14 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 
             try
             {
-                return true;
+                //return true;
                 //if (_player == null)
                 //    return true;
                 
                 List<ItemDrop.ItemData> m_inventory = (typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance)) as List<ItemDrop.ItemData>;
                 Action m_onChanged = __instance.m_onChanged; //(typeof(Inventory).GetField("m_onChanged", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory())) as Action;
 
-                UnityEngine.Debug.LogWarning("ILD load start:");
+                //UnityEngine.Debug.LogWarning("ILD load start:");
                 cle = 191;
                 int num1 = pkg.ReadInt();
                 int num2 = pkg.ReadInt();
@@ -252,7 +257,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
                         }
                         else
                         {
-                            UnityEngine.Debug.LogWarning($"{component.m_itemData.m_shared.m_name}, {component.m_itemData.m_crafterName}");
+                            //UnityEngine.Debug.LogWarning($"{component.m_itemData.m_shared.m_name}, {component.m_itemData.m_crafterName}");
 
                             List<float> attr = new List<float>();
                             bool repairable;
@@ -302,15 +307,15 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
                                 str2 += $" {fl},";
                             }
 
-                            pkg.SetPos(pkg.GetPos() - 1);
+                            //pkg.SetPos(pkg.GetPos() - 1);
 
-                            str2 += $" {pkg.ReadBool()},";
+                            //str2 += $" {pkg.ReadBool()},";
 
-                            UnityEngine.Debug.LogWarning(str2);
+                            //UnityEngine.Debug.LogWarning(str2);
 
                             UnityEngine.Object.Destroy((UnityEngine.Object)gameObject);
 
-                            pkg.SetPos(pkg.GetPos()-((4*22) + 1));
+                            //pkg.SetPos(pkg.GetPos()-((4*22) + 1));
                         }
                     }
                     //_player.GetInvento.AddItem(name, stack, durability, pos, equiped, quality, variant, crafterID, crafterName);
