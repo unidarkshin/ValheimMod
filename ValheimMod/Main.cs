@@ -120,10 +120,80 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ISZDO))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: AccessTools.Method(typeof(CharacterDrop), "GenerateDropList"),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.CGDL))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
-        public static void ILZDO(ref ItemDrop.ItemData itemData, ref ZDO zdo)
+        public static bool CGDL(ref CharacterDrop __instance, ref List<KeyValuePair<GameObject, int>> __result)
+        {
+
+            try
+            {
+
+                Character c = __instance.GetComponent<Character>();
+
+                ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
+                bool vml = int.TryParse(znv.GetZDO().GetString("VMMML", ""), out int cl);
+                int level;
+
+                if (!vml)
+                    return true;
+                else
+                    level = cl;
+
+                List<KeyValuePair<GameObject, int>> keyValuePairList = new List<KeyValuePair<GameObject, int>>();
+
+                foreach (CharacterDrop.Drop drop in __instance.m_drops)
+                {
+                    if (!((UnityEngine.Object)drop.m_prefab == (UnityEngine.Object)null))
+                    {
+                        float chance = drop.m_chance;
+                        if (drop.m_levelMultiplier)
+                            chance *= level;
+                        if ((double)UnityEngine.Random.value <= (double)chance)
+                        {
+                            int num2 = UnityEngine.Random.Range(drop.m_amountMin, drop.m_amountMax);
+                            if (drop.m_levelMultiplier)
+                                num2 *= (int)Mathf.Round(UnityEngine.Random.Range(0.0f, level * 2.0f));
+                            if (drop.m_onePerPlayer)
+                                num2 = ZNet.instance.GetNrOfPlayers();
+                            if (num2 > 0)
+                                keyValuePairList.Add(new KeyValuePair<GameObject, int>(drop.m_prefab, num2));
+                        }
+                    }
+                }
+
+                if (UnityEngine.Random.value <= (0.001f * level * level))
+                {
+                    GameObject it = ObjectDB.instance.m_items[UnityEngine.Random.Range(0, ObjectDB.instance.m_items.Count)];
+                    ItemDrop itd = it.GetComponent<ItemDrop>();
+
+                    int amt;
+
+                    if (itd.m_itemData.m_shared.m_maxStackSize == 1)
+                        amt = 1;
+                    else
+                        amt = UnityEngine.Random.Range(1, level + 1);
+
+                    keyValuePairList.Add(new KeyValuePair<GameObject, int>(it, amt));
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+
+                UnityEngine.Debug.LogWarning("CGDL failed: " + ex.ToString());
+                return true;
+            }
+
+        }
+
+            public static void ILZDO(ref ItemDrop.ItemData itemData, ref ZDO zdo)
         {
             try
             {
@@ -176,7 +246,8 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ISZDO))
         {
             try
             {
-                
+                if (!zdo.GetString("crafterName", "").Contains(" (UVO"))
+                    return;
 
                 List<float> attr = getAttr(itemData.m_shared);
 
@@ -752,14 +823,14 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ISZDO))
                     {
 
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_armor += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_armor += UnityEngine.Random.Range(0, r + 1);
 
                         item.m_shared.m_attackForce = rndf2(item.m_shared.m_attackForce * (UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f))));
                         item.m_shared.m_backstabBonus = rndf2(item.m_shared.m_backstabBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
                         item.m_shared.m_blockPower = rndf2(item.m_shared.m_blockPower * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
 
 
-                        int cbr = UnityEngine.Random.Range(0, 1);
+                        int cbr = UnityEngine.Random.Range(0, 2);
 
                         if (cbr == 0)
                             item.m_shared.m_canBeReparied = false;
@@ -767,23 +838,23 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ISZDO))
                             item.m_shared.m_canBeReparied = true;
 
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_blunt += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_blunt += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_damage += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_damage += UnityEngine.Random.Range(0 , r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_fire += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_fire += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_frost += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_frost += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_lightning += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_lightning += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_pierce += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_pierce += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_poison += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_poison += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_slash += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_slash += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_spirit += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_spirit += UnityEngine.Random.Range(0, r + 1);
 
 
                         item.m_shared.m_damages.Modify(rndf2(UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f))));
@@ -793,7 +864,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ISZDO))
                         item.m_shared.m_movementModifier = rndf2(item.m_shared.m_movementModifier / UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
                         item.m_shared.m_timedBlockBonus = rndf2(item.m_shared.m_timedBlockBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
 
-                        item.m_shared.m_weight = rndf2(item.m_shared.m_weight * (1 + UnityEngine.Random.Range(0, r)));
+                        item.m_shared.m_weight = rndf2(item.m_shared.m_weight * (1 + UnityEngine.Random.Range(0, r + 1)));
                         item.m_durability = item.m_shared.m_maxDurability;
 
 
@@ -807,7 +878,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ISZDO))
                         item.m_shared.m_blockPower = rndf2(item.m_shared.m_blockPower * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
 
 
-                        int cbr = UnityEngine.Random.Range(0, 1);
+                        int cbr = UnityEngine.Random.Range(0, 2);
 
                         if (cbr == 0)
                             item.m_shared.m_canBeReparied = false;
@@ -815,23 +886,23 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ISZDO))
                             item.m_shared.m_canBeReparied = true;
 
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_blunt += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_blunt += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_damage += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_damage += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_fire += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_fire += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_frost += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_frost += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_lightning += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_lightning += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_pierce += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_pierce += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_poison += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_poison += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_slash += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_slash += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_spirit += UnityEngine.Random.Range(0, r);
+                            item.m_shared.m_damages.m_spirit += UnityEngine.Random.Range(0, r + 1);
 
 
                         item.m_shared.m_damages.Modify(rndf2(UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f))));
@@ -841,7 +912,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ISZDO))
                         item.m_shared.m_movementModifier = rndf2(item.m_shared.m_movementModifier / UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
                         item.m_shared.m_timedBlockBonus = rndf2(item.m_shared.m_timedBlockBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
 
-                        item.m_shared.m_weight = rndf2(item.m_shared.m_weight * (1 + UnityEngine.Random.Range(0, r)));
+                        item.m_shared.m_weight = rndf2(item.m_shared.m_weight * (1 + UnityEngine.Random.Range(0, r + 1)));
                         item.m_durability = item.m_shared.m_maxDurability;
 
                     }
@@ -1372,8 +1443,9 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ISZDO))
                                     {
                                         c.SetLevel(lvl);
                                         c.m_speed = c.m_speed * (1.0f + (lvl / 10.0f));
+                                        
 
-                                        CharacterDrop component2 = (CharacterDrop)((Component)c).GetComponent<CharacterDrop>();
+                                        /*CharacterDrop component2 = (CharacterDrop)((Component)c).GetComponent<CharacterDrop>();
 
                                         foreach (CharacterDrop.Drop item in component2.m_drops)
                                         {
@@ -1381,7 +1453,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ISZDO))
                                             item.m_levelMultiplier = false;
                                             item.m_amountMax += (lvl * 2);
 
-                                        }
+                                        }*/
 
                                         ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
                                         znv.GetZDO().Set("VMMML", $"{lvl}");
