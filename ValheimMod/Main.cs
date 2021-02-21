@@ -182,9 +182,11 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
                     else
                     {
                         int i = itemData.m_shared.m_name.IndexOf(" (UVO");
-
-                        if (itemData.m_shared.m_name.Substring(0, i - 1) == name)
+                        string str = itemData.m_shared.m_name.Substring(0, i);
+                        if (str == name)
                             num += itemData.m_stack;
+
+                        UnityEngine.Debug.LogWarning($"ICI output: {str}, {name}");
                     }
                 }
 
