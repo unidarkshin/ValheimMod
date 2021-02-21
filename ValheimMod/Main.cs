@@ -903,8 +903,8 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
                 }
 
 
-                //int r = GenerateItemRarity();
-                int r = 8;
+                int r = GenerateItemRarity();
+                //int r = 8;
 
                 if (r > 1)
                 {
@@ -1060,9 +1060,11 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
 
             int r = 1;
 
+            Skill c = skills.Where(sk => sk.name.ToLower() == "crafting").FirstOrDefault();
+
             for (int i = 2; i < 101; i++)
             {
-                if ((rnd < (1.0f / (i * i * i))))
+                if ((rnd < ((1.0f / (i * i * i)) * (1.0 + (0.01 * c.level)))))
                 {
                     r = i;
                 }
