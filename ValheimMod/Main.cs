@@ -175,7 +175,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
         public static void IRI(ItemDrop.ItemData item)
         {
-            if (iscrafting)
+            if (iscrafting && item.m_shared.m_name.Contains(" (UVO"))
                 cupgitem = item;
         }
 
@@ -1258,9 +1258,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                         item.m_shared.m_name += str;
                     }
 
-                    //if (oir == 0)
-                      //  xp = xp + (int)(r * r);
-                    //else
+                    if (oir == 0)
+                        xp = xp + (int)(r * r);
+                    else
                         xp = xp + (int)(r * r * (0.5 * oir));
 
                     c.xp = c.xp + xp;
