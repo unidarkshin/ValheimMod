@@ -103,11 +103,11 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD)),
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
-            /*            h.Patch(
+                        h.Patch(
             original: AccessTools.Method(typeof(ItemDrop), "DropItem"),
             postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDI))
             //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-            );*/
+            );
 
             h.Patch(
 original: AccessTools.Method(typeof(ItemDrop), "LoadFromZDO"),
@@ -139,60 +139,140 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
 );
 
             h.Patch(
+original: AccessTools.Method(typeof(Inventory), "CountItems", new Type[] { typeof(string) }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.ICI))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+            h.Patch(
 original: AccessTools.Method(typeof(WearNTear), "OnPlaced", new Type[] {}),
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.WOP))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
-            /*h.Patch(
+            h.Patch(
 original: AccessTools.Method(typeof(WearNTear), "GetMaterialProperties"),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.WGMP))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-);*/
+);
+
+            h.Patch(
+original: AccessTools.Method(typeof(Player), "CheckCanRemovePiece", new Type[] { typeof(Piece) }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
 
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
-        public static bool WGMP(WearNTear __instance,
+        public static bool ICI(ref Inventory __instance, ref int __result, string name)
+        {
+            try
+            {
+
+
+                int num = 0;
+                foreach (ItemDrop.ItemData itemData in __instance.GetAllItems())
+                {
+                    if (!itemData.m_shared.m_name.Contains(" (UVO"))
+                    {
+                        if (itemData.m_shared.m_name == name)
+                            num += itemData.m_stack;
+                    }
+                    else
+                    {
+                        int i = itemData.m_shared.m_name.IndexOf(" (UVO");
+
+                        if (itemData.m_shared.m_name.Substring(0, i) == name)
+                            num += itemData.m_stack;
+                    }
+                }
+
+                __result = num;
+
+                return false;
+
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("ICI failed: " + ex.ToString());
+                return true;
+            }
+        }
+
+        public static bool PCCRP(ref bool __result)
+        {
+            try
+            {
+                __result = true;
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+
+                UnityEngine.Debug.LogWarning("PCCRP failed: " + ex.ToString());
+
+                return true;
+            }
+        }
+
+            public static bool WGMP(ref WearNTear __instance,
   out float maxSupport,
   out float minSupport,
   out float horizontalLoss,
   out float verticalLoss)
         {
-            switch (__instance.m_materialType)
+            try
             {
-                case WearNTear.MaterialType.Wood:
-                    maxSupport = 100f;
-                    minSupport = 10f;
-                    verticalLoss = 0.125f;
-                    horizontalLoss = 0.2f;
-                    break;
-                case WearNTear.MaterialType.Stone:
-                    maxSupport = 1000f;
-                    minSupport = 100f;
-                    verticalLoss = 0.125f;
-                    horizontalLoss = 1f;
-                    break;
-                case WearNTear.MaterialType.Iron:
-                    maxSupport = 1500f;
-                    minSupport = 20f;
-                    verticalLoss = 0.07692308f;
-                    horizontalLoss = 0.07692308f;
-                    break;
-                case WearNTear.MaterialType.HardWood:
-                    maxSupport = 140f;
-                    minSupport = 10f;
-                    verticalLoss = 0.1f;
-                    horizontalLoss = 0.1666667f;
-                    break;
-                default:
-                    maxSupport = 0.0f;
-                    minSupport = 0.0f;
-                    verticalLoss = 0.0f;
-                    horizontalLoss = 0.0f;
-                    break;
+                Skill b = skills.Where(sk => sk.name.ToLower() == "building").FirstOrDefault();
+
+                switch (__instance.m_materialType)
+                {
+                    case WearNTear.MaterialType.Wood:
+                        maxSupport = 100f * (1.0f + (b.level * 0.01f));
+                        minSupport = 10f * (1.0f + (b.level * 0.01f));
+                        verticalLoss = 0.125f / (1.0f + (b.level * 0.01f));
+                        horizontalLoss = 0.2f / (1.0f + (b.level * 0.01f));
+                        break;
+                    case WearNTear.MaterialType.Stone:
+                        maxSupport = 1000f * (1.0f + (b.level * 0.01f));
+                        minSupport = 100f * (1.0f + (b.level * 0.01f));
+                        verticalLoss = 0.125f / (1.0f + (b.level * 0.012f));
+                        horizontalLoss = 1f / (1.0f + (b.level * 0.01f));
+                        break;
+                    case WearNTear.MaterialType.Iron:
+                        maxSupport = 1500f * (1.0f + (b.level * 0.01f));
+                        minSupport = 20f * (1.0f + (b.level * 0.01f));
+                        verticalLoss = 0.07692308f / (1.0f + (b.level * 0.01f));
+                        horizontalLoss = 0.07692308f / (1.0f + (b.level * 0.01f));
+                        break;
+                    case WearNTear.MaterialType.HardWood:
+                        maxSupport = 140f * (1.0f + (b.level * 0.01f));
+                        minSupport = 10f * (1.0f + (b.level * 0.01f));
+                        verticalLoss = 0.1f / (1.0f + (b.level * 0.01f));
+                        horizontalLoss = 0.1666667f / (1.0f + (b.level * 0.01f));
+                        break;
+                    default:
+                        maxSupport = 0.0f;
+                        minSupport = 0.0f;
+                        verticalLoss = 0.0f;
+                        horizontalLoss = 0.0f;
+                        break;
+                }
+                return false;
             }
-            return false;
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("WGMP failed: " + ex.ToString());
+
+                maxSupport = 0.0f;
+                minSupport = 0.0f;
+                verticalLoss = 0.0f;
+                horizontalLoss = 0.0f;
+
+                return true;
+            }
         }
 
         public static void WOP(ref WearNTear __instance)
@@ -321,12 +401,14 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.WGMP))
                     {
                         float chance = drop.m_chance;
                         if (drop.m_levelMultiplier)
-                            chance *= level;
+                            chance *= (level * 2);
                         if ((double)UnityEngine.Random.value <= (double)chance)
                         {
                             int num2 = UnityEngine.Random.Range(drop.m_amountMin, drop.m_amountMax);
                             if (drop.m_levelMultiplier)
-                                num2 *= (int)Mathf.Round(UnityEngine.Random.Range(0.0f, level * 2.0f));
+                                num2 *= level;
+                            if (UnityEngine.Random.value <= (0.001f * level * level))
+                                num2 = Mathf.RoundToInt(num2 * 1.5f);
                             if (drop.m_onePerPlayer)
                                 num2 = ZNet.instance.GetNrOfPlayers();
                             if (num2 > 0)
