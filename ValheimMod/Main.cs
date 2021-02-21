@@ -177,6 +177,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
         {
             if (iscrafting && item.m_shared.m_name.Contains(" (UVO"))
                 cupgitem = item;
+            else
+                cupgitem = null;
         }
 
             public static bool IGAI(ref Inventory __instance, string name, ref List<ItemDrop.ItemData> items)
