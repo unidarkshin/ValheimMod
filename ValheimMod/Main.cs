@@ -1070,8 +1070,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
                 }
 
 
-                //int r = GenerateItemRarity();
-                int r = 8;
+                int r = GenerateItemRarity();
+                //int r = 8;
 
                 if (r > 1)
                 {
@@ -1507,10 +1507,17 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
 
                         Skill s = skills.Where(sk => sk.name.ToLower() == "sailing").FirstOrDefault();
 
-                        if (elapsed7 >= 30f)
+                        if (elapsed7 >= 30f && _player.GetVelocity().magnitude > 1f)
                         {
                             elapsed7 = 0;
-                            s.xp = s.xp + 1 + (int)(s.level * 0.8);
+
+                            EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
+
+                            s.xp = s.xp + 1 + (int)(env.m_windMax / 5.0) + (int)(s.level * 0.8);
+                        }
+                        else if (_player.GetVelocity().magnitude <= 1f)
+                        {
+                            elapsed7 = 0;
                         }
 
                         if (_player.GetControlledShip().m_backwardForce != (0.5f + (s.level * 0.005f)))
@@ -2115,6 +2122,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
 
                     ItemDrop item = go.GetComponent<ItemDrop>();
 
+                    if (item.m_itemData.m_shared.m_maxStackSize == 1)
+                        continue;
 
                     if (Main.oms.TryGetValue(item.m_itemData.m_shared.m_name, out int ms))
                         item.m_itemData.m_shared.m_maxStackSize = ms * (1 + (level / 10));
@@ -2126,6 +2135,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
 
                 foreach (ItemDrop.ItemData item in items)
                 {
+                    if (item.m_shared.m_maxStackSize == 1)
+                        continue;
+
                     if (Main.oms.TryGetValue(item.m_shared.m_name, out int ms))
                         item.m_shared.m_maxStackSize = ms * (1 + (level / 10));
 
