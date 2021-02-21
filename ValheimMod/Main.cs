@@ -165,7 +165,15 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
-        public static bool IGAI(ref Inventory __instance, string name, ref List<ItemDrop.ItemData> items)
+        public static ItemDrop.ItemData cupgitem = null;
+
+        public static void RemoveItem(ref ItemDrop.ItemData item)
+        {
+            if (iscrafting)
+                cupgitem = item;
+        }
+
+            public static bool IGAI(ref Inventory __instance, string name, ref List<ItemDrop.ItemData> items)
         {
             try
             {
@@ -1080,13 +1088,18 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
             {
                 if (!iscrafting)
                 {
+                    cupgitem = null;
                     return;
                 }
                 else if (item == null)
                 {
+                    cupgitem = null;
                     iscrafting = false;
                     return;
                 }
+
+                if (cupgitem != null)
+                    item = cupgitem;
 
                 Skill c = skills.Where(sk => sk.name.ToLower() == "crafting").FirstOrDefault();
 
@@ -1103,6 +1116,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
 
                 if (type == 0)
                 {
+                    cupgitem = null;
                     iscrafting = false;
                     return;
                 }
@@ -1229,6 +1243,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
                     c.xp = c.xp + xp;
                 }
 
+                cupgitem = null;
                 iscrafting = false;
             }
             catch
