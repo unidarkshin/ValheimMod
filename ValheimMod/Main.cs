@@ -183,7 +183,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
                     {
                         int i = itemData.m_shared.m_name.IndexOf(" (UVO");
 
-                        if (itemData.m_shared.m_name.Substring(0, i) == name)
+                        if (itemData.m_shared.m_name.Substring(0, i - 1) == name)
                             num += itemData.m_stack;
                     }
                 }
