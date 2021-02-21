@@ -137,7 +137,31 @@ original: AccessTools.Method(typeof(Player), "HaveRequirements", new Type[] { ty
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
+
+            h.Patch(
+original: AccessTools.Method(typeof(Player), "OnPlaced", new Type[] {}),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.WOP))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
             //ZNet.instance.m_serverPlayerLimit = 99;
+        }
+
+        public static void WOP(ref WearNTear __instance)
+        {
+            try
+            {
+
+                Skill b = skills.Where(sk => sk.name.ToLower() == "building").FirstOrDefault();
+
+                //int xp = __instance.
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public static void PHR(ref Player __instance, ref bool __result, ref Piece piece, ref Player.RequirementMode mode)
@@ -1018,6 +1042,10 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
                     //ObjectDB.instance.m_items.Add(item.m_dropPrefab);
 
                     //ObjectDB.instance.m_items
+
+                    xp = xp + (int)(r * r);
+
+                    c.xp = c.xp + xp;
                 }
 
                 iscrafting = false;
@@ -1075,7 +1103,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
 
             }
 
-            UnityEngine.Debug.LogWarning($"GIR: rnd={rnd}, r={r}");
+            //UnityEngine.Debug.LogWarning($"GIR: rnd={rnd}, r={r}");
             return r;
         }
 
@@ -1339,7 +1367,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
                         if (elapsed7 >= 30f)
                         {
                             elapsed7 = 0;
-                            s.xp = s.xp + 1 + (int)Mathf.Round((elapsed7 / 6.0f) * s.level);
+                            s.xp = s.xp + 1 + (int)(s.level * 0.8);
                         }
 
                         if (_player.GetControlledShip().m_backwardForce != (0.5f + (s.level * 0.005f)))
@@ -1349,7 +1377,9 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
                             sh.m_sailForceFactor = (0.05f + (s.level * 0.0005f));
                             sh.m_stearForce = (0.5f + (s.level * 0.005f));
                             sh.m_force = 0.60f;
-                            sh.m_waterImpactDamage = 0;
+                            sh.m_waterImpactDamage = Mathf.Max(10.0f - (s.level * 0.07f), 3.0f);
+                            sh.m_minWaterImpactForce = (3.5f + (s.level * 0.07f));
+                            sh.m_minWaterImpactInterval = (10.0f + (s.level * 0.1f));
 
                             _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
                         }
