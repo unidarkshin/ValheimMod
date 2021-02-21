@@ -1131,6 +1131,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                         setAttr(ref item, attr, cupgitem.m_shared.m_canBeReparied);
 
+                        item.m_shared.m_name = cupgitem.m_shared.m_name;
+
                         r = r + oir;
                     }
                 }
@@ -1260,12 +1262,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                         item.m_shared.m_name += str;
                     }
 
-                    if (oir == 0)
-                        xp = xp + (int)(r * r);
-                    else
-                        xp = xp + (int)(r * r * (0.5 * oir));
-
-                    c.xp = c.xp + xp;
+                    
                 }
                 else if (r == 1 && oir == 0)
                 {
@@ -1277,6 +1274,13 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                         item.m_shared.m_name += str;
                     }
                 }
+
+                if (oir == 0)
+                    xp = xp + (int)(r * r);
+                else
+                    xp = xp + (int)(r * r * (0.5 * oir));
+
+                c.xp = c.xp + xp;
 
                 cupgitem = null;
                 iscrafting = false;
