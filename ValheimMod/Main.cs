@@ -139,8 +139,8 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
 );
 
             h.Patch(
-original: AccessTools.Method(typeof(Inventory), "CountItems", new Type[] { typeof(string) }),
-prefix: new HarmonyMethod(typeof(Main), nameof(Main.ICI))
+original: AccessTools.Method(typeof(Inventory), "GetAllItems", new Type[] { typeof(string), typeof(List<ItemDrop.ItemData>) }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.IGAI))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
@@ -163,6 +163,37 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
 );
 
             //ZNet.instance.m_serverPlayerLimit = 99;
+        }
+
+        public static bool IGAI(ref Inventory __instance, string name, ref List<ItemDrop.ItemData> items)
+        {
+            try
+            {
+                foreach (ItemDrop.ItemData itemData in __instance.GetAllItems())
+                {
+                    if (!itemData.m_shared.m_name.Contains(" (UVO"))
+                    {
+                        if (itemData.m_shared.m_name == name)
+                            items.Add(itemData);
+                    }
+                    else
+                    {
+                        int i = itemData.m_shared.m_name.IndexOf(" (UVO");
+                        string str = itemData.m_shared.m_name.Substring(0, i);
+
+                        if (str == name)
+                            items.Add(itemData);
+                            
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+
+                return true;
+            }
         }
 
         public static bool ICI(ref Inventory __instance, ref int __result, string name)
