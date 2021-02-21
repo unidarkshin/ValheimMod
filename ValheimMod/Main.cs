@@ -349,6 +349,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.WGMP))
 
                     keyValuePairList.Add(new KeyValuePair<GameObject, int>(it, amt));
                 }
+
+                __result = keyValuePairList;
+
                 return false;
             }
             catch (Exception ex)
