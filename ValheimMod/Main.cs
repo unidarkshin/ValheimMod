@@ -223,9 +223,18 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
   out float horizontalLoss,
   out float verticalLoss)
         {
+
+            maxSupport = 0.0f;
+            minSupport = 0.0f;
+            verticalLoss = 0.0f;
+            horizontalLoss = 0.0f;
+
             try
             {
                 Skill b = skills.Where(sk => sk.name.ToLower() == "building").FirstOrDefault();
+
+                if (b == null)
+                    return true;
 
                 switch (__instance.m_materialType)
                 {
@@ -266,10 +275,6 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
             {
                 UnityEngine.Debug.LogWarning("WGMP failed: " + ex.ToString());
 
-                maxSupport = 0.0f;
-                minSupport = 0.0f;
-                verticalLoss = 0.0f;
-                horizontalLoss = 0.0f;
 
                 return true;
             }
