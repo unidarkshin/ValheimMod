@@ -173,7 +173,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
         public static ItemDrop.ItemData cupgitem = null;
 
-        public static void IRI(ref ItemDrop.ItemData item)
+        public static void IRI(ItemDrop.ItemData item)
         {
             if (iscrafting)
                 cupgitem = item;
@@ -514,30 +514,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                 bool repairable = zdo.GetBool($"attr22", itemData.m_shared.m_canBeReparied);
 
-                itemData.m_shared.m_armor = attr[0];
-                itemData.m_shared.m_attackForce = attr[1];
-                itemData.m_shared.m_backstabBonus = attr[2];
-                itemData.m_shared.m_blockPower = attr[3];
-                itemData.m_shared.m_damages.m_blunt = attr[4];
-                itemData.m_shared.m_damages.m_chop = attr[5];
-                itemData.m_shared.m_damages.m_damage = attr[6];
-                itemData.m_shared.m_damages.m_fire = attr[7];
-                itemData.m_shared.m_damages.m_frost = attr[8];
-                itemData.m_shared.m_damages.m_lightning = attr[9];
-                itemData.m_shared.m_damages.m_pickaxe = attr[10];
-                itemData.m_shared.m_damages.m_pierce = attr[11];
-                itemData.m_shared.m_damages.m_poison = attr[12];
-                itemData.m_shared.m_damages.m_slash = attr[13];
-                itemData.m_shared.m_damages.m_spirit = attr[14];
-                itemData.m_shared.m_deflectionForce = attr[15];
-                itemData.m_shared.m_durabilityDrain = attr[16];
-                itemData.m_shared.m_maxDurability = attr[17];
-                itemData.m_shared.m_movementModifier = attr[18];
-                itemData.m_shared.m_timedBlockBonus = attr[19];
-                itemData.m_shared.m_useDurabilityDrain = attr[20];
-                itemData.m_shared.m_weight = attr[21];
+                setAttr(ref itemData, attr, repairable);
 
-                itemData.m_shared.m_canBeReparied = repairable;
             }
             catch (Exception ex)
             {
@@ -1104,8 +1082,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                     return;
                 }
 
-                if (cupgitem != null)
-                    item = cupgitem;
+
 
                 Skill c = skills.Where(sk => sk.name.ToLower() == "crafting").FirstOrDefault();
 
@@ -1125,6 +1102,13 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                     cupgitem = null;
                     iscrafting = false;
                     return;
+                }
+
+                if (cupgitem != null)
+                {
+                    List<float> attr = getAttr(cupgitem.m_shared);
+
+                    setAttr(ref item, attr, cupgitem.m_shared.m_canBeReparied);
                 }
 
 
@@ -1256,6 +1240,34 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
             {
                 UnityEngine.Debug.LogWarning("Fail in AI patch.");
             }
+        }
+
+        public static void setAttr(ref ItemDrop.ItemData item, List<float> attr, bool repairable)
+        {
+            item.m_shared.m_armor = attr[0];
+            item.m_shared.m_attackForce = attr[1];
+            item.m_shared.m_backstabBonus = attr[2];
+            item.m_shared.m_blockPower = attr[3];
+            item.m_shared.m_damages.m_blunt = attr[4];
+            item.m_shared.m_damages.m_chop = attr[5];
+            item.m_shared.m_damages.m_damage = attr[6];
+            item.m_shared.m_damages.m_fire = attr[7];
+            item.m_shared.m_damages.m_frost = attr[8];
+            item.m_shared.m_damages.m_lightning = attr[9];
+            item.m_shared.m_damages.m_pickaxe = attr[10];
+            item.m_shared.m_damages.m_pierce = attr[11];
+            item.m_shared.m_damages.m_poison = attr[12];
+            item.m_shared.m_damages.m_slash = attr[13];
+            item.m_shared.m_damages.m_spirit = attr[14];
+            item.m_shared.m_deflectionForce = attr[15];
+            item.m_shared.m_durabilityDrain = attr[16];
+            item.m_shared.m_maxDurability = attr[17];
+            item.m_shared.m_movementModifier = attr[18];
+            item.m_shared.m_timedBlockBonus = attr[19];
+            item.m_shared.m_useDurabilityDrain = attr[20];
+            item.m_shared.m_weight = attr[21];
+
+            item.m_shared.m_canBeReparied = repairable;
         }
 
         public static float rndf2(float val)
