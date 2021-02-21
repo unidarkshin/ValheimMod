@@ -1104,16 +1104,22 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                     return;
                 }
 
-                if (cupgitem != null)
+                int oir = 0;
+                if (cupgitem != null && UnityEngine.Random.value <= 0.2 + (c.level * 0.0013))
                 {
+                    string sub = cupgitem.m_shared.m_name.Remove(cupgitem.m_shared.m_name.Length - 1);
+
+                    if (int.TryParse(sub.Substring(sub.IndexOf("UVO: ") + 4), out int orar))
+                        oir = orar;
+
                     List<float> attr = getAttr(cupgitem.m_shared);
 
                     setAttr(ref item, attr, cupgitem.m_shared.m_canBeReparied);
                 }
 
 
-                int r = GenerateItemRarity();
-                //int r = 8;
+                //int r = GenerateItemRarity();
+                int r = 8;
 
                 if (r > 1)
                 {
@@ -1219,7 +1225,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                 if (r != 1)
                 {
                     //globalid += 1;
-                    string str = $" (UVO: R{r})";
+                    string str = $" (UVO: R{r + oir})";
                     item.m_shared.m_name += str;
                     //item.m_crafterName += str;
                     //item.m_dropPrefab.name += $" (UVO: R{r}, {globalid})";
@@ -1227,8 +1233,10 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                     //ObjectDB.instance.m_items.Add(item.m_dropPrefab);
 
                     //ObjectDB.instance.m_items
-
-                    xp = xp + (int)(r * r);
+                    if (oir == 0)
+                        xp = xp + (int)(r * r);
+                    else
+                        xp = xp + (int)(r * r * (0.5 * oir));
 
                     c.xp = c.xp + xp;
                 }
