@@ -139,16 +139,16 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
 );
 
             h.Patch(
-original: AccessTools.Method(typeof(Player), "OnPlaced", new Type[] {}),
+original: AccessTools.Method(typeof(WearNTear), "OnPlaced", new Type[] {}),
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.WOP))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(WearNTear), "GetMaterialProperties"),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.WGMP))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-);
+);*/
 
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
@@ -985,8 +985,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.WGMP))
                 }
 
 
-                int r = GenerateItemRarity();
-                //int r = 8;
+                //int r = GenerateItemRarity();
+                int r = 8;
 
                 if (r > 1)
                 {
