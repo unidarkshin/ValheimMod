@@ -1104,22 +1104,35 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                     return;
                 }
 
+                int r = GenerateItemRarity();
+                //int r = 8;
+
                 int oir = 0;
-                if (cupgitem != null && UnityEngine.Random.value <= 0.2 + (c.level * 0.0013))
+                if (cupgitem != null)
                 {
                     string sub = cupgitem.m_shared.m_name.Remove(cupgitem.m_shared.m_name.Length - 1);
 
-                    if (int.TryParse(sub.Substring(sub.IndexOf("UVO: ") + 4), out int orar))
+                    if (int.TryParse(sub.Substring(sub.IndexOf("UVO: ") + 5), out int orar))
                         oir = orar;
 
-                    List<float> attr = getAttr(cupgitem.m_shared);
+                    float chance = keepOldR(oir, c.level, cupgitem.m_quality);
 
-                    setAttr(ref item, attr, cupgitem.m_shared.m_canBeReparied);
+                    if (UnityEngine.Random.value > chance)
+                    {
+                        oir = 0;
+                        r = 1;
+                    }
+                    else if (oir != 0)
+                    {
+
+                        List<float> attr = getAttr(cupgitem.m_shared);
+
+                        setAttr(ref item, attr, cupgitem.m_shared.m_canBeReparied);
+
+                        r = r + oir;
+                    }
                 }
 
-
-                //int r = GenerateItemRarity();
-                int r = 8;
 
                 if (r > 1)
                 {
@@ -1225,20 +1238,42 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                 if (r != 1)
                 {
                     //globalid += 1;
-                    string str = $" (UVO: R{r + oir})";
-                    item.m_shared.m_name += str;
-                    //item.m_crafterName += str;
-                    //item.m_dropPrefab.name += $" (UVO: R{r}, {globalid})";
 
-                    //ObjectDB.instance.m_items.Add(item.m_dropPrefab);
+                    if (!item.m_shared.m_name.Contains(" (UVO"))
+                    {
+                        string str = $" (UVO: R{r})";
+                        item.m_shared.m_name += str;
+                        //item.m_crafterName += str;
+                        //item.m_dropPrefab.name += $" (UVO: R{r}, {globalid})";
 
-                    //ObjectDB.instance.m_items
-                    if (oir == 0)
-                        xp = xp + (int)(r * r);
+                        //ObjectDB.instance.m_items.Add(item.m_dropPrefab);
+
+                        //ObjectDB.instance.m_items
+                    }
                     else
+                    {
+                        item.m_shared.m_name = item.m_shared.m_name.Substring(0, item.m_shared.m_name.IndexOf(" (UVO"));
+
+                        string str = $" (UVO: R{r})";
+                        item.m_shared.m_name += str;
+                    }
+
+                    //if (oir == 0)
+                      //  xp = xp + (int)(r * r);
+                    //else
                         xp = xp + (int)(r * r * (0.5 * oir));
 
                     c.xp = c.xp + xp;
+                }
+                else if (r == 1 && oir == 0)
+                {
+                    if (item.m_shared.m_name.Contains(" (UVO"))
+                    {
+                        item.m_shared.m_name = item.m_shared.m_name.Substring(0, item.m_shared.m_name.IndexOf(" (UVO"));
+
+                        string str = $" (UVO: R{1})";
+                        item.m_shared.m_name += str;
+                    }
                 }
 
                 cupgitem = null;
@@ -1248,6 +1283,22 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
             {
                 UnityEngine.Debug.LogWarning("Fail in AI patch.");
             }
+        }
+
+        public static float keepOldR(int or, int cl, int q)
+        {
+            float chance = 0f;
+
+            if (or < 13)
+            {
+                chance = (0.95f - (or * 0.05f)) - (0.1f * q) + (cl * 0.0010f);
+            }
+            else
+            {
+                chance = 0.1f + (cl * 0.0010f);
+            }
+
+            return chance;
         }
 
         public static void setAttr(ref ItemDrop.ItemData item, List<float> attr, bool repairable)
