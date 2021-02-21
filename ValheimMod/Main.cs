@@ -39,9 +39,9 @@ namespace ValheimMod
 
         public static bool shouldInit = true;
 
-        public List<Skill> skills = new List<Skill>();
+        public static List<Skill> skills = new List<Skill>();
 
-        public string[] snames = { "Weight", "Agility", "Sailing" };
+        public string[] snames = { "Weight", "Agility", "Sailing", "Crafting", "Building" };
 
         /*[DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -126,8 +126,93 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CGDL))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: AccessTools.Method(typeof(Player), "UpdatePlacementGhost"),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.PUPG))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+            h.Patch(
+original: AccessTools.Method(typeof(Player), "HaveRequirements", new Type[] { typeof(Piece), typeof(Player.RequirementMode)}),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
+
+        public static void PHR(ref Player __instance, ref bool __result, ref Piece piece, ref Player.RequirementMode mode)
+        {
+            try
+            {
+                bool cb = true;
+                HashSet<string> mkm = typeof(Player).GetField("m_knownMaterial", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance) as HashSet<string>;
+                foreach (Piece.Requirement resource in piece.m_resources)
+                {
+                    if ((bool)(UnityEngine.Object)resource.m_resItem && resource.m_amount > 0)
+                    {
+                        switch (mode)
+                        {
+                            case Player.RequirementMode.CanBuild:
+                                if (__instance.GetInventory().CountItems(resource.m_resItem.m_itemData.m_shared.m_name) < resource.m_amount)
+                                    cb = false;
+                                continue;
+                            case Player.RequirementMode.IsKnown:
+                                if (!mkm.Contains(resource.m_resItem.m_itemData.m_shared.m_name))
+                                    cb = false;
+                                continue;
+                            case Player.RequirementMode.CanAlmostBuild:
+                                if (!__instance.GetInventory().HaveItem(resource.m_resItem.m_itemData.m_shared.m_name))
+                                    cb = false;
+                                continue;
+                            default:
+                                continue;
+                        }
+                    }
+
+                    if (!cb)
+                        break;
+                }
+
+                if (cb)
+                    __result = true;
+            }
+            catch (Exception ex)
+            {
+
+                UnityEngine.Debug.LogWarning("PHR failed: " + ex.ToString());
+            }
+        }
+
+            public static void PUPG(ref Player __instance)
+        {
+            try
+            {
+
+                //var etype = ;
+                AccessTools.Field(typeof(Player), "m_placementStatus").SetValue(__instance, Enum.GetValues(AccessTools.Field(typeof(Player), "m_placementStatus").GetUnderlyingType()).GetValue(0));
+
+                //UnityEngine.Debug.LogWarning(Enum.GetValues(AccessTools.Field(typeof(Player), "m_placementStatus").GetUnderlyingType()).GetValue(0).ToString());
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("PUPG failed: " + ex.ToString());
+
+            }
+        }
+
+        public static Type GetEnumType(string enumName)
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var type = assembly.GetType(enumName);
+                if (type == null)
+                    continue;
+                if (type.IsEnum)
+                    return type;
+            }
+            return null;
+        }
+
 
         public static bool CGDL(ref CharacterDrop __instance, ref List<KeyValuePair<GameObject, int>> __result)
         {
@@ -798,6 +883,10 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CGDL))
                     return;
                 }
 
+                Skill c = skills.Where(sk => sk.name.ToLower() == "crafting").FirstOrDefault();
+
+                int xp = 1 + (int)(c.level / 10.0);
+
                 ItemDrop.ItemData.ItemType it = item.m_shared.m_itemType;
                 int type = 0;
 
@@ -1038,13 +1127,17 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CGDL))
                     Directory.CreateDirectory(path);
                 }
 
+                IniData data;
+
                 if (File.Exists(filename))
                 {
 
-                    IniData data = parser.ReadFile(filename);
+                    data = parser.ReadFile(filename);
 
                     for (int i = 1; i < snames.Length + 1; i++)
                     {
+                        if (!data.Sections.ContainsSection($"SkillData{i}"))
+                            break;
 
                         string name = data[$"SkillData{i}"]["SkillName"];
 
@@ -1061,11 +1154,14 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CGDL))
                 {
                     FileStream configStream = File.Create(filename);
                     configStream.Close();
+                }
 
-                    IniData data = parser.ReadFile(filename);
+                if (skills.Count < snames.Length)
+                {
 
+                    data = parser.ReadFile(filename);
 
-                    for (int i = 1; i < snames.Length + 1; i++)
+                    for (int i = skills.Count + 1; i < snames.Length + 1; i++)
                     {
                         string secName = $"SkillData{i}";
                         data.Sections.AddSection(secName);
@@ -1079,8 +1175,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CGDL))
                     }
 
                     parser.WriteFile(filename, data);
-                }
 
+                }
 
 
                 otime = Time.time;
@@ -1226,8 +1322,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CGDL))
                         //typeof(Player).GetField("m_placementStatus", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player, 0);
                         CraftingStation cr = _player.GetCurrentCraftingStation();
                         //_player.GetHoveringPiece()
-                        if (cr != null && cr.m_rangeBuild != 100f)
-                            cr.m_rangeBuild = 100f;
+                        //if (cr != null && cr.m_rangeBuild != 100f)
+                        //    cr.m_rangeBuild = 100f;
                     }
 
 
