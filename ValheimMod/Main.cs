@@ -1997,7 +1997,20 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                         if (Input.GetKeyDown(KeyCode.U))
                         {
                             GameObject itemPrefab = ObjectDB.instance.GetItemPrefab("Wood");
-                            
+
+                            ZNetView.m_forceDisableInit = true;
+                            GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(itemPrefab);
+                            ZNetView.m_forceDisableInit = false;
+                            ItemDrop component = gameObject.GetComponent<ItemDrop>();
+                            component.m_itemData.m_stack = 999;
+
+                            _player.GetInventory().AddItem(component.m_itemData);
+
+                        }
+                        if (Input.GetKeyDown(KeyCode.Y))
+                        {
+                            GameObject itemPrefab = ObjectDB.instance.GetItemPrefab("Stone");
+
                             ZNetView.m_forceDisableInit = true;
                             GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(itemPrefab);
                             ZNetView.m_forceDisableInit = false;
