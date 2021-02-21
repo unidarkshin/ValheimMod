@@ -140,11 +140,59 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
 
             h.Patch(
 original: AccessTools.Method(typeof(Player), "OnPlaced", new Type[] {}),
-prefix: new HarmonyMethod(typeof(Main), nameof(Main.WOP))
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.WOP))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+            h.Patch(
+original: AccessTools.Method(typeof(WearNTear), "GetMaterialProperties"),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.WGMP))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
             //ZNet.instance.m_serverPlayerLimit = 99;
+        }
+
+        public static bool WGMP(WearNTear __instance,
+  out float maxSupport,
+  out float minSupport,
+  out float horizontalLoss,
+  out float verticalLoss)
+        {
+            switch (__instance.m_materialType)
+            {
+                case WearNTear.MaterialType.Wood:
+                    maxSupport = 100f;
+                    minSupport = 10f;
+                    verticalLoss = 0.125f;
+                    horizontalLoss = 0.2f;
+                    break;
+                case WearNTear.MaterialType.Stone:
+                    maxSupport = 1000f;
+                    minSupport = 100f;
+                    verticalLoss = 0.125f;
+                    horizontalLoss = 1f;
+                    break;
+                case WearNTear.MaterialType.Iron:
+                    maxSupport = 1500f;
+                    minSupport = 20f;
+                    verticalLoss = 0.07692308f;
+                    horizontalLoss = 0.07692308f;
+                    break;
+                case WearNTear.MaterialType.HardWood:
+                    maxSupport = 140f;
+                    minSupport = 10f;
+                    verticalLoss = 0.1f;
+                    horizontalLoss = 0.1666667f;
+                    break;
+                default:
+                    maxSupport = 0.0f;
+                    minSupport = 0.0f;
+                    verticalLoss = 0.0f;
+                    horizontalLoss = 0.0f;
+                    break;
+            }
+            return false;
         }
 
         public static void WOP(ref WearNTear __instance)
@@ -153,14 +201,24 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.WOP))
             {
 
                 Skill b = skills.Where(sk => sk.name.ToLower() == "building").FirstOrDefault();
+                Piece p = __instance.GetComponent<Piece>();
 
-                //int xp = __instance.
+                int reqttl = 1;
+
+                foreach (Piece.Requirement pr in p.m_resources)
+                {
+                    reqttl += pr.m_amount;
+                }
+
+                int xp = 1 + ((1 * ((int)__instance.m_materialType) + 1) * (1 + (int)(reqttl / 5)) * (1 + (int)(b.level / 20)));
+
+                b.xp = b.xp + xp;
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
-                throw;
+                UnityEngine.Debug.LogWarning("WOP failed: " + ex.ToString());
             }
         }
 
