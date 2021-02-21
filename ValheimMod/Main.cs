@@ -162,12 +162,18 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PCCRP))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: AccessTools.Method(typeof(Inventory), "RemoveItem", new Type[] { typeof(ItemDrop.ItemData) }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
         public static ItemDrop.ItemData cupgitem = null;
 
-        public static void RemoveItem(ref ItemDrop.ItemData item)
+        public static void IRI(ref ItemDrop.ItemData item)
         {
             if (iscrafting)
                 cupgitem = item;
