@@ -1083,7 +1083,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                     iscrafting = false;
                     return;
                 }
-
+                
 
 
                 Skill c = skills.Where(sk => sk.name.ToLower() == "crafting").FirstOrDefault();
@@ -1119,7 +1119,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                     float chance = keepOldR(oir, c.level, cupgitem.m_quality);
 
-                    
+                    UnityEngine.Debug.LogWarning($"OIR: {oir}");
 
                     if (UnityEngine.Random.value > chance)
                     {
@@ -2030,11 +2030,18 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                         {
                             InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
                             ItemDrop.ItemData it = g.GetItem(new Vector2i((int)Input.mousePosition.x, (int)Input.mousePosition.y));
+                            Container c = typeof(InventoryGui).GetField("m_currentContainer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(InventoryGui.instance) as Container;
+
                             if (g != null && it != null)
                             {
-                                _player.GetInventory().RemoveItem(it);
-
+                                if (c == null)
+                                    _player.GetInventory().RemoveItem(it);
+                                else
+                                    c.GetInventory().RemoveItem(it);
+          
                             }
+                            
+                            
                         }
 
                         if (Input.GetKeyDown(KeyCode.Delete)) // Will just unload our DLL
