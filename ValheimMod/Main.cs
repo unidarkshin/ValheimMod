@@ -1106,8 +1106,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                     return;
                 }
 
-                //int r = GenerateItemRarity();
-                int r = 8;
+                int r = GenerateItemRarity();
+                //int r = 8;
 
                 int oir = 0;
                 if (cupgitem != null)
@@ -1119,7 +1119,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                     float chance = keepOldR(oir, c.level, cupgitem.m_quality);
 
-                    UnityEngine.Debug.LogWarning($"OIR: sub: {sub}, {oir}");
+                    //UnityEngine.Debug.LogWarning($"OIR: sub: {sub}, {oir}");
 
                     if (UnityEngine.Random.value > chance)
                     {
@@ -1378,7 +1378,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
             for (int i = 2; i < 101; i++)
             {
-                if ((rnd < ((1.0f / (i * i * i)) * (1.0 + (0.01 * c.level)))))
+                if ((rnd < ((1.0f / (i * i * (0.8f * i))) * (1.0 + (0.01 * c.level)))))
                 {
                     r = i;
                 }
@@ -2001,7 +2001,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                             }
                         }
-                        if (Input.GetKeyDown(KeyCode.U))
+                        if (false)
                         {
                             GameObject itemPrefab = ObjectDB.instance.GetItemPrefab("Wood");
 
@@ -2014,7 +2014,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                             _player.GetInventory().AddItem(component.m_itemData);
 
                         }
-                        if (Input.GetKeyDown(KeyCode.Y))
+                        if (false)
                         {
                             GameObject itemPrefab = ObjectDB.instance.GetItemPrefab("Stone");
 
