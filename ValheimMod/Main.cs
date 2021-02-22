@@ -210,7 +210,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                     if (!itemData.m_equiped)
                         ___m_totalWeight += itemData.GetWeight();
                     else
-                        ___m_totalWeight += (itemData.GetWeight() * Mathf.Max(1.0f - (a.level * 0.005f), 0.5f));
+                        ___m_totalWeight += (itemData.GetWeight() / (a.level * 0.04f));
                 }
 
                 return false;
@@ -2201,18 +2201,25 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                         {
                             InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
                             ItemDrop.ItemData it = g.GetItem(new Vector2i((int)Input.mousePosition.x, (int)Input.mousePosition.y));
-                            Container c = typeof(InventoryGui).GetField("m_currentContainer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(InventoryGui.instance) as Container;
-
+                            
+                            
                             if (g != null && it != null)
                             {
-                                if (c == null)
-                                    _player.GetInventory().RemoveItem(it);
-                                else
-                                    c.GetInventory().RemoveItem(it);
-                                
-          
+                                    _player.GetInventory().RemoveItem(it);                                         
                             }
-                            
+
+                            Container c = typeof(InventoryGui).GetField("m_currentContainer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(InventoryGui.instance) as Container;
+
+                            if (c != null)
+                            {
+                                InventoryGrid g2 = c.GetComponentInChildren<InventoryGrid>();
+                                ItemDrop.ItemData it2 = g2.GetItem(new Vector2i((int)Input.mousePosition.x, (int)Input.mousePosition.y));
+
+                                if (g2 != null && it2 != null)
+                                {
+                                    c.GetInventory().RemoveItem(it2);
+                                }
+                            }
                             
                         }
 
