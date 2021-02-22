@@ -2023,7 +2023,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                         }
                         if (Input.GetKeyDown(KeyCode.T))
                         {
-                            InventoryGrid g = _player.GetComponentInChildren<InventoryGrid>();
+                            InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
 
                             if (g != null && g.GetGamepadSelectedItem() != null)
                             {
