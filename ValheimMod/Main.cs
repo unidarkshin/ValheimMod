@@ -1119,24 +1119,24 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                     float chance = keepOldR(oir, c.level, cupgitem.m_quality);
 
-                    item.m_shared.m_name = cupgitem.m_shared.m_name;
+                    
 
                     if (UnityEngine.Random.value > chance)
                     {
                         oir = 0;
                         r = 1;
                     }
-                    else if (oir != 0)
-                    {
+                    
 
                         List<float> attr = getAttr(cupgitem.m_shared);
 
                         setAttr(ref item, attr, cupgitem.m_shared.m_canBeReparied);
 
-                        
+                    item.m_shared.m_name = cupgitem.m_shared.m_name;
 
-                        r = r + oir;
-                    }
+
+                    r = r + oir;
+                    
                 }
 
 
@@ -1274,6 +1274,11 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                         string str = $" (UVO: R{1})";
                         item.m_shared.m_name += str;
+
+                        if (type == 1)
+                            item.m_shared.m_damages.Modify(0.85f);
+                        else if (type == 2)
+                            item.m_shared.m_armor = Mathf.Round(item.m_shared.m_armor * 0.85f);
                     }
                 }
 
@@ -2024,10 +2029,11 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                         if (Input.GetKeyDown(KeyCode.T))
                         {
                             InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
-
-                            if (g != null && g.GetGamepadSelectedItem() != null)
+                            ItemDrop.ItemData it = g.GetItem(new Vector2i((int)Input.mousePosition.x, (int)Input.mousePosition.y));
+                            if (g != null && it != null)
                             {
-                                _player.GetInventory().RemoveItem(g.GetGamepadSelectedItem());
+                                _player.GetInventory().RemoveItem(it);
+
                             }
                         }
 
