@@ -103,11 +103,11 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD)),
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
-                        h.Patch(
-            original: AccessTools.Method(typeof(ItemDrop), "DropItem"),
-            prefix: new HarmonyMethod(typeof(Main), nameof(Main.IDI))
-            //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-            );
+            h.Patch(
+original: AccessTools.Method(typeof(ItemDrop), "DropItem"),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.IDI))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
 
             h.Patch(
 original: AccessTools.Method(typeof(ItemDrop), "LoadFromZDO"),
@@ -133,7 +133,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.PUPG))
 );
 
             h.Patch(
-original: AccessTools.Method(typeof(Player), "HaveRequirements", new Type[] { typeof(Piece), typeof(Player.RequirementMode)}),
+original: AccessTools.Method(typeof(Player), "HaveRequirements", new Type[] { typeof(Piece), typeof(Player.RequirementMode) }),
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
@@ -145,7 +145,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IGAI))
 );
 
             h.Patch(
-original: AccessTools.Method(typeof(WearNTear), "OnPlaced", new Type[] {}),
+original: AccessTools.Method(typeof(WearNTear), "OnPlaced", new Type[] { }),
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.WOP))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
@@ -169,7 +169,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 );
 
             h.Patch(
-original: AccessTools.Method(typeof(Character), "Jump", new Type[] {}),
+original: AccessTools.Method(typeof(Character), "Jump", new Type[] { }),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.CJ))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
@@ -214,7 +214,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                 }
 
                 return false;
-                    
+
             }
             catch (Exception ex)
             {
@@ -223,7 +223,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
             }
         }
 
-            public static bool PUC(ref Player __instance, ref bool ___m_crouchToggled, ref bool ___m_run, ref int ___crouching, ref ZSyncAnimation ___m_zanim, ref float dt)
+        public static bool PUC(ref Player __instance, ref bool ___m_crouchToggled, ref bool ___m_run, ref int ___crouching, ref ZSyncAnimation ___m_zanim, ref float dt)
         {
             try
             {
@@ -249,7 +249,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
             }
         }
 
-            public static bool OGR(ref ObjectDB __instance, ref Recipe __result, ItemDrop.ItemData item)
+        public static bool OGR(ref ObjectDB __instance, ref Recipe __result, ItemDrop.ItemData item)
         {
             try
             {
@@ -338,7 +338,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
             }
         }
 
-            public static bool IGAI(ref Inventory __instance, string name, ref List<ItemDrop.ItemData> items)
+        public static bool IGAI(ref Inventory __instance, string name, ref List<ItemDrop.ItemData> items)
         {
             try
             {
@@ -356,7 +356,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
                         if (str == name)
                             items.Add(itemData);
-                            
+
                     }
                 }
 
@@ -423,11 +423,11 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
             }
         }
 
-            public static bool WGMP(ref WearNTear __instance,
-  out float maxSupport,
-  out float minSupport,
-  out float horizontalLoss,
-  out float verticalLoss)
+        public static bool WGMP(ref WearNTear __instance,
+out float maxSupport,
+out float minSupport,
+out float horizontalLoss,
+out float verticalLoss)
         {
 
             maxSupport = 0.0f;
@@ -556,7 +556,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
             }
         }
 
-            public static void PUPG(ref Player __instance)
+        public static void PUPG(ref Player __instance)
         {
             try
             {
@@ -656,7 +656,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
         }
 
-            public static void ILZDO(ref ItemDrop.ItemData itemData, ref ZDO zdo)
+        public static void ILZDO(ref ItemDrop.ItemData itemData, ref ZDO zdo)
         {
             try
             {
@@ -683,7 +683,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
             }
         }
 
-            public static void ISZDO(ref ItemDrop.ItemData itemData, ref ZDO zdo)
+        public static void ISZDO(ref ItemDrop.ItemData itemData, ref ZDO zdo)
         {
             try
             {
@@ -699,7 +699,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
                 //zdo.Set($"attr22", itemData.m_shared.m_canBeReparied);
 
-                
+
             }
             catch (Exception ex)
             {
@@ -708,7 +708,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
             }
         }
 
-            public static bool IDI(ref ItemDrop __result, ref ItemDrop.ItemData item, int amount, Vector3 position, Quaternion rotation)
+        public static bool IDI(ref ItemDrop __result, ref ItemDrop.ItemData item, int amount, Vector3 position, Quaternion rotation)
         {
             try
             {
@@ -734,7 +734,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
             }
         }
 
-            public static bool ISV(ref Inventory __instance, ref ZPackage pkg)
+        public static bool ISV(ref Inventory __instance, ref ZPackage pkg)
         {
             int opos = pkg.GetPos();
 
@@ -779,7 +779,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                         pkg.Write(itemData.m_crafterName);
                     }
 
-                    
+
 
                     if (itemData.m_crafterName.Contains(" (UVO"))
                     {
@@ -816,7 +816,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                 //return true;
                 //if (_player == null)
                 //    return true;
-                
+
                 List<ItemDrop.ItemData> m_inventory = (typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance)) as List<ItemDrop.ItemData>;
                 Action m_onChanged = __instance.m_onChanged; //(typeof(Inventory).GetField("m_onChanged", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player.GetInventory())) as Action;
 
@@ -881,7 +881,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                             //typeof(Inventory).GetMethod("AddItem", BindingFlags.NonPublic | BindingFlags.Instance,).Invoke(_player.GetInventory(), new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
                             AccessTools.Method(typeof(Inventory), "AddItem", new Type[] { typeof(ItemDrop.ItemData), typeof(int), typeof(int), typeof(int) }).Invoke(__instance, new object[] { component.m_itemData, component.m_itemData.m_stack, pos.x, pos.y });
                             UnityEngine.Object.Destroy((UnityEngine.Object)gameObject);
-                            cle = 251; 
+                            cle = 251;
                         }
                         else
                         {
@@ -950,7 +950,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                 }
                 cle = 303;
                 typeof(Inventory).GetMethod("Changed", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { });
-                
+
                 return false;
             }
             catch (Exception ex)
@@ -966,7 +966,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                     }
 
                 }*/
-                
+
 
                 UnityEngine.Debug.LogWarning($"ILD ERROR: {cle}, {ex.ToString()}, {ex.Message}, {ex.StackTrace}, {ex.InnerException}, {ex.Source}");
                 //UnityEngine.Debug.LogException(ex);
@@ -988,7 +988,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
                 foreach (ItemDrop.ItemData item in __instance.GetAllItems())
                 {
-                    if(item.m_crafterName.Contains(" (UVO"))
+                    if (item.m_crafterName.Contains(" (UVO"))
                     {
                         string str = item.m_crafterName;
 
@@ -996,7 +996,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
                         UnityEngine.Debug.LogWarning($"changing craftername for {item.m_shared.m_name}, {str} to {item.m_crafterName}");
                     }
-                    
+
                 }
             }
             catch (Exception ex)
@@ -1248,7 +1248,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                     iscrafting = false;
                     return;
                 }
-                
+
 
 
                 Skill c = skills.Where(sk => sk.name.ToLower() == "crafting").FirstOrDefault();
@@ -1303,9 +1303,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
                     item.m_shared.m_name = cupgitem.m_shared.m_name;
 
-                    
-                    
-                    
+
+
+
                 }
 
 
@@ -1332,7 +1332,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
                             item.m_shared.m_damages.m_blunt += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
-                            item.m_shared.m_damages.m_damage += UnityEngine.Random.Range(0 , r + 1);
+                            item.m_shared.m_damages.m_damage += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
                             item.m_shared.m_damages.m_fire += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
@@ -1405,7 +1405,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                         item.m_shared.m_timedBlockBonus = rndf2(item.m_shared.m_timedBlockBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
 
                         item.m_shared.m_weight = rndf2(item.m_shared.m_weight + (1 + UnityEngine.Random.Range(0, r + 1)));
-                        
+
 
                     }
                 }
@@ -1433,7 +1433,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                         item.m_shared.m_name += str;
                     }
 
-                    
+
                 }
                 else if (r == 1 && oir != 0)
                 {
@@ -1742,10 +1742,14 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
         float elapsed5 = 0f;
         float elapsed6 = 0f;
         float elapsed7 = 0f;
+        float elapsed8 = 0f;
         float savetime = 0f;
         public static bool cs = false;
         public bool us = true;
         public Vector3 ovel = new Vector3(0, 0, 0);
+
+        bool active = false;
+        bool activechanges = false;
 
         float stc = 0f;
         float ostam = -99999f;
@@ -1758,7 +1762,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
             {
                 if (Player.m_localPlayer != null)
                 {
-
+                    
 
                     if (shouldInit)
                     {
@@ -1768,6 +1772,10 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
                     if (iscrafting)
                         iscrafting = false;
+
+                    if (!active && _player.GetVelocity().magnitude > 1f)
+                        active = true;
+
 
                     if (ostam == -99999f)
                     {
@@ -1786,11 +1794,10 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
                     if (elapsed6 >= 30f)
                     {
-                        elapsed6 = 0f;
-                        ostam = _player.GetStamina();
+                        
 
                         Skill a = skills.Where(sk => sk.name.ToLower() == "agility").FirstOrDefault();
-                        if (a != null)
+                        if (active && a != null)
                         {
                             int extra = a.level / 2;
 
@@ -1801,16 +1808,21 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                             //a.updateEffects();
                         }
 
+                        elapsed6 = 0f;
+                        ostam = _player.GetStamina();
                         stc = 0f;
+
+                        activechanges = true;
                     }
 
-                    if (_player.GetSelectedPiece() != null)
+                    CraftingStation cr = _player.GetCurrentCraftingStation();
+
+                    if (cr != null && cr.m_rangeBuild != 100f)
                     {
-                        //typeof(Player).GetField("m_placementStatus", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player, 0);
-                        CraftingStation cr = _player.GetCurrentCraftingStation();
-                        //_player.GetHoveringPiece()
-                        //if (cr != null && cr.m_rangeBuild != 100f)
-                        //    cr.m_rangeBuild = 100f;
+
+                        cr.m_rangeBuild = 100f;
+                        cr.m_craftRequireRoof = false;
+                        
                     }
 
 
@@ -1821,17 +1833,21 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
                         Skill s = skills.Where(sk => sk.name.ToLower() == "sailing").FirstOrDefault();
 
-                        if (elapsed7 >= 30f && _player.GetVelocity().magnitude > 1f)
+                        if (elapsed7 >= 30f && active)
                         {
                             elapsed7 = 0;
 
                             EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
 
                             s.xp = s.xp + 1 + (int)(env.m_windMax / 5.0) + (int)(s.level * 0.8);
+
+                            activechanges = true;
                         }
-                        else if (_player.GetVelocity().magnitude <= 1f)
+                        else if (elapsed7 >= 30f)
                         {
                             elapsed7 = 0;
+
+                            activechanges = true;
                         }
 
                         if (_player.GetControlledShip().m_backwardForce != (0.5f + (s.level * 0.005f)))
@@ -1879,57 +1895,17 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
                     }
 
-                    /*if (cs)
-                    {
-                        elapsed3 += Time.deltaTime;
-                    }
-                    else
-                    {
-                        elapsed5 += Time.deltaTime;
-                    }
-
-                    if (cs && !us)
-                        us = true;
-
-                    if (_player.IsDead() && !cs)
-                    {
-                        //List<ItemDrop.ItemData> items = new List<ItemDrop.ItemData>();
-
-                        //(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player.GetInventory(), items);
-
-                        //(typeof(Player).GetField("m_playerProfile", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as PlayerProfile).SavePlayerData(_player);
-
-                        _player = UnityEngine.Object.Instantiate<GameObject>(Game.instance.m_playerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity).GetComponent<Player>();
-
-
-                        //_player.m_name = "temp";
-                        //_player.gameObject.
-                        //_player = new Player();
-                        //_player.m_name = "RS";
-                        cs = true;
-                    }
-                    else if (cs && (bool)(UnityEngine.Object)Player.m_localPlayer && !Player.m_localPlayer.IsDead()) //elapsed3 > 15f)
-                    {
-                        //ZNetScene.instance.Destroy(_player.gameObject);
-                        _player = Player.m_localPlayer;
-                        _player.UnequipAllItems();
-                        _player.GetInventory().RemoveAll();
-                        //if (_player.m_name.Contains("VMM"))
-                        //_player.m_name += "VMM";
-
-                        cs = false;
-                        elapsed3 = 0f;
-                    }*/
-
 
                     if (!cs)
                     {
+                        elapsed8 += Time.deltaTime;
+
                         if (ovel.magnitude == 0)
                         {
                             ovel = _player.GetVelocity();
                         }
 
-                        if (us)
+                        if (elapsed8 >= 30f || us)
                         {
                             foreach (Skill sk in skills)
                             {
@@ -1937,66 +1913,40 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                             }
 
                             us = false;
+                            elapsed8 = 0f;
                         }
 
                         elapsed += Time.deltaTime;
                         elapsed2 += Time.deltaTime;
 
 
-                        if (elapsed >= 30.0f && ovel.magnitude == 0f)
-                        {
-                            elapsed = 0f;
-                        }
-                        else if (elapsed >= 30.0f && ovel.magnitude > 0f)
+
+                        if (elapsed >= 30.0f)
                         {
                             elapsed = 0f;
                             ovel = new Vector3(0, 0, 0);
 
                             //_player = Player.m_localPlayer;
 
-                            float ratio = (_player.GetInventory().GetTotalWeight() / _player.GetMaxCarryWeight());
-
-                            if (ratio > 1.0f)
+                            if (active)
                             {
-                                ratio = 1.0f;
+
+                                float ratio = (_player.GetInventory().GetTotalWeight() / _player.GetMaxCarryWeight());
+
+                                if (ratio > 1.0f)
+                                {
+                                    ratio = 1.0f;
+                                }
+
+                                Skill w = skills.Where(sk => sk.name.ToLower() == "weight").FirstOrDefault();
+
+                                w.xp = w.xp + 1 + (int)(ratio * (float)w.level);
+
                             }
 
-                            Skill w = skills.Where(sk => sk.name.ToLower() == "weight").FirstOrDefault();
+                            //otime = Time.time;
 
-                            w.xp = w.xp + 1 + (int)(ratio * (float)w.level);
-
-
-                            //File.WriteAllText(filename, $"{wsl},{wsxp}");
-
-                            //File.Create(filename);
-
-
-                            /*using (System.IO.StreamWriter file =
-                        new System.IO.StreamWriter(filename, false))
-                            {
-                                file.WriteLine($"{wsl},{wsxp}");
-                            */
-
-                            //ZPackage z = new ZPackage();
-
-                            //FileStream fs = File.OpenWrite(filename);
-
-                            /*FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.ReadWrite);
-
-
-                            string data = $"{wsl},{wsxp}";
-                            byte[] bytes = Encoding.UTF8.GetBytes(data);
-
-                            fs.Write(bytes, 0, bytes.Length);
-
-                            fs.Close();
-                            */
-
-                            otime = Time.time;
-                            //frame = Time.frameCount;
-                            //Console.print($"Level {wsl}, XP {wsxp}");
-
-
+                            activechanges = true;
                         }
 
                         if (elapsed2 >= 30.0f * Player.GetAllPlayers().Count)
@@ -2035,7 +1985,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                                     {
                                         c.SetLevel(lvl);
                                         c.m_speed = c.m_speed * (1.0f + (lvl / 10.0f));
-                                        
+
 
                                         /*CharacterDrop component2 = (CharacterDrop)((Component)c).GetComponent<CharacterDrop>();
 
@@ -2201,11 +2151,11 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                         {
                             InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
                             ItemDrop.ItemData it = g.GetItem(new Vector2i((int)Input.mousePosition.x, (int)Input.mousePosition.y));
-                            
-                            
+
+
                             if (g != null && it != null)
                             {
-                                    _player.GetInventory().RemoveItem(it);                                         
+                                _player.GetInventory().RemoveItem(it);
                             }
 
                             Container c = typeof(InventoryGui).GetField("m_currentContainer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(InventoryGui.instance) as Container;
@@ -2220,7 +2170,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                                     c.GetInventory().RemoveItem(it2);
                                 }
                             }
-                            
+
                         }
 
                         if (Input.GetKeyDown(KeyCode.PageDown)) // Will just unload our DLL
@@ -2292,21 +2242,13 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                     //shouldInit = true;
                     Uninitialize();
                 }
+
+                if (activechanges)
+                    active = false;
             }
             catch (Exception ex)
             {
-                //_player = Player.m_localPlayer;
 
-                /*Player[] pls = GameObject.FindObjectsOfType<Player>();
-
-                foreach (Player pl in pls)
-                {
-                    if (pl.GetPlayerName() == pln)
-                    {
-                        _player = pl;
-                        break;
-                    }
-                }*/
 
                 UnityEngine.Debug.LogWarning($"Error in Update: {ex.Message}");
             }
@@ -2354,33 +2296,6 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
         }
 
     }
-
-    /*[HarmonyPatch(typeof(WaterVolume), "CreateWave")]
-    static class Application_loadedLevelName_Patch
-    {
-        static void Prefix(
-    Vector3 worldPos,
-    float time,
-    ref float waveSpeed,
-    ref float waveLength,
-    ref float waveHeight,
-    Vector2 dir2d,
-    ref float sharpness)
-        {
-            try
-            {
-                waveSpeed += 50000f;
-                waveHeight += 50000f;
-                waveLength += 50000f;
-                sharpness += 50000f;
-            }
-            catch (Exception e)
-            {
-                //mod.Logger.Error(e.ToString());
-                 
-            }
-        }
-    }*/
 
     public class Skill
     {
