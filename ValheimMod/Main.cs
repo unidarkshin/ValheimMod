@@ -1114,12 +1114,12 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                 {
                     string sub = cupgitem.m_shared.m_name.Remove(cupgitem.m_shared.m_name.Length - 1);
 
-                    if (int.TryParse(sub.Substring(sub.IndexOf("UVO: ") + 5), out int orar))
+                    if (int.TryParse(sub.Substring(sub.IndexOf("UVO: ") + 6), out int orar))
                         oir = orar;
 
                     float chance = keepOldR(oir, c.level, cupgitem.m_quality);
 
-                    UnityEngine.Debug.LogWarning($"OIR: {oir}");
+                    UnityEngine.Debug.LogWarning($"OIR: sub: {sub}, {oir}");
 
                     if (UnityEngine.Random.value > chance)
                     {
