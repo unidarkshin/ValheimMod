@@ -105,7 +105,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 
                         h.Patch(
             original: AccessTools.Method(typeof(ItemDrop), "DropItem"),
-            postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDI))
+            prefix: new HarmonyMethod(typeof(Main), nameof(Main.IDI))
             //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
             );
 
@@ -168,17 +168,140 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: AccessTools.Method(typeof(Character), "Jump", new Type[] {}),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.CJ))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+            h.Patch(
+original: AccessTools.Method(typeof(ObjectDB), "GetRecipe", new Type[] { typeof(ItemDrop.ItemData) }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.OGR))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+            h.Patch(
+original: AccessTools.Method(typeof(Player), "UpdateCrouch", new Type[] { typeof(float) }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.PUC))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
             //ZNet.instance.m_serverPlayerLimit = 99;
+        }
+
+        public static bool PUC(ref Player __instance, ref bool ___m_crouchToggled, ref bool ___m_run, ref int ___crouching, ref ZSyncAnimation ___m_zanim, ref float dt)
+        {
+            try
+            {
+                if (__instance == null)
+                    return true;
+
+                if (___m_crouchToggled)
+                {
+                    if (!__instance.HaveStamina(0.0f) || __instance.IsSwiming() || (__instance.InBed() || __instance.InPlaceMode()) || (___m_run || __instance.IsBlocking() || __instance.IsFlying()))
+                        ___m_crouchToggled = false;
+                    bool flag = __instance.InAttack() || __instance.IsHoldingAttack();
+                    ___m_zanim.SetBool(___crouching, ___m_crouchToggled && !flag);
+                }
+                else
+                    ___m_zanim.SetBool(___crouching, false);
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("PUC failed: " + ex.ToString());
+                return true;
+            }
+        }
+
+            public static bool OGR(ref ObjectDB __instance, ref Recipe __result, ItemDrop.ItemData item)
+        {
+            try
+            {
+                if (!item.m_shared.m_name.Contains(" (UVO"))
+                    return true;
+
+                string str = item.m_shared.m_name.Substring(0, item.m_shared.m_name.IndexOf(" (UVO"));
+                foreach (Recipe recipe in __instance.m_recipes)
+                {
+                    if (!((UnityEngine.Object)recipe.m_item == (UnityEngine.Object)null) && recipe.m_item.m_itemData.m_shared.m_name == str)
+                        __result = recipe;
+                }
+
+                __result = (Recipe)null;
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("OGR failed: " + ex.ToString());
+                return true;
+            }
+        }
+
+
+        public static int jc = 0;
+
+        public static void CJ(ref Character __instance, ref float ___m_lastGroundTouch, ref float ___m_maxAirAltitude, ref float ___m_jumpForce)
+        {
+            try
+            {
+                if (!__instance.IsPlayer())
+                    return;
+
+                /*if (jc > 0 && __instance.IsOnGround())
+                    jc = 0;
+
+                if (jc <= getMaxJumps())
+                {
+                    ___m_maxAirAltitude = __instance.transform.position.y;
+                    ___m_lastGroundTouch = 0.1f;
+
+                    if (jc == 0)
+                        ___m_jumpForce = 10f;
+                    else
+                        ___m_jumpForce = 5f;
+
+                    jc++;
+                }*/
+                Skill a = skills.Where(sk => sk.name.ToLower() == "agility").FirstOrDefault();
+
+                if (a == null)
+                    return;
+
+                ___m_jumpForce = 10f + (a.level / 2);
+            }
+            catch (Exception ex)
+            {
+
+                UnityEngine.Debug.LogWarning("CJ failed: " + ex.ToString());
+            }
+        }
+
+        public static int getMaxJumps()
+        {
+            Skill a = skills.Where(sk => sk.name.ToLower() == "agility").FirstOrDefault();
+
+            return (a.level / 2);
         }
 
         public static ItemDrop.ItemData cupgitem = null;
 
         public static void IRI(ItemDrop.ItemData item)
         {
-            if (iscrafting && item.m_shared.m_name.Contains(" (UVO"))
-                cupgitem = item;
-            else
-                cupgitem = null;
+            try
+            {
+
+                if (iscrafting && item.m_shared.m_name.Contains(" (UVO"))
+                    cupgitem = item;
+                else
+                    cupgitem = null;
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("IRI failed: " + ex.ToString());
+            }
         }
 
             public static bool IGAI(ref Inventory __instance, string name, ref List<ItemDrop.ItemData> items)
@@ -207,7 +330,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
             }
             catch (Exception ex)
             {
-
+                UnityEngine.Debug.LogWarning("IGAI failed: " + ex.ToString());
                 return true;
             }
         }
@@ -514,9 +637,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                     attr.Add(zdo.GetFloat($"attr{i}", battr[i]));
                 }
 
-                bool repairable = zdo.GetBool($"attr22", itemData.m_shared.m_canBeReparied);
+                //bool repairable = zdo.GetBool($"attr22", itemData.m_shared.m_canBeReparied);
 
-                setAttr(ref itemData, attr, repairable);
+                setAttr(ref itemData, attr);
 
             }
             catch (Exception ex)
@@ -540,7 +663,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                     zdo.Set($"attr{i}", attr[i]);
                 }
 
-                zdo.Set($"attr22", itemData.m_shared.m_canBeReparied);
+                //zdo.Set($"attr22", itemData.m_shared.m_canBeReparied);
 
                 
             }
@@ -551,21 +674,29 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
             }
         }
 
-            public static void IDI(ref ItemDrop __result, ref ItemDrop.ItemData item)
+            public static bool IDI(ref ItemDrop __result, ref ItemDrop.ItemData item, int amount, Vector3 position, Quaternion rotation)
         {
             try
             {
+                ItemDrop component = UnityEngine.Object.Instantiate<GameObject>(item.m_dropPrefab, position, rotation).GetComponent<ItemDrop>();
+                setAttr(ref component.m_itemData, getAttr(item.m_shared));
+                if (amount > 0)
+                    component.m_itemData.m_stack = amount;
+                AccessTools.Method(typeof(ItemDrop), "Save").Invoke(component, new object[] { });
+                __result = component;
 
-                __result.m_itemData = item;
-                AccessTools.Method(typeof(ItemDrop), "Save").Invoke(__result, new object[] { });
+                return false;
 
-                UnityEngine.Debug.LogWarning("Updated and saved " + __result.m_itemData.m_shared.m_name);
+                //__result.m_itemData = item;
+                //AccessTools.Method(typeof(ItemDrop), "Save").Invoke(__result, new object[] { });
+
+                //UnityEngine.Debug.LogWarning("Updated and saved " + __result.m_itemData.m_shared.m_name);
             }
             catch (Exception ex)
             {
 
                 UnityEngine.Debug.LogWarning("IDI Error: " + ex.ToString());
-
+                return true;
             }
         }
 
@@ -1123,19 +1254,23 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                     if (UnityEngine.Random.value > chance)
                     {
-                        oir = 0;
+                        //oir = 0;
                         r = 1;
                     }
-                    
+                    else
+                    {
+                        r = r + oir;
+                    }
 
-                        List<float> attr = getAttr(cupgitem.m_shared);
 
-                        setAttr(ref item, attr, cupgitem.m_shared.m_canBeReparied);
+                    List<float> attr = getAttr(cupgitem.m_shared);
+
+                    setAttr(ref item, attr);
 
                     item.m_shared.m_name = cupgitem.m_shared.m_name;
 
-
-                    r = r + oir;
+                    
+                    
                     
                 }
 
@@ -1187,8 +1322,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                         item.m_shared.m_movementModifier = rndf2(item.m_shared.m_movementModifier / UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
                         item.m_shared.m_timedBlockBonus = rndf2(item.m_shared.m_timedBlockBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
 
-                        item.m_shared.m_weight = rndf2(item.m_shared.m_weight * (1 + UnityEngine.Random.Range(0, r + 1)));
-                        item.m_durability = item.m_shared.m_maxDurability;
+                        item.m_shared.m_weight = rndf2(item.m_shared.m_weight + (1 + UnityEngine.Random.Range(0, r + 1)));
+                        //item.m_durability = item.m_shared.m_maxDurability;
 
 
                     }
@@ -1203,10 +1338,10 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                         int cbr = UnityEngine.Random.Range(0, 2);
 
-                        if (cbr == 0)
-                            item.m_shared.m_canBeReparied = false;
-                        else
-                            item.m_shared.m_canBeReparied = true;
+                        //if (cbr == 0)
+                        //    item.m_shared.m_canBeReparied = false;
+                        //else
+                        //    item.m_shared.m_canBeReparied = true;
 
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
                             item.m_shared.m_damages.m_blunt += UnityEngine.Random.Range(0, r + 1);
@@ -1235,8 +1370,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                         item.m_shared.m_movementModifier = rndf2(item.m_shared.m_movementModifier / UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
                         item.m_shared.m_timedBlockBonus = rndf2(item.m_shared.m_timedBlockBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
 
-                        item.m_shared.m_weight = rndf2(item.m_shared.m_weight * (1 + UnityEngine.Random.Range(0, r + 1)));
-                        item.m_durability = item.m_shared.m_maxDurability;
+                        item.m_shared.m_weight = rndf2(item.m_shared.m_weight + (1 + UnityEngine.Random.Range(0, r + 1)));
+                        
 
                     }
                 }
@@ -1266,13 +1401,15 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                     
                 }
-                else if (r == 1 && oir == 0)
+                else if (r == 1 && oir != 0)
                 {
                     if (item.m_shared.m_name.Contains(" (UVO"))
                     {
                         item.m_shared.m_name = item.m_shared.m_name.Substring(0, item.m_shared.m_name.IndexOf(" (UVO"));
 
-                        string str = $" (UVO: R{1})";
+                        int newr = oir - UnityEngine.Random.Range(1, 3);
+
+                        string str = $" (UVO: R{newr})";
                         item.m_shared.m_name += str;
 
                         if (type == 1)
@@ -1291,6 +1428,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                 cupgitem = null;
                 iscrafting = false;
+
+                item.m_durability = item.m_shared.m_maxDurability;
             }
             catch
             {
@@ -1314,7 +1453,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
             return chance;
         }
 
-        public static void setAttr(ref ItemDrop.ItemData item, List<float> attr, bool repairable)
+        public static void setAttr(ref ItemDrop.ItemData item, List<float> attr)
         {
             item.m_shared.m_armor = attr[0];
             item.m_shared.m_attackForce = attr[1];
@@ -1338,8 +1477,6 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
             item.m_shared.m_timedBlockBonus = attr[19];
             item.m_shared.m_useDurabilityDrain = attr[20];
             item.m_shared.m_weight = attr[21];
-
-            item.m_shared.m_canBeReparied = repairable;
         }
 
         public static float rndf2(float val)
@@ -1378,7 +1515,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
             for (int i = 2; i < 101; i++)
             {
-                if ((rnd < ((1.0f / (i * i * (0.8f * i))) * (1.0 + (0.01 * c.level)))))
+                if ((rnd < ((1.0f / (i * i * (0.5f * i))) * (1.0 + (0.01 * c.level)))))
                 {
                     r = i;
                 }
