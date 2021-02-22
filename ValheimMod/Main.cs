@@ -449,8 +449,7 @@ out float verticalLoss)
                         minSupport = 10f * (1.0f + (b.level * 0.01f));
                         verticalLoss = 0.125f / (1.0f + (b.level * 0.01f));
                         horizontalLoss = 0.2f / (1.0f + (b.level * 0.01f));
-
-                        UnityEngine.Debug.LogWarning($"WGMP W: maxs = {maxSupport}, mins = {minSupport}");
+                        //UnityEngine.Debug.LogWarning($"WGMP W: maxs = {maxSupport}, mins = {minSupport}");
                         break;
                     case WearNTear.MaterialType.Stone:
                         maxSupport = 1000f * (1.0f + (b.level * 0.01f));
