@@ -186,10 +186,44 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PUC))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: AccessTools.Method(typeof(Inventory), "UpdateTotalWeight", new Type[] { }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
-        public static bool PUC(ref Player __instance, ref bool ___m_crouchToggled, ref bool ___m_run, ref int ___crouching, ref ZSyncAnimation ___m_zanim, ref float dt)
+        public static bool IUTW(ref Inventory __instance, ref float ___m_totalWeight)
+        {
+            try
+            {
+                Skill a = skills.Where(sk => sk.name.ToLower() == "agility").FirstOrDefault();
+
+                if (a == null)
+                    return true;
+
+                ___m_totalWeight = 0.0f;
+                foreach (ItemDrop.ItemData itemData in __instance.GetAllItems())
+                {
+                    if (!itemData.m_equiped)
+                        ___m_totalWeight += itemData.GetWeight();
+                    else
+                        ___m_totalWeight += (itemData.GetWeight() * Mathf.Max(1.0f - (a.level * 0.005f), 0.5f));
+                }
+
+                return false;
+                    
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("IUTW failed: " + ex.ToString());
+                return true;
+            }
+        }
+
+            public static bool PUC(ref Player __instance, ref bool ___m_crouchToggled, ref bool ___m_run, ref int ___crouching, ref ZSyncAnimation ___m_zanim, ref float dt)
         {
             try
             {
@@ -200,8 +234,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PUC))
                 {
                     if (!__instance.HaveStamina(0.0f) || __instance.IsSwiming() || (__instance.InBed() || __instance.InPlaceMode()) || (___m_run || __instance.IsBlocking() || __instance.IsFlying()))
                         ___m_crouchToggled = false;
-                    bool flag = __instance.InAttack() || __instance.IsHoldingAttack();
-                    ___m_zanim.SetBool(___crouching, ___m_crouchToggled && !flag);
+                    //bool flag = __instance.InAttack() || __instance.IsHoldingAttack();
+                    ___m_zanim.SetBool(___crouching, ___m_crouchToggled); //&& !flag);
                 }
                 else
                     ___m_zanim.SetBool(___crouching, false);
