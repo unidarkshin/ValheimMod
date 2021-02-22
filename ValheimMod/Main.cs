@@ -1798,7 +1798,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                                 extra = 1;
 
                             a.xp = a.xp + 1 + (int)Mathf.Round(stc * 0.000025f * (extra));
-                            a.updateEffects();
+                            //a.updateEffects();
                         }
 
                         stc = 0f;
@@ -1867,7 +1867,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
                             ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
 
-                            znv.GetZDO().Set("VMMWS", rnd);
+                            znv.GetZDO().Set("VMMWS", rndf2(rnd));
                             //env.m_windMax = rnd;
 
                             //typeof(EnvMan).GetField("m_currentEnv", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, env);
@@ -2098,9 +2098,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
                             typeof(EnvMan).GetField("m_wind", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(EnvMan.instance, tmw);
                             */
-                            ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
+                            //ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
 
-                            znv.GetZDO().Set("VMMWS", 200.0f);
+                            //znv.GetZDO().Set("VMMWS", 200.0f);
 
 
                         }
@@ -2197,7 +2197,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 
                             _player.GetInventory().AddItem(component.m_itemData);
                         }
-                        if (Input.GetKeyDown(KeyCode.T))
+                        if (Input.GetKeyDown(KeyCode.Delete))
                         {
                             InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
                             ItemDrop.ItemData it = g.GetItem(new Vector2i((int)Input.mousePosition.x, (int)Input.mousePosition.y));
@@ -2223,7 +2223,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                             
                         }
 
-                        if (Input.GetKeyDown(KeyCode.Delete)) // Will just unload our DLL
+                        if (Input.GetKeyDown(KeyCode.PageDown)) // Will just unload our DLL
                         {
                             Loader.Unload();
                         }
