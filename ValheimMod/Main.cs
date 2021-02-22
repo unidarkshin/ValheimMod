@@ -2038,6 +2038,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                                     _player.GetInventory().RemoveItem(it);
                                 else
                                     c.GetInventory().RemoveItem(it);
+                                
           
                             }
                             
