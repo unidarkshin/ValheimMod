@@ -1106,8 +1106,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                     return;
                 }
 
-                int r = GenerateItemRarity();
-                //int r = 8;
+                //int r = GenerateItemRarity();
+                int r = 8;
 
                 int oir = 0;
                 if (cupgitem != null)
