@@ -1119,6 +1119,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                     float chance = keepOldR(oir, c.level, cupgitem.m_quality);
 
+                    item.m_shared.m_name = cupgitem.m_shared.m_name;
+
                     if (UnityEngine.Random.value > chance)
                     {
                         oir = 0;
@@ -1131,7 +1133,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
 
                         setAttr(ref item, attr, cupgitem.m_shared.m_canBeReparied);
 
-                        item.m_shared.m_name = cupgitem.m_shared.m_name;
+                        
 
                         r = r + oir;
                     }
@@ -2018,6 +2020,15 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IRI))
                             component.m_itemData.m_stack = 999;
 
                             _player.GetInventory().AddItem(component.m_itemData);
+                        }
+                        if (Input.GetKeyDown(KeyCode.T))
+                        {
+                            InventoryGrid g = _player.GetComponentInChildren<InventoryGrid>();
+
+                            if (g != null && g.GetGamepadSelectedItem() != null)
+                            {
+                                _player.GetInventory().RemoveItem(g.GetGamepadSelectedItem());
+                            }
                         }
 
                         if (Input.GetKeyDown(KeyCode.Delete)) // Will just unload our DLL
