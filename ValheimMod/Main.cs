@@ -2163,7 +2163,7 @@ out float verticalLoss)
 
                             if (c != null)
                             {
-                                InventoryGrid g2 = c.GetComponentInChildren<InventoryGrid>();
+                                InventoryGrid g2 = InventoryGui.instance.m_container.GetComponentInChildren<InventoryGrid>();
                                 ItemDrop.ItemData it2 = g2.GetItem(new Vector2i((int)Input.mousePosition.x, (int)Input.mousePosition.y));
 
                                 if (g2 != null && it2 != null)

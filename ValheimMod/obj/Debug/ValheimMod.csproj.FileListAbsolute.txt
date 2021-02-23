@@ -151,4 +151,3 @@ C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\INIFileParser.x
 C:\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins\ValheimMod.dll.config
 C:\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins\ValheimMod.dll
 C:\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins\ValheimMod.pdb
-C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.csprojAssemblyReference.cache
