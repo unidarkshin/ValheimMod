@@ -304,7 +304,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                 if (a == null)
                     return;
 
-                ___m_jumpForce = 10f + (a.level / 2);
+                //___m_jumpForce = 10f + (a.level / 2);
             }
             catch (Exception ex)
             {
@@ -2058,8 +2058,14 @@ out float verticalLoss)
 
                         if (Input.GetKeyDown(KeyCode.O))
                         {
-                            _player.SetHealth(_player.GetHealth() - 1);
+                            //_player.SetHealth(_player.GetHealth() - 1);
                             //Console.print("You subtracted health.");
+
+                            foreach (ItemDrop item in GameObject.FindObjectsOfType<ItemDrop>())
+                            {
+                                ZNetView tznv = typeof(ItemDrop).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(item) as ZNetView;
+                                tznv.Destroy();
+                            } 
                         }
 
                         if (Input.GetKeyDown(KeyCode.I))
