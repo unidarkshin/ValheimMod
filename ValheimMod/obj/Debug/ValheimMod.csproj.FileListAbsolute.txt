@@ -93,9 +93,6 @@ C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\UnityEngine.VFX
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\UnityEngine.VideoModule.dll
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\UnityEngine.VRModule.dll
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\UnityEngine.XRModule.dll
-C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.csproj.CoreCompileInputs.cache
-C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.dll
-C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.pdb
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\Mono.Cecil.dll
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\Mono.Cecil.Mdb.dll
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\bin\Debug\Mono.Cecil.Pdb.dll
@@ -152,3 +149,6 @@ C:\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins\ValheimMod
 C:\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins\ValheimMod.dll
 C:\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins\ValheimMod.pdb
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.csprojAssemblyReference.cache
+C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.csproj.CoreCompileInputs.cache
+C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.dll
+C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.pdb

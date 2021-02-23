@@ -198,7 +198,79 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CIT))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: AccessTools.Method(typeof(CraftingStation), "Start", new Type[] { }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.CSS))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+            h.Patch(
+original: AccessTools.Method(typeof(Character), "SetLevel", new Type[] { typeof(int) }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.CSL))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
             //ZNet.instance.m_serverPlayerLimit = 99;
+        }
+
+        public static bool CSL(ref Character __instance, ref int level, ref ZNetView ___m_nview)
+        {
+            try
+            {
+                if (!__instance.IsMonsterFaction())
+                    return true;
+
+                bool vml = int.TryParse(___m_nview.GetZDO().GetString("VMMML", ""), out int cl);
+
+                if (vml)
+                    return true;
+
+
+                if (UnityEngine.Random.value <= 0.33)
+                {
+                    level = getMonsterUpgrade(level);
+                    ___m_nview.GetZDO().Set("VMMML", level);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("CSL failed: " + ex.ToString());
+                return true;
+            }
+        }
+
+        public static int getMonsterUpgrade(int level)
+        {
+            int newlevel = level + 1;
+
+            for (int i = newlevel; i < 9; i++)
+            {
+                if (UnityEngine.Random.value < 0.5f)
+                    newlevel = i + 1;
+            }
+
+            return newlevel;
+        }
+
+
+        public static void CSS(ref CraftingStation __instance)
+        {
+            try
+            {
+
+                __instance.m_craftRequireFire = false;
+                __instance.m_craftRequireRoof = false;
+                __instance.m_rangeBuild = 100f;
+
+
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("CSS failed: " + ex.ToString());
+            }
+
         }
 
         public static bool CIT(ref Chat __instance)
@@ -207,10 +279,12 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CIT))
             {
                 string text = __instance.m_input.text;
                 string[] args;
+                string[] oargs;
 
                 if (text[0] == '/')
                 {
                     args = text.Substring(1).ToLower().Split(',');
+                    oargs = text.Substring(1).Split(',');
 
                     if (args.Length < 1)
                         return true;
@@ -220,7 +294,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CIT))
                     return true;
                 }
 
-                if (args[0] == "deleteaog")
+                if (args[0] == "deleteaiog")
                 {
                     foreach (ItemDrop item in GameObject.FindObjectsOfType<ItemDrop>())
                     {
@@ -230,15 +304,97 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CIT))
 
                     return false;
                 }
-                else if (args[0] == "tp" && args.Length > 1 && _player != null)
+                else if (args[0] == "tpto" && args.Length > 1 && _player != null)
                 {
                     foreach (Player pl in Player.GetAllPlayers())
                     {
                         if (args[1] == pl.name.ToLower())
                         {
                             _player.transform.position = pl.GetHeadPoint() + (pl.m_eye.forward * 2f);
+
+                            break;
                         }
                     }
+
+                    return false;
+                }
+                else if (args[0] == "giveitemtp" && args.Length > 2 && _player != null)
+                {
+                    Player p = null;
+
+                    foreach (Player pl in Player.GetAllPlayers())
+                    {
+                        if (args[1] == pl.name.ToLower())
+                        {
+                            p = pl;
+                            break;
+                        }
+                    }
+
+                    if (p == null)
+                        return false;
+
+                    GameObject itemPrefab = ObjectDB.instance.GetItemPrefab(oargs[2]);
+
+                    if (itemPrefab == null)
+                        return false;
+
+                    int stack = 1;
+
+                    if (args.Length > 3 && int.TryParse(args[3], out int st))
+                        stack = st;
+                    else
+                        return false;
+
+                    ZNetView.m_forceDisableInit = true;
+                    GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(itemPrefab);
+                    ZNetView.m_forceDisableInit = false;
+
+                    if (gameObject == null)
+                        return false;
+
+                    ItemDrop component = gameObject.GetComponent<ItemDrop>();
+
+                    if (component == null)
+                        return false;
+
+                    component.m_itemData.m_stack = st;
+
+                    p.GetInventory().AddItem(component.m_itemData);
+
+
+                    return false;
+                }
+                else if (args[0] == "giveitem" && args.Length > 1 && _player != null)
+                {
+
+                    GameObject itemPrefab = ObjectDB.instance.GetItemPrefab(oargs[1]);
+
+                    if (itemPrefab == null)
+                        return false;
+
+                    int stack = 1;
+
+                    if (args.Length > 2 && int.TryParse(args[2], out int st))
+                        stack = st;
+                    else
+                        return false;
+
+                    ZNetView.m_forceDisableInit = true;
+                    GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(itemPrefab);
+                    ZNetView.m_forceDisableInit = false;
+
+                    if (gameObject == null)
+                        return false;
+
+                    ItemDrop component = gameObject.GetComponent<ItemDrop>();
+
+                    if (component == null)
+                        return false;
+
+                    component.m_itemData.m_stack = st;
+
+                    _player.GetInventory().AddItem(component.m_itemData);
 
                     return false;
                 }
@@ -252,7 +408,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CIT))
             }
         }
 
-            public static bool IUTW(ref Inventory __instance, ref float ___m_totalWeight)
+        public static bool IUTW(ref Inventory __instance, ref float ___m_totalWeight)
         {
             try
             {
@@ -1502,7 +1658,7 @@ out float verticalLoss)
                     {
                         item.m_shared.m_name = item.m_shared.m_name.Substring(0, item.m_shared.m_name.IndexOf(" (UVO"));
 
-                        int newr = Mathf.Max(oir - UnityEngine.Random.Range(1, 3), 0);
+                        int newr = Mathf.Max(oir - UnityEngine.Random.Range(1, 3), 1);
 
                         string str = $" (UVO: R{newr})";
                         item.m_shared.m_name += str;
@@ -1535,16 +1691,18 @@ out float verticalLoss)
 
         public static float keepOldR(int or, int cl, int q)
         {
-            float chance = 0f;
+            //float chance = 0f;
 
-            if (or < 13)
+            /*if (or < 13)
             {
-                chance = (0.95f - (or * 0.05f)) - (0.1f * q) + (cl * 0.0010f);
+                chance = (0.70f - (or * 0.05f)) - (0.1f * q) + (cl * 0.0010f);
             }
             else
             {
                 chance = 0.1f + (cl * 0.0010f);
-            }
+            }*/
+
+            float chance = (1.0f / ((or + 1) * q)) * (1.0f + (cl * 0.01f));
 
             return chance;
         }
@@ -1611,7 +1769,7 @@ out float verticalLoss)
 
             for (int i = 2; i < 101; i++)
             {
-                if ((rnd < ((1.0f / (i * i * (0.5f * i))) * (1.0 + (0.01 * c.level)))))
+                if ((rnd < ((1.0f / (i * i * (0.6f * i))) * (1.0 + (0.01 * c.level)))))
                 {
                     r = i;
                 }
@@ -1824,7 +1982,7 @@ out float verticalLoss)
             {
                 if (Player.m_localPlayer != null)
                 {
-                    
+
 
                     if (shouldInit)
                     {
@@ -1856,7 +2014,7 @@ out float verticalLoss)
 
                     if (elapsed6 >= 30f)
                     {
-                        
+
 
                         Skill a = skills.Where(sk => sk.name.ToLower() == "agility").FirstOrDefault();
                         if (active && a != null)
@@ -1877,7 +2035,7 @@ out float verticalLoss)
                         activechanges = true;
                     }
 
-                    CraftingStation cr = _player.GetCurrentCraftingStation();
+                    /*CraftingStation cr = _player.GetCurrentCraftingStation();
 
                     if (cr != null && cr.m_rangeBuild != 100f)
                     {
@@ -1885,7 +2043,7 @@ out float verticalLoss)
                         cr.m_rangeBuild = 100f;
                         cr.m_craftRequireRoof = false;
                         
-                    }
+                    }*/
 
 
 
@@ -2014,7 +2172,7 @@ out float verticalLoss)
                         if (elapsed2 >= 30.0f * Player.GetAllPlayers().Count)
                         {
                             elapsed2 = 0f;
-
+                            /*
 
                             try
                             {
@@ -2047,7 +2205,7 @@ out float verticalLoss)
                                     {
                                         c.SetLevel(lvl);
                                         c.m_speed = c.m_speed * (1.0f + (lvl / 10.0f));
-
+                                        */
 
                                         /*CharacterDrop component2 = (CharacterDrop)((Component)c).GetComponent<CharacterDrop>();
 
@@ -2058,7 +2216,7 @@ out float verticalLoss)
                                             item.m_amountMax += (lvl * 2);
 
                                         }*/
-
+                                        /*
                                         ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
                                         znv.GetZDO().Set("VMMML", $"{lvl}");
 
@@ -2073,16 +2231,16 @@ out float verticalLoss)
                             }
                             catch (Exception ex)
                             {
-
+                            */
                                 /*List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
                                 cbt.Add($"VM Error (Enemy Modifiers): {ex.Message}");
                                 typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Chat.instance, cbt);
                                 typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { });*/
 
-                                _player.Message(MessageHud.MessageType.TopLeft, $"VM Error(Enemy Modifiers): {ex.Message}", 0, (Sprite)null);
-                            }
+                            //    _player.Message(MessageHud.MessageType.TopLeft, $"VM Error(Enemy Modifiers): {ex.Message}", 0, (Sprite)null);
+                            //}
 
-
+                            
 
                         }
 
@@ -2122,7 +2280,7 @@ out float verticalLoss)
                             //_player.SetHealth(_player.GetHealth() - 1);
                             //Console.print("You subtracted health.");
 
-                            
+
                         }
 
                         if (Input.GetKeyDown(KeyCode.I))
@@ -2250,16 +2408,16 @@ out float verticalLoss)
                             {
                                 ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
 
-                                znv.GetZDO().Set("VMMWS", 0);
+                                znv.GetZDO().Set("VMMWS", 0f);
                             }
 
                             foreach (Player pl in Player.GetAllPlayers())
                             {
                                 ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
 
-                                float rnd = znv.GetZDO().GetFloat("VMMWS");
+                                float rnd = znv.GetZDO().GetFloat("VMMWS", 0f);
 
-                                if (rnd != 0)
+                                if (rnd != 0 && EnvMan.instance.GetCurrentEnvironment().m_windMax != rnd)
                                 {
                                     EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
                                     env.m_windMax = rnd;
@@ -2277,11 +2435,11 @@ out float verticalLoss)
                                 ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ch) as ZNetView;
                                 //znv.GetZDO().Set("VMMML", $"{}");
 
-                                if (ch.IsMonsterFaction() && znv.GetZDO().GetString("VMMML") != "" && !ch.m_name.Contains("VMM") && int.TryParse(znv.GetZDO().GetString("VMMML"), out int level))
+                                if (ch.IsMonsterFaction() && znv.GetZDO().GetInt("VMMML", 0) != 0 && !ch.m_name.Contains("UVO"))
                                 {
-                                    ch.m_name += $" (VMM: {level})";
+                                    int lev = znv.GetZDO().GetInt("VMMML");
+                                    ch.m_name += $" (UVO: {lev})";
                                 }
-
 
                             }
                         }
