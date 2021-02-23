@@ -192,10 +192,67 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: AccessTools.Method(typeof(Chat), "InputText", new Type[] { }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.CIT))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
-        public static bool IUTW(ref Inventory __instance, ref float ___m_totalWeight)
+        public static bool CIT(ref Chat __instance)
+        {
+            try
+            {
+                string text = __instance.m_input.text;
+                string[] args;
+
+                if (text[0] == '/')
+                {
+                    args = text.Substring(1).ToLower().Split(',');
+
+                    if (args.Length < 1)
+                        return true;
+                }
+                else
+                {
+                    return true;
+                }
+
+                if (args[0] == "deleteaog")
+                {
+                    foreach (ItemDrop item in GameObject.FindObjectsOfType<ItemDrop>())
+                    {
+                        ZNetView tznv = typeof(ItemDrop).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(item) as ZNetView;
+                        tznv.Destroy();
+                    }
+
+                    return false;
+                }
+                else if (args[0] == "tp" && args.Length > 1 && _player != null)
+                {
+                    foreach (Player pl in Player.GetAllPlayers())
+                    {
+                        if (args[1] == pl.name.ToLower())
+                        {
+                            _player.transform.position = pl.GetHeadPoint() + (pl.m_eye.forward * 2f);
+                        }
+                    }
+
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("CIT failed: " + ex.ToString());
+                return true;
+            }
+        }
+
+            public static bool IUTW(ref Inventory __instance, ref float ___m_totalWeight)
         {
             try
             {
@@ -256,14 +313,17 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
                 if (!item.m_shared.m_name.Contains(" (UVO"))
                     return true;
 
+                __result = (Recipe)null;
+
                 string str = item.m_shared.m_name.Substring(0, item.m_shared.m_name.IndexOf(" (UVO"));
                 foreach (Recipe recipe in __instance.m_recipes)
                 {
                     if (!((UnityEngine.Object)recipe.m_item == (UnityEngine.Object)null) && recipe.m_item.m_itemData.m_shared.m_name == str)
+                    {
                         __result = recipe;
+                        return false;
+                    }
                 }
-
-                __result = (Recipe)null;
 
                 return false;
             }
@@ -1442,7 +1502,7 @@ out float verticalLoss)
                     {
                         item.m_shared.m_name = item.m_shared.m_name.Substring(0, item.m_shared.m_name.IndexOf(" (UVO"));
 
-                        int newr = oir - UnityEngine.Random.Range(1, 3);
+                        int newr = Mathf.Max(oir - UnityEngine.Random.Range(1, 3), 0);
 
                         string str = $" (UVO: R{newr})";
                         item.m_shared.m_name += str;
@@ -1465,6 +1525,7 @@ out float verticalLoss)
                 iscrafting = false;
 
                 item.m_durability = item.m_shared.m_maxDurability;
+                item.m_shared.m_canBeReparied = true;
             }
             catch
             {
@@ -2061,11 +2122,7 @@ out float verticalLoss)
                             //_player.SetHealth(_player.GetHealth() - 1);
                             //Console.print("You subtracted health.");
 
-                            foreach (ItemDrop item in GameObject.FindObjectsOfType<ItemDrop>())
-                            {
-                                ZNetView tznv = typeof(ItemDrop).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(item) as ZNetView;
-                                tznv.Destroy();
-                            } 
+                            
                         }
 
                         if (Input.GetKeyDown(KeyCode.I))
