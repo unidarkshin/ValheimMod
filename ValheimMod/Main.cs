@@ -1702,7 +1702,7 @@ out float verticalLoss)
                 chance = 0.1f + (cl * 0.0010f);
             }*/
 
-            float chance = (1.0f / ((or + 1) * q)) * (1.0f + (cl * 0.01f));
+            float chance = (1.0f / (Mathf.Max(or * or * 0.5f, 0.6f) * q)) * Mathf.Min(1.0f + (cl * 0.004f), 1.4f);
 
             return chance;
         }
@@ -1769,7 +1769,7 @@ out float verticalLoss)
 
             for (int i = 2; i < 101; i++)
             {
-                if ((rnd < ((1.0f / (i * i * (0.6f * i))) * (1.0 + (0.01 * c.level)))))
+                if ((rnd < ((1.0f / (i * i * (0.5f * i))) * Mathf.Min(1.0f + (0.01f * c.level), 2.0f))))
                 {
                     r = i;
                 }
