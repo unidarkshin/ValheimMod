@@ -249,7 +249,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
 
             for (int i = newlevel; i < 9; i++)
             {
-                if (UnityEngine.Random.value <= 0.45f + Mathf.Max(Player.GetAllPlayers().Count * 0.05f, 25f))
+                if (UnityEngine.Random.value <= 0.45f + Mathf.Min(Player.GetAllPlayers().Count * 0.05f, 0.25f))
                 {
                     newlevel = i + 1;
                 }
