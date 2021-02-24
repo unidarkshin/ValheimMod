@@ -1341,10 +1341,39 @@ out float verticalLoss)
 
             //__result += ((float)wsl * 5f);
         }
+
+        public static void addArmorModsToHit(ref HitData hit, ItemDrop.ItemData.SharedData m_shared)
+        {
+
+            hit.m_backstabBonus += m_shared.m_backstabBonus;
+            hit.m_damage.m_blunt += m_shared.m_damages.m_blunt;
+            hit.m_damage.m_chop += m_shared.m_damages.m_chop;
+            hit.m_damage.m_damage += m_shared.m_damages.m_damage;
+            hit.m_damage.m_fire += m_shared.m_damages.m_fire;
+            hit.m_damage.m_frost += m_shared.m_damages.m_frost;
+            hit.m_damage.m_lightning += m_shared.m_damages.m_lightning;
+            hit.m_damage.m_pickaxe += m_shared.m_damages.m_pickaxe;
+            hit.m_damage.m_pierce += m_shared.m_damages.m_pierce;
+            hit.m_damage.m_poison += m_shared.m_damages.m_poison;
+            hit.m_damage.m_slash += m_shared.m_damages.m_slash;
+            hit.m_damage.m_spirit += m_shared.m_damages.m_spirit;
+            hit.m_pushForce += m_shared.m_deflectionForce;
+
+        }
+
         public static void DDM(Destructible __instance, long sender, ref HitData hit)
         {
             try
             {
+
+                foreach (ItemDrop.ItemData item in _player.GetInventory().GetEquipedtems())
+                {
+                    if (item.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Chest || item.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Hands || item.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Helmet || item.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Legs || item.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Shoulder || item.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Shield)
+                    {
+                        addArmorModsToHit(ref hit, item.m_shared);
+                    }
+                }
+
                 List<Skills.Skill> gskills = _player.GetSkills().GetSkillList();
 
                 if (__instance.m_destructibleType == DestructibleType.Tree)
