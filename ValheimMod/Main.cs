@@ -229,7 +229,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
 
                 int lev = __instance.GetLevel(); ;
 
-                if (UnityEngine.Random.value <= (0.35f + (0.5f * Player.GetAllPlayers().Count)))
+                if (UnityEngine.Random.value <= (0.35f + (0.05f * Player.GetAllPlayers().Count)))
                 {
                     lev = getMonsterUpgrade(__instance.GetLevel());
                     __instance.SetLevel(lev);
@@ -249,7 +249,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
 
         public static int getMonsterUpgrade(int level)
         {
-            int newlevel = level + 1;
+            int newlevel = level;
 
             for (int i = newlevel; i < 9; i++)
             {
@@ -2463,7 +2463,7 @@ out float verticalLoss)
 
                     savetime += Time.deltaTime;
 
-                    if (savetime >= 60f)
+                    if (savetime >= 30f)
                     {
                         savetime = 0f;
                         SaveSkillData();
