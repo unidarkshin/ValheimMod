@@ -227,13 +227,15 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
                 if (vml >= 0)
                     return true;
 
-                int lev = __instance.GetLevel(); ;
+                int lev = __instance.GetLevel();
 
                 if (UnityEngine.Random.value <= (0.35f + (0.05f * Player.GetAllPlayers().Count)))
                 {
                     lev = getMonsterUpgrade(__instance.GetLevel());
                     __instance.SetLevel(lev);
                     ___m_nview.GetZDO().Set("VMMML", lev);
+
+                    return true;
                 }
 
                 ___m_nview.GetZDO().Set("VMMML", 0);
@@ -253,7 +255,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
 
             for (int i = newlevel; i < 9; i++)
             {
-                if (UnityEngine.Random.value < 0.5f)
+                if (UnityEngine.Random.value <= 0.6f)
                 {
                     newlevel = i + 1;
                 }
@@ -320,7 +322,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
                 {
                     foreach (Player pl in Player.GetAllPlayers())
                     {
-                        if (args[1] == pl.name.ToLower())
+                        if (args[1] == pl.GetPlayerName().ToLower())
                         {
                             _player.transform.position = pl.GetHeadPoint() + (pl.m_eye.forward * 2f);
 
@@ -336,7 +338,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
 
                     foreach (Player pl in Player.GetAllPlayers())
                     {
-                        if (args[1] == pl.name.ToLower())
+                        if (args[1] == pl.GetPlayerName().ToLower())
                         {
                             p = pl;
                             break;
@@ -1356,7 +1358,7 @@ out float verticalLoss)
                         }
                         else if (skl.m_info.m_skill == Skills.SkillType.Bows)
                         {
-                            if (_player.IsCrouching())
+                            if (_player.IsSneaking())
                                 hit.m_damage.m_damage += (hit.m_damage.GetTotalDamage() * 2.5f);
                             else
                                 hit.m_damage.m_damage += hit.m_damage.GetTotalDamage();
