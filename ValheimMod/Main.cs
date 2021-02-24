@@ -227,11 +227,17 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
                 if (vml >= 0)
                     return true;
 
-                int lev = __instance.GetLevel();
+                int olev = __instance.GetLevel();
+                int lev = olev;
 
-                lev = getMonsterUpgrade(__instance.GetLevel());
-                __instance.SetLevel(lev);
-                ___m_nview.GetZDO().Set("VMMML", lev);
+                if (olev < 4)
+                {
+                    lev = getMonsterUpgrade(olev);
+                    __instance.SetLevel(lev);
+                }
+                    ___m_nview.GetZDO().Set("VMMML", lev);
+                
+                //UnityEngine.Debug.Log($"CSL monster incr. {__instance.GetHoverName()}, {lev}");
 
                 return true;
 
@@ -247,9 +253,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
         {
             int newlevel = level;
 
-            for (int i = newlevel; i < 9; i++)
+            for (int i = newlevel; i < 8; i++)
             {
-                if (UnityEngine.Random.value <= 0.45f + Mathf.Min(Player.GetAllPlayers().Count * 0.05f, 0.25f))
+                if (UnityEngine.Random.value <= 0.44f + Mathf.Min(Player.GetAllPlayers().Count * 0.03f, 0.16f))
                 {
                     newlevel = i + 1;
                 }
@@ -314,11 +320,11 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
                 }
                 else if (args[0] == "tpto" && args.Length > 1 && _player != null)
                 {
-                    foreach (Player pl in Player.GetAllPlayers())
+                    foreach (ZNet.PlayerInfo pl in ZNet.instance.GetPlayerList())
                     {
-                        if (args[1] == pl.GetPlayerName().ToLower())
+                        if (args[1] == pl.m_name.ToLower())
                         {
-                            _player.transform.position = pl.GetHeadPoint() + (pl.m_eye.forward * 2f);
+                            _player.transform.position = pl.m_position + (new Vector3(0f, 1f, 0f));
 
                             break;
                         }
@@ -1518,7 +1524,7 @@ out float verticalLoss)
                     }
                     else
                     {
-                        r = r + oir;
+                        r = r + oir + UnityEngine.Random.Range(0, 2);
                     }
 
 
@@ -1690,6 +1696,12 @@ out float verticalLoss)
 
                 item.m_durability = item.m_shared.m_maxDurability;
                 item.m_shared.m_canBeReparied = true;
+
+                if (item.m_shared.m_name.Contains(" (UVO") && (!item.m_crafterName.Contains(" (UVO") || item.m_shared.m_name.Substring(item.m_shared.m_name.IndexOf(" (UVO")) != item.m_crafterName.Substring(item.m_crafterName.IndexOf(" (UVO"))))
+                {
+                    item.m_crafterName = item.m_crafterName.Substring(0, item.m_crafterName.IndexOf(" (UVO"));
+                    item.m_crafterName += item.m_shared.m_name.Substring(item.m_shared.m_name.IndexOf(" (UVO"));
+                }
             }
             catch
             {
@@ -1710,7 +1722,7 @@ out float verticalLoss)
                 chance = 0.1f + (cl * 0.0010f);
             }*/
 
-            float chance = (1.0f / (Mathf.Max(or * or * 0.5f, 0.6f) * q)) * Mathf.Min(1.0f + (cl * 0.004f), 1.4f);
+            float chance = (1.0f / (Mathf.Max(or * or * 0.4f, 1.5f) * (0.5f * (q + 1.0f)))) * Mathf.Min(1.0f + (cl * 0.004f), 1.4f);
 
             return chance;
         }
@@ -1777,7 +1789,9 @@ out float verticalLoss)
 
             for (int i = 2; i < 101; i++)
             {
-                if ((rnd < ((1.0f / (i * i * (0.5f * i))) * Mathf.Min(1.0f + (0.01f * c.level), 2.0f))))
+   
+
+                if ((rnd <= ((1.0f / (i * i * (0.375f * i))) * Mathf.Min(1.0f + (0.005f * c.level), 1.5f))))
                 {
                     r = i;
                 }
