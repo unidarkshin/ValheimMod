@@ -1356,8 +1356,8 @@ out float verticalLoss)
                         }
                         else if (skl.m_info.m_skill == Skills.SkillType.Bows)
                         {
-                            if (_player.IsSneaking())
-                                hit.m_damage.m_damage += (hit.m_damage.GetTotalDamage() * 3);
+                            if (_player.IsCrouching())
+                                hit.m_damage.m_damage += (hit.m_damage.GetTotalDamage() * 2.5f);
                             else
                                 hit.m_damage.m_damage += hit.m_damage.GetTotalDamage();
                         }
