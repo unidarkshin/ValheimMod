@@ -446,6 +446,16 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDGTT))
 
                     return false;
                 }
+                else if (args[0] == "deleteac")
+                {
+                    foreach (Character c in GameObject.FindObjectsOfType<Character>())
+                    {
+                        if (c.IsMonsterFaction())
+                        {
+                            ZNetScene.instance.Destroy(c.gameObject);
+                        }
+                    }
+                }
 
                 return true;
             }
@@ -1345,7 +1355,7 @@ out float verticalLoss)
         public static void addArmorModsToHit(ref HitData hit, ItemDrop.ItemData.SharedData m_shared)
         {
 
-            hit.m_backstabBonus += m_shared.m_backstabBonus;
+            //hit.m_backstabBonus += m_shared.m_backstabBonus;
             hit.m_damage.m_blunt += m_shared.m_damages.m_blunt;
             hit.m_damage.m_chop += m_shared.m_damages.m_chop;
             hit.m_damage.m_damage += m_shared.m_damages.m_damage;
@@ -1357,7 +1367,7 @@ out float verticalLoss)
             hit.m_damage.m_poison += m_shared.m_damages.m_poison;
             hit.m_damage.m_slash += m_shared.m_damages.m_slash;
             hit.m_damage.m_spirit += m_shared.m_damages.m_spirit;
-            hit.m_pushForce += m_shared.m_deflectionForce;
+            //hit.m_pushForce += m_shared.m_deflectionForce;
 
         }
 
