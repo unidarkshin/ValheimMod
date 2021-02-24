@@ -229,18 +229,12 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
 
                 int lev = __instance.GetLevel();
 
-                if (UnityEngine.Random.value <= (0.35f + (0.05f * Player.GetAllPlayers().Count)))
-                {
-                    lev = getMonsterUpgrade(__instance.GetLevel());
-                    __instance.SetLevel(lev);
-                    ___m_nview.GetZDO().Set("VMMML", lev);
-
-                    return true;
-                }
-
-                ___m_nview.GetZDO().Set("VMMML", 0);
+                lev = getMonsterUpgrade(__instance.GetLevel());
+                __instance.SetLevel(lev);
+                ___m_nview.GetZDO().Set("VMMML", lev);
 
                 return true;
+
             }
             catch (Exception ex)
             {
@@ -255,7 +249,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
 
             for (int i = newlevel; i < 9; i++)
             {
-                if (UnityEngine.Random.value <= 0.6f)
+                if (UnityEngine.Random.value <= 0.45f + Mathf.Max(Player.GetAllPlayers().Count * 0.05f, 25f))
                 {
                     newlevel = i + 1;
                 }
@@ -437,7 +431,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
                     if (!itemData.m_equiped)
                         ___m_totalWeight += itemData.GetWeight();
                     else
-                        ___m_totalWeight += (itemData.GetWeight() / (a.level * 0.04f));
+                        ___m_totalWeight += (itemData.GetWeight() / (1.0f + (a.level * 0.04f)));
                 }
 
                 return false;
@@ -1595,7 +1589,7 @@ out float verticalLoss)
                     else if (type == 2)
                     {
 
-                        item.m_shared.m_armor = rndf2(item.m_shared.m_armor * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+                        item.m_shared.m_armor = rndf2(item.m_shared.m_armor * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .05f)));
                         item.m_shared.m_attackForce = rndf2(item.m_shared.m_attackForce * (UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f))));
                         item.m_shared.m_backstabBonus = rndf2(item.m_shared.m_backstabBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
                         item.m_shared.m_blockPower = rndf2(item.m_shared.m_blockPower * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
