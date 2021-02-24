@@ -206,31 +206,37 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CSS))
 
             h.Patch(
 original: AccessTools.Method(typeof(Character), "SetLevel", new Type[] { typeof(int) }),
-prefix: new HarmonyMethod(typeof(Main), nameof(Main.CSL))
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
-        public static bool CSL(ref Character __instance, ref int level, ref ZNetView ___m_nview)
+        public static bool CFU(ref Character __instance, ref ZNetView ___m_nview, ref int level)
         {
             try
             {
+                UnityEngine.Debug.Log($"CSL attempting monster incr.");
+
                 if (!__instance.IsMonsterFaction())
                     return true;
 
-                bool vml = int.TryParse(___m_nview.GetZDO().GetString("VMMML", ""), out int cl);
+                int vml = ___m_nview.GetZDO().GetInt("VMMML", 0);
 
-                if (vml)
+                if (vml != 0)
                     return true;
 
+                int lev = level;
 
                 if (UnityEngine.Random.value <= 0.33)
                 {
-                    level = getMonsterUpgrade(level);
-                    ___m_nview.GetZDO().Set("VMMML", level);
+                    lev = getMonsterUpgrade(__instance.GetLevel());
+                    //__instance.SetLevel(level);
+                    
                 }
+
+                ___m_nview.GetZDO().Set("VMMML", lev);
 
                 return true;
             }
