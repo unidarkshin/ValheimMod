@@ -222,9 +222,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
                 if (!__instance.IsMonsterFaction())
                     return true;
 
-                int vml = ___m_nview.GetZDO().GetInt("VMMML", 0);
+                int vml = ___m_nview.GetZDO().GetInt("VMMML", -1);
 
-                if (vml != 0)
+                if (vml >= 0)
                     return true;
 
                 int lev = __instance.GetLevel(); ;
@@ -233,10 +233,10 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
                 {
                     lev = getMonsterUpgrade(__instance.GetLevel());
                     __instance.SetLevel(lev);
-                    
+                    ___m_nview.GetZDO().Set("VMMML", lev);
                 }
 
-                ___m_nview.GetZDO().Set("VMMML", lev);
+                ___m_nview.GetZDO().Set("VMMML", 0);
 
                 return true;
             }
@@ -254,7 +254,13 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
             for (int i = newlevel; i < 9; i++)
             {
                 if (UnityEngine.Random.value < 0.5f)
+                {
                     newlevel = i + 1;
+                }
+                else
+                {
+                    break;
+                }
             }
 
             return newlevel;
@@ -819,13 +825,13 @@ out float verticalLoss)
                 Character c = __instance.GetComponent<Character>();
 
                 ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
-                bool vml = int.TryParse(znv.GetZDO().GetString("VMMML", ""), out int cl);
+                int vml = znv.GetZDO().GetInt("VMMML", 0);
                 int level;
 
-                if (!vml)
+                if (vml == 0)
                     return true;
                 else
-                    level = cl;
+                    level = vml;
 
                 List<KeyValuePair<GameObject, int>> keyValuePairList = new List<KeyValuePair<GameObject, int>>();
 
