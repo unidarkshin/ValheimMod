@@ -2441,7 +2441,7 @@ out float verticalLoss)
                                 ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ch) as ZNetView;
                                 //znv.GetZDO().Set("VMMML", $"{}");
 
-                                if (ch.IsMonsterFaction() && znv.GetZDO().GetInt("VMMML", 0) != 0 && !ch.m_name.Contains("UVO"))
+                                if (ch.IsMonsterFaction() && znv.GetZDO().GetInt("VMMML", 0) > 3 && !ch.m_name.Contains("UVO"))
                                 {
                                     int lev = znv.GetZDO().GetInt("VMMML");
                                     ch.m_name += $" (UVO: {lev})";
