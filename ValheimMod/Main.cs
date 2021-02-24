@@ -237,7 +237,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDGTT))
                 for (int i = 0; i < ams.Length; i++)
                 {
                     if (attr[i] != 0 && !__result.ToLower().Contains(ams[i].ToLower()))
-                        __result += $"\n{ams[i]}: {attr[i]}";
+                        __result += $"\n{ams[i]}: <color=blue>{attr[i]}</color>";
                 }
 
             }
