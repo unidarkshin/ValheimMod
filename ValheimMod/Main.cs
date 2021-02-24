@@ -205,15 +205,49 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CSS))
 );
 
             h.Patch(
-original: AccessTools.Method(typeof(Character), "FixedUpdate", new Type[] { }),
-prefix: new HarmonyMethod(typeof(Main), nameof(Main.CFU))
+original: AccessTools.Method(typeof(ItemDrop.ItemData), "GetTooltip", new Type[] { typeof(ItemDrop.ItemData), typeof(int), typeof(bool) }),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDGTT))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
+
 
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
-        public static bool CFU(ref Character __instance, ref ZNetView ___m_nview)
+
+        public static string[] ams = { "Armor", "Attack", "Backstab", "BlockPower", "Blunt", "Chop", "Damage", "Fire", "Frost", "Lightning",
+            "Pickaxe", "Pierce", "Poison", "Slash" , "Spirit", "Deflection", "Durability Drain", "Durability" , "Movement", "ParryBonus", "Use Durability Drain", "Weight"};
+
+        public static void IDGTT(ref string __result, ref ItemDrop.ItemData item, int qualityLevel, bool crafting)
+        {
+            try
+            {
+                ItemDrop.ItemData.ItemType it = item.m_shared.m_itemType;
+                int type;
+
+                if (it == ItemDrop.ItemData.ItemType.Bow || it == ItemDrop.ItemData.ItemType.OneHandedWeapon || it == ItemDrop.ItemData.ItemType.TwoHandedWeapon || it == ItemDrop.ItemData.ItemType.Tool)
+                    type = 1;
+                else if (it == ItemDrop.ItemData.ItemType.Chest || it == ItemDrop.ItemData.ItemType.Hands || it == ItemDrop.ItemData.ItemType.Helmet || it == ItemDrop.ItemData.ItemType.Legs || it == ItemDrop.ItemData.ItemType.Shoulder || it == ItemDrop.ItemData.ItemType.Shield)
+                    type = 2;
+                else
+                    return;
+
+                List<float> attr = getAttr(item.m_shared);
+
+                for (int i = 0; i < ams.Length; i++)
+                {
+                    if (attr[i] != 0 && !__result.ToLower().Contains(ams[i].ToLower()))
+                        __result += $"\n{ams[i]}: {attr[i]}";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("IDGTT failed: " + ex.ToString());
+            }
+        }
+
+            public static bool CFU(ref Character __instance, ref ZNetView ___m_nview)
         {
             try
             {
@@ -1488,7 +1522,7 @@ out float verticalLoss)
 
                 ItemDrop.ItemData.ItemType it = item.m_shared.m_itemType;
                 int type = 0;
-
+                
                 if (it == ItemDrop.ItemData.ItemType.Bow || it == ItemDrop.ItemData.ItemType.OneHandedWeapon || it == ItemDrop.ItemData.ItemType.TwoHandedWeapon || it == ItemDrop.ItemData.ItemType.Tool)
                     type = 1;
                 else if (it == ItemDrop.ItemData.ItemType.Chest || it == ItemDrop.ItemData.ItemType.Hands || it == ItemDrop.ItemData.ItemType.Helmet || it == ItemDrop.ItemData.ItemType.Legs || it == ItemDrop.ItemData.ItemType.Shoulder || it == ItemDrop.ItemData.ItemType.Shield)
@@ -1553,13 +1587,6 @@ out float verticalLoss)
                         item.m_shared.m_blockPower = rndf2(item.m_shared.m_blockPower * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
 
 
-                        int cbr = UnityEngine.Random.Range(0, 2);
-
-                        if (cbr == 0)
-                            item.m_shared.m_canBeReparied = false;
-                        else
-                            item.m_shared.m_canBeReparied = true;
-
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
                             item.m_shared.m_damages.m_blunt += UnityEngine.Random.Range(0, r + 1);
                         if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
@@ -1601,7 +1628,7 @@ out float verticalLoss)
                         item.m_shared.m_blockPower = rndf2(item.m_shared.m_blockPower * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
 
 
-                        int cbr = UnityEngine.Random.Range(0, 2);
+                        //int cbr = UnityEngine.Random.Range(0, 2);
 
                         //if (cbr == 0)
                         //    item.m_shared.m_canBeReparied = false;
