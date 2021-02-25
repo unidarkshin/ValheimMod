@@ -1396,6 +1396,18 @@ out float verticalLoss)
                     if (UnityEngine.Random.Range(0.0f, 1.0f) < (skl.m_level * 0.003f))
                     {
                         hit.m_damage.m_damage += hit.m_damage.GetTotalDamage();
+
+                        if (__instance.TryGetComponent<TreeLog>(out TreeLog t))
+                        {
+                            
+                            List<DropTable.DropData> drs = t.m_dropWhenDestroyed.m_drops;
+                            int index = UnityEngine.Random.Range(0, drs.Count);
+                            DropTable.DropData dr = drs[index];
+                            dr.m_stackMax = (int)(dr.m_stackMax * UnityEngine.Random.Range(1.5f, 2.5f));
+                            drs[index] = dr;
+
+                            t.m_dropWhenDestroyed.m_drops = drs;
+                        }
                     }
 
                 }
@@ -1409,8 +1421,32 @@ out float verticalLoss)
                     if (UnityEngine.Random.Range(0.0f, 1.0f) < (skl.m_level * 0.003f))
                     {
                         hit.m_damage.m_damage += hit.m_damage.GetTotalDamage();
-                    }
 
+                        if (__instance.TryGetComponent<MineRock>(out MineRock t))
+                        {
+
+                            List<DropTable.DropData> drs = t.m_dropItems.m_drops;
+                            int index = UnityEngine.Random.Range(0, drs.Count);
+                            DropTable.DropData dr = drs[index];
+                            dr.m_stackMax = (int)(dr.m_stackMax * UnityEngine.Random.Range(1.5f, 2.5f));
+                            drs[index] = dr;
+
+                            t.m_dropItems.m_drops = drs;
+                        }
+
+                        if (__instance.TryGetComponent<MineRock5>(out MineRock5 t2))
+                        {
+
+                            List<DropTable.DropData> drs = t2.m_dropItems.m_drops;
+                            int index = UnityEngine.Random.Range(0, drs.Count);
+                            DropTable.DropData dr = drs[index];
+                            dr.m_stackMax = (int)(dr.m_stackMax * UnityEngine.Random.Range(1.5f, 2.5f));
+                            drs[index] = dr;
+
+                            t2.m_dropItems.m_drops = drs;
+                        }
+                    }
+                   
                 }
                 else if (__instance.m_destructibleType == DestructibleType.Character)
                 {
