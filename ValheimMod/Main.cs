@@ -253,7 +253,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDGTT))
             {
                 //UnityEngine.Debug.Log($"CSL attempting monster incr.");
 
-                if (!__instance.IsMonsterFaction())
+                /*if (!__instance.IsMonsterFaction())
                     return true;
 
                 int vml = ___m_nview.GetZDO().GetInt("VMMML", -1);
@@ -269,7 +269,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDGTT))
                     lev = getMonsterUpgrade(olev);
                     __instance.SetLevel(lev);
                 }
-                    ___m_nview.GetZDO().Set("VMMML", lev);
+                    ___m_nview.GetZDO().Set("VMMML", lev);*/
                 
                 //UnityEngine.Debug.Log($"CSL monster incr. {__instance.GetHoverName()}, {lev}");
 
@@ -2257,7 +2257,7 @@ out float verticalLoss)
                             activechanges = true;
                         }
 
-                        if (elapsed2 >= 30.0f * Player.GetAllPlayers().Count)
+                        if (elapsed2 >= 20.0f * Player.GetAllPlayers().Count)
                         {
                             elapsed2 = 0f;
                             /*
@@ -2295,38 +2295,61 @@ out float verticalLoss)
                                         c.m_speed = c.m_speed * (1.0f + (lvl / 10.0f));
                                         */
 
-                                        /*CharacterDrop component2 = (CharacterDrop)((Component)c).GetComponent<CharacterDrop>();
+                            /*CharacterDrop component2 = (CharacterDrop)((Component)c).GetComponent<CharacterDrop>();
 
-                                        foreach (CharacterDrop.Drop item in component2.m_drops)
-                                        {
-                                            item.m_chance = lvl * 0.1f;
-                                            item.m_levelMultiplier = false;
-                                            item.m_amountMax += (lvl * 2);
-
-                                        }*/
-                                        /*
-                                        ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
-                                        znv.GetZDO().Set("VMMML", $"{lvl}");
-
-                                    }
-
-                                }
-
-
-
-
-                                //}
-                            }
-                            catch (Exception ex)
+                            foreach (CharacterDrop.Drop item in component2.m_drops)
                             {
-                            */
-                                /*List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
-                                cbt.Add($"VM Error (Enemy Modifiers): {ex.Message}");
-                                typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Chat.instance, cbt);
-                                typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { });*/
+                                item.m_chance = lvl * 0.1f;
+                                item.m_levelMultiplier = false;
+                                item.m_amountMax += (lvl * 2);
+
+                            }*/
+                            /*
+                            ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
+                            znv.GetZDO().Set("VMMML", $"{lvl}");
+
+                        }
+
+                    }
+
+
+
+
+                    //}
+                }
+                catch (Exception ex)
+                {
+                */
+                            /*List<string> cbt = typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Chat.instance) as List<string>;
+                            cbt.Add($"VM Error (Enemy Modifiers): {ex.Message}");
+                            typeof(Chat).GetField("m_chatBuffer", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Chat.instance, cbt);
+                            typeof(Chat).GetMethod("UpdateChat", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(Chat.instance, new object[] { });*/
 
                             //    _player.Message(MessageHud.MessageType.TopLeft, $"VM Error(Enemy Modifiers): {ex.Message}", 0, (Sprite)null);
                             //}
+
+                            foreach (Character c in GameObject.FindObjectsOfType<Character>())
+                            {
+                                if (c.IsMonsterFaction())
+                                {
+                                    ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
+
+                                    int vml = znv.GetZDO().GetInt("VMMML", 0);
+
+                                    if (vml > 0)
+                                        continue;
+
+                                    int olev = c.GetLevel();
+                                    
+
+
+                                    int lev = getMonsterUpgrade(olev);
+                                    c.SetLevel(lev);
+                                    c.m_speed = c.m_speed * (1.0f + (lev / 10.0f));
+
+                                    znv.GetZDO().Set("VMMML", lev);
+                                }
+                            }
 
                             
 
