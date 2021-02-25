@@ -720,26 +720,26 @@ out float verticalLoss)
                 {
                     case WearNTear.MaterialType.Wood:
                         maxSupport = 100f * (1.0f + (b.level * 0.01f));
-                        minSupport = 10f * (1.0f + (b.level * 0.01f));
+                        minSupport = 10f / (1.0f + (b.level * 0.01f));
                         verticalLoss = 0.125f / (1.0f + (b.level * 0.01f));
                         horizontalLoss = 0.2f / (1.0f + (b.level * 0.01f));
                         //UnityEngine.Debug.LogWarning($"WGMP W: maxs = {maxSupport}, mins = {minSupport}");
                         break;
                     case WearNTear.MaterialType.Stone:
                         maxSupport = 1000f * (1.0f + (b.level * 0.01f));
-                        minSupport = 100f * (1.0f + (b.level * 0.01f));
+                        minSupport = 50f / (1.0f + (b.level * 0.01f));
                         verticalLoss = 0.125f / (1.0f + (b.level * 0.012f));
                         horizontalLoss = 1f / (1.0f + (b.level * 0.01f));
                         break;
                     case WearNTear.MaterialType.Iron:
                         maxSupport = 1500f * (1.0f + (b.level * 0.01f));
-                        minSupport = 20f * (1.0f + (b.level * 0.01f));
+                        minSupport = 20f / (1.0f + (b.level * 0.01f));
                         verticalLoss = 0.07692308f / (1.0f + (b.level * 0.01f));
                         horizontalLoss = 0.07692308f / (1.0f + (b.level * 0.01f));
                         break;
                     case WearNTear.MaterialType.HardWood:
                         maxSupport = 140f * (1.0f + (b.level * 0.01f));
-                        minSupport = 10f * (1.0f + (b.level * 0.01f));
+                        minSupport = 10f / (1.0f + (b.level * 0.01f));
                         verticalLoss = 0.1f / (1.0f + (b.level * 0.01f));
                         horizontalLoss = 0.1666667f / (1.0f + (b.level * 0.01f));
                         break;
