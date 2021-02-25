@@ -289,7 +289,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDGTT))
 
             for (int i = newlevel; i < 8; i++)
             {
-                if (UnityEngine.Random.value <= 0.45f + Mathf.Min(Player.GetAllPlayers().Count * 0.05f, 0.20f))
+                if (UnityEngine.Random.value <= 0.55f + Mathf.Min(Player.GetAllPlayers().Count * 0.05f, 0.20f))
                 {
                     newlevel = i + 1;
                 }
@@ -1763,9 +1763,11 @@ out float verticalLoss)
                 item.m_durability = item.m_shared.m_maxDurability;
                 item.m_shared.m_canBeReparied = true;
 
-                if (item.m_shared.m_name.Contains(" (UVO") && (!item.m_crafterName.Contains(" (UVO") || item.m_shared.m_name.Substring(item.m_shared.m_name.IndexOf(" (UVO")) != item.m_crafterName.Substring(item.m_crafterName.IndexOf(" (UVO"))))
+                if (item.m_shared.m_name.Contains(" (UVO"))
                 {
-                    item.m_crafterName = item.m_crafterName.Substring(0, item.m_crafterName.IndexOf(" (UVO"));
+                    if(item.m_crafterName.Contains(" (UVO"))
+                        item.m_crafterName = item.m_crafterName.Substring(0, item.m_crafterName.IndexOf(" (UVO"));
+
                     item.m_crafterName += item.m_shared.m_name.Substring(item.m_shared.m_name.IndexOf(" (UVO"));
                 }
             }
