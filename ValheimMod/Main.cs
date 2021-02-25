@@ -949,6 +949,7 @@ out float verticalLoss)
                 //bool repairable = zdo.GetBool($"attr22", itemData.m_shared.m_canBeReparied);
 
                 setAttr(ref itemData, attr);
+                itemData.m_shared.m_name = zdo.GetString("attriname", itemData.m_shared.m_name);
 
             }
             catch (Exception ex)
@@ -972,6 +973,8 @@ out float verticalLoss)
                     zdo.Set($"attr{i}", attr[i]);
                 }
 
+                zdo.Set("attriname", itemData.m_shared.m_name);
+
                 //zdo.Set($"attr22", itemData.m_shared.m_canBeReparied);
 
 
@@ -988,11 +991,22 @@ out float verticalLoss)
             try
             {
                 ItemDrop component = UnityEngine.Object.Instantiate<GameObject>(item.m_dropPrefab, position, rotation).GetComponent<ItemDrop>();
-                setAttr(ref component.m_itemData, getAttr(item.m_shared));
-                if (amount > 0)
-                    component.m_itemData.m_stack = amount;
-                AccessTools.Method(typeof(ItemDrop), "Save").Invoke(component, new object[] { });
+                //setAttr(ref component.m_itemData, getAttr(item.m_shared));
+                component.m_itemData = item;
+                //if (amount > 0)
+                //    component.m_itemData.m_stack = amount;
+
+                ZNetView znv = typeof(ItemDrop).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(component) as ZNetView;
+
+                //AccessTools.Method(typeof(ItemDrop), "SaveToZDO").Invoke(component, new object[] { component.m_itemData,  znv.GetZDO() });
+                //typeof(ItemDrop).GetMethod("SaveToZDO", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(component, new object[] { component.m_itemData, znv.GetZDO() });
+                ItemDrop.SaveToZDO(component.m_itemData, znv.GetZDO());
+
                 __result = component;
+
+                
+
+                //UnityEngine.Debug.LogWarning($"item drop: {znv.GetZDO().GetString("attriname", "..")}, {znv.GetZDO().GetFloat("attr3", -56.2f)}");
 
                 return false;
 
