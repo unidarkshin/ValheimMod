@@ -1468,7 +1468,7 @@ out float verticalLoss)
                             {
                                 int index = UnityEngine.Random.Range(0, dropList.Count);
 
-                                UnityEngine.Object.Instantiate<GameObject>(dropList[index], hit.m_point - hit.m_dir * 0.2f + UnityEngine.Random.insideUnitSphere * 0.3f, Quaternion.identity);
+                                UnityEngine.Object.Instantiate<GameObject>(dropList[index], hit.m_point + UnityEngine.Random.insideUnitSphere * 0.3f, Quaternion.identity);
                             }
                         }
                     }
