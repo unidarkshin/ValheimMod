@@ -358,7 +358,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDGTT))
                     {
                         if (args[1] == pl.m_name.ToLower())
                         {
-                            _player.transform.position = pl.m_position + (new Vector3(2f, 2f, 2f));
+                            _player.TeleportTo(pl.m_position + new Vector3(0f, 1.5f, 0f), _player.transform.rotation, true);
 
                             break;
                         }
