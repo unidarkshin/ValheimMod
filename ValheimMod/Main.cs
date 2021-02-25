@@ -289,7 +289,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDGTT))
 
             for (int i = newlevel; i < 8; i++)
             {
-                if (UnityEngine.Random.value <= 0.44f + Mathf.Min(Player.GetAllPlayers().Count * 0.03f, 0.16f))
+                if (UnityEngine.Random.value <= 0.45f + Mathf.Min(Player.GetAllPlayers().Count * 0.05f, 0.20f))
                 {
                     newlevel = i + 1;
                 }
@@ -2257,7 +2257,7 @@ out float verticalLoss)
                             activechanges = true;
                         }
 
-                        if (elapsed2 >= 20.0f * Player.GetAllPlayers().Count)
+                        if (elapsed2 >= 10.0f)
                         {
                             elapsed2 = 0f;
                             /*
@@ -2348,6 +2348,8 @@ out float verticalLoss)
                                     c.m_speed = c.m_speed * (1.0f + (lev / 10.0f));
 
                                     znv.GetZDO().Set("VMMML", lev);
+
+                                    UnityEngine.Debug.LogWarning($"Enemy: {c.m_name} set to level {lev}.");
                                 }
                             }
 
@@ -2511,7 +2513,7 @@ out float verticalLoss)
                             Loader.Unload();
                         }
 
-                        if (elapsed5 >= 20.0f)
+                        if (elapsed5 >= 10.0f)
                         {
                             elapsed5 = 0f;
 
