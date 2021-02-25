@@ -1575,29 +1575,29 @@ out float verticalLoss)
                     return;
                 }
 
-                int r = GenerateItemRarity();
+                int r;
                 //int r = 8;
 
-                int oir = 0;
+                //int oir = 0;
+
+                int or = 0;
                 if (cupgitem != null)
                 {
                     string sub = cupgitem.m_shared.m_name.Remove(cupgitem.m_shared.m_name.Length - 1);
 
                     if (int.TryParse(sub.Substring(sub.IndexOf("UVO: ") + 6), out int orar))
-                        oir = orar;
+                        or = orar;
 
-                    float chance = keepOldR(oir, c.level, cupgitem.m_quality);
+                    //float chance = keepOldR(oir, c.level, cupgitem.m_quality);
 
                     //UnityEngine.Debug.LogWarning($"OIR: sub: {sub}, {oir}");
 
-                    if (UnityEngine.Random.value > chance)
+                    r = GenerateItemRarity(or, c.level, cupgitem.m_quality);
+
+                    if (r > 1)
                     {
                         //oir = 0;
-                        r = 1;
-                    }
-                    else
-                    {
-                        r = r + oir + UnityEngine.Random.Range(0, 2);
+                        r = r + or + UnityEngine.Random.Range(0, 2);
                     }
 
 
@@ -1607,9 +1607,10 @@ out float verticalLoss)
 
                     item.m_shared.m_name = cupgitem.m_shared.m_name;
 
-
-
-
+                }
+                else
+                {
+                    r = GenerateItemRarity(or, c.level, 1);
                 }
 
 
@@ -1732,13 +1733,13 @@ out float verticalLoss)
 
 
                 }
-                else if (r == 1 && oir != 0)
+                else
                 {
                     if (item.m_shared.m_name.Contains(" (UVO"))
                     {
                         item.m_shared.m_name = item.m_shared.m_name.Substring(0, item.m_shared.m_name.IndexOf(" (UVO"));
 
-                        int newr = Mathf.Max(oir - UnityEngine.Random.Range(1, 3), 1);
+                        int newr = Mathf.Max(or - UnityEngine.Random.Range(1, 3), 1);
 
                         string str = $" (UVO: R{newr})";
                         item.m_shared.m_name += str;
@@ -1750,10 +1751,10 @@ out float verticalLoss)
                     }
                 }
 
-                if (oir == 0)
-                    xp = xp + (int)(r * r);
+                if (or == 0)
+                    xp = xp + (int)(r * r * 0.5);
                 else
-                    xp = xp + (int)(r * r * (0.5 * oir));
+                    xp = xp + (int)(r * r * (0.5 * or));
 
                 c.xp = c.xp + xp;
 
@@ -1847,19 +1848,17 @@ out float verticalLoss)
             skills = new List<Skill>();
         }
 
-        public static int GenerateItemRarity()
+        public static int GenerateItemRarity(int or, int level, int quality)
         {
             float rnd = UnityEngine.Random.value;
 
             int r = 1;
 
-            Skill c = skills.Where(sk => sk.name.ToLower() == "crafting").FirstOrDefault();
-
             for (int i = 2; i < 101; i++)
             {
    
 
-                if ((rnd <= ((1.0f / (i * i * (0.375f * i))) * Mathf.Min(1.0f + (0.005f * c.level), 1.5f))))
+                if ((rnd <= ((1.0f / (i * i)) * Mathf.Min(1.0f + (0.005f * level), 1.5f) * Mathf.Min(1.0f + (quality * 0.1f), 1.5f))))
                 {
                     r = i;
                 }
