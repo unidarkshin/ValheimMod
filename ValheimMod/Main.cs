@@ -990,6 +990,10 @@ out float verticalLoss)
         {
             try
             {
+
+                if (!item.m_crafterName.Contains(" (UVO"))
+                    return true;
+
                 ItemDrop component = UnityEngine.Object.Instantiate<GameObject>(item.m_dropPrefab, position, rotation).GetComponent<ItemDrop>();
                 //setAttr(ref component.m_itemData, getAttr(item.m_shared));
                 component.m_itemData = item;
@@ -1000,8 +1004,11 @@ out float verticalLoss)
 
                 //AccessTools.Method(typeof(ItemDrop), "SaveToZDO").Invoke(component, new object[] { component.m_itemData,  znv.GetZDO() });
                 //typeof(ItemDrop).GetMethod("SaveToZDO", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(component, new object[] { component.m_itemData, znv.GetZDO() });
-                ItemDrop.SaveToZDO(component.m_itemData, znv.GetZDO());
+                if (znv == null)
+                    return true;
 
+                    ItemDrop.SaveToZDO(component.m_itemData, znv.GetZDO());
+                
                 __result = component;
 
                 
@@ -1413,14 +1420,17 @@ out float verticalLoss)
 
                         if (__instance.TryGetComponent<TreeLog>(out TreeLog t))
                         {
-                            
-                            List<DropTable.DropData> drs = t.m_dropWhenDestroyed.m_drops;
-                            int index = UnityEngine.Random.Range(0, drs.Count);
-                            DropTable.DropData dr = drs[index];
-                            dr.m_stackMax = (int)(dr.m_stackMax * UnityEngine.Random.Range(1.5f, 2.5f));
-                            drs[index] = dr;
 
-                            t.m_dropWhenDestroyed.m_drops = drs;
+                            List<GameObject> dropList = t.m_dropWhenDestroyed.GetDropList();
+
+                            if (dropList.Count > 0)
+                            {
+                                int index = UnityEngine.Random.Range(0, dropList.Count);
+
+                                Vector3 position = t.transform.position + t.transform.up * UnityEngine.Random.Range(-t.m_spawnDistance, t.m_spawnDistance) + Vector3.up * 0.3f * (float)index;
+                                Quaternion rotation = Quaternion.Euler(0.0f, (float)UnityEngine.Random.Range(0, 360), 0.0f);
+                                UnityEngine.Object.Instantiate<GameObject>(dropList[index], position, rotation);
+                            }
                         }
                     }
 
@@ -1439,25 +1449,27 @@ out float verticalLoss)
                         if (__instance.TryGetComponent<MineRock>(out MineRock t))
                         {
 
-                            List<DropTable.DropData> drs = t.m_dropItems.m_drops;
-                            int index = UnityEngine.Random.Range(0, drs.Count);
-                            DropTable.DropData dr = drs[index];
-                            dr.m_stackMax = (int)(dr.m_stackMax * UnityEngine.Random.Range(1.5f, 2.5f));
-                            drs[index] = dr;
+                            List<GameObject> dropList = t.m_dropItems.GetDropList();
 
-                            t.m_dropItems.m_drops = drs;
+                            if (dropList.Count > 0)
+                            {
+                                int index = UnityEngine.Random.Range(0, dropList.Count);
+
+                                UnityEngine.Object.Instantiate<GameObject>(dropList[index], hit.m_point - hit.m_dir * 0.2f + UnityEngine.Random.insideUnitSphere * 0.3f, Quaternion.identity);
+                            }
                         }
 
                         if (__instance.TryGetComponent<MineRock5>(out MineRock5 t2))
                         {
 
-                            List<DropTable.DropData> drs = t2.m_dropItems.m_drops;
-                            int index = UnityEngine.Random.Range(0, drs.Count);
-                            DropTable.DropData dr = drs[index];
-                            dr.m_stackMax = (int)(dr.m_stackMax * UnityEngine.Random.Range(1.5f, 2.5f));
-                            drs[index] = dr;
+                            List<GameObject> dropList = t2.m_dropItems.GetDropList();
 
-                            t2.m_dropItems.m_drops = drs;
+                            if (dropList.Count > 0)
+                            {
+                                int index = UnityEngine.Random.Range(0, dropList.Count);
+
+                                UnityEngine.Object.Instantiate<GameObject>(dropList[index], hit.m_point - hit.m_dir * 0.2f + UnityEngine.Random.insideUnitSphere * 0.3f, Quaternion.identity);
+                            }
                         }
                     }
                    
@@ -2388,21 +2400,32 @@ out float verticalLoss)
                                     int vml = znv.GetZDO().GetInt("VMMML", 0);
 
                                     if (vml > 0)
+                                    {
+                                        if (znv.GetZDO().GetInt("VMMML", 0) > 0 && !c.m_name.Contains(" (UVO"))
+                                        {
+                                            int lev = znv.GetZDO().GetInt("VMMML");
+                                            c.m_name += $" (UVO: {lev})";
+
+                                            UnityEngine.Debug.LogWarning($"Enemy: {c.m_name} -> Name updated.");
+                                        }
                                         continue;
+                                    }
+                                    else
+                                    {
 
-                                    int olev = c.GetLevel();
-                                    
+                                        int olev = c.GetLevel();
 
+                                        int lev = getMonsterUpgrade(olev);
+                                        c.SetLevel(lev);
+                                        c.m_speed = c.m_speed * (1.0f + (lev / 10.0f));
 
-                                    int lev = getMonsterUpgrade(olev);
-                                    c.SetLevel(lev);
-                                    c.m_speed = c.m_speed * (1.0f + (lev / 10.0f));
+                                        znv.GetZDO().Set("VMMML", lev);
 
-                                    znv.GetZDO().Set("VMMML", lev);
-
-                                    UnityEngine.Debug.LogWarning($"Enemy: {c.m_name} set to level {lev}.");
+                                        UnityEngine.Debug.LogWarning($"Enemy: {c.m_name} upgraded to level {lev}.");
+                                    }
                                 }
                             }
+
 
                             
 
@@ -2591,21 +2614,7 @@ out float verticalLoss)
                                 }
                             }
 
-                            Character[] chars3 = GameObject.FindObjectsOfType(typeof(Character)) as Character[];
-
-                            foreach (Character ch in chars3)
-                            {
-
-                                ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ch) as ZNetView;
-                                //znv.GetZDO().Set("VMMML", $"{}");
-
-                                if (ch.IsMonsterFaction() && znv.GetZDO().GetInt("VMMML", 0) > 3 && !ch.m_name.Contains("UVO"))
-                                {
-                                    int lev = znv.GetZDO().GetInt("VMMML");
-                                    ch.m_name += $" (UVO: {lev})";
-                                }
-
-                            }
+                            
                         }
                         else
                         {
