@@ -210,10 +210,36 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDGTT))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: AccessTools.Method(typeof(Character), "Awake", new Type[] { }),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.CAW))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
 
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
+
+        public static void CAW(ref Character __instance)
+        {
+            if (__instance == null || !__instance.IsMonsterFaction() || __instance.m_name.Contains(" (UVO"))
+                return;
+
+            string on = __instance.m_name;
+            int ol = __instance.GetLevel();
+
+            int lev = getMonsterUpgrade(ol);
+
+            __instance.SetLevel(lev);
+            __instance.m_speed = __instance.m_speed * (1.0f + (lev / 10.0f));
+
+            //__instance.SetLevel(lev);
+
+            //UnityEngine.Debug.LogWarning($"Enemy: {__instance.m_name} upgraded to level {lev}.");
+
+            UnityEngine.Debug.LogWarning($"Updating creature: {on}, {ol} --> {__instance.m_name}, {__instance.GetLevel()}");
+        }
 
         public static string[] ams = { "Armor", "Attack", "Backstab", "BlockPower", "Blunt", "Chop", "Damage", "Fire", "Frost", "Lightning",
             "Pickaxe", "Pierce", "Poison", "Slash" , "Spirit", "Deflection", "Durability Drain", "Durability" , "Movement", "ParryBonus", "Use Durability Drain", "Weight"};
@@ -289,7 +315,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDGTT))
 
             for (int i = newlevel; i < 8; i++)
             {
-                if (UnityEngine.Random.value <= 0.55f + Mathf.Min(Player.GetAllPlayers().Count * 0.05f, 0.20f))
+                if (UnityEngine.Random.value <= 0.6f + Mathf.Min(Player.GetAllPlayers().Count * 0.05f, 0.20f))
                 {
                     newlevel = i + 1;
                 }
@@ -871,10 +897,10 @@ out float verticalLoss)
                 Character c = __instance.GetComponent<Character>();
 
                 ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
-                int vml = znv.GetZDO().GetInt("VMMML", 0);
+                int vml = znv.GetZDO().GetInt("level", 0);
                 int level;
 
-                if (vml == 0)
+                if (vml < 4)
                     return true;
                 else
                     level = vml;
@@ -2391,38 +2417,26 @@ out float verticalLoss)
                             //    _player.Message(MessageHud.MessageType.TopLeft, $"VM Error(Enemy Modifiers): {ex.Message}", 0, (Sprite)null);
                             //}
 
-                            foreach (Character c in GameObject.FindObjectsOfType<Character>())
+                            foreach (Character c in Character.GetAllCharacters())
                             {
                                 if (c.IsMonsterFaction())
                                 {
                                     ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
 
-                                    int vml = znv.GetZDO().GetInt("VMMML", 0);
-
-                                    if (vml > 0)
+                                    int lev = znv.GetZDO().GetInt("level", 0);
+                                    
+                                    if (lev > 0 && !c.m_name.Contains(" (UVO"))
                                     {
-                                        if (znv.GetZDO().GetInt("VMMML", 0) > 0 && !c.m_name.Contains(" (UVO"))
+                                        if (lev > 3)
                                         {
-                                            int lev = znv.GetZDO().GetInt("VMMML");
+                                            //int lev = znv.GetZDO().GetInt("VMMML");
                                             c.m_name += $" (UVO: {lev})";
 
                                             UnityEngine.Debug.LogWarning($"Enemy: {c.m_name} -> Name updated.");
                                         }
-                                        continue;
+                                        //continue;
                                     }
-                                    else
-                                    {
 
-                                        int olev = c.GetLevel();
-
-                                        int lev = getMonsterUpgrade(olev);
-                                        c.SetLevel(lev);
-                                        c.m_speed = c.m_speed * (1.0f + (lev / 10.0f));
-
-                                        znv.GetZDO().Set("VMMML", lev);
-
-                                        UnityEngine.Debug.LogWarning($"Enemy: {c.m_name} upgraded to level {lev}.");
-                                    }
                                 }
                             }
 
