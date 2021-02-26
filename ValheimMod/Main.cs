@@ -221,24 +221,35 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.CAW))
         }
 
 
-        public static void CAW(ref Character __instance)
+        public static void CAW(ref Character __instance, ref ZNetView ___m_nview)
         {
-            if (__instance == null || !__instance.IsMonsterFaction() || __instance.m_name.Contains(" (UVO"))
-                return;
+            try
+            {
+                if (__instance == null || !__instance.IsMonsterFaction() || __instance.m_name.Contains(" (UVO") || ___m_nview.GetZDO().GetBool("cmod", false))
+                    return;
 
-            string on = __instance.m_name;
-            int ol = __instance.GetLevel();
+                ___m_nview.GetZDO().Set("cmod", true);
 
-            int lev = getMonsterUpgrade(ol);
+                string on = __instance.m_name;
+                int ol = __instance.GetLevel();
 
-            __instance.SetLevel(lev);
-            __instance.m_speed = __instance.m_speed * (1.0f + (lev / 10.0f));
+                int lev = getMonsterUpgrade(ol);
 
-            //__instance.SetLevel(lev);
+                __instance.SetLevel(lev);
+                __instance.m_speed = __instance.m_speed * (1.0f + (lev / 10.0f));
 
-            //UnityEngine.Debug.LogWarning($"Enemy: {__instance.m_name} upgraded to level {lev}.");
+                //ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance) as ZNetView;
 
-            UnityEngine.Debug.LogWarning($"Updating creature: {on}, {ol} --> {__instance.m_name}, {__instance.GetLevel()}");
+                //__instance.SetLevel(lev);
+
+                //UnityEngine.Debug.LogWarning($"Enemy: {__instance.m_name} upgraded to level {lev}.");
+
+                UnityEngine.Debug.LogWarning($"Updating creature: {on}, {ol} --> {__instance.m_name}, {__instance.GetLevel()}");
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("CAW failed: " + ex.ToString());
+            }
         }
 
         public static string[] ams = { "Armor", "Attack", "Backstab", "BlockPower", "Blunt", "Chop", "Damage", "Fire", "Frost", "Lightning",
@@ -315,7 +326,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.CAW))
 
             for (int i = newlevel; i < 8; i++)
             {
-                if (UnityEngine.Random.value <= 0.6f + Mathf.Min(Player.GetAllPlayers().Count * 0.05f, 0.20f))
+                if (UnityEngine.Random.value <= 0.65f + Mathf.Min(Player.GetAllPlayers().Count * 0.05f, 0.20f))
                 {
                     newlevel = i + 1;
                 }
