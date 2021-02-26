@@ -1987,15 +1987,18 @@ out float verticalLoss)
                 int count = 0;
 
 
-                foreach (Player pl in Player.GetAllPlayers())
+                foreach (ZNet.PlayerInfo pl in ZNet.instance.GetPlayerList())
                 {
-                    ZNetView tznv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
-                    if (tznv.GetZDO().GetString("VMMHM") == "True")
+                    ZDO zd2 = ZDOMan.instance.GetZDO(pl.m_characterID);
+                    //ZNetView tznv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
+                    if (zd2.GetString("VMMHM") == "True")
                     {
                         count++;
                         break;
                     }
                 }
+
+
 
                 if (count == 0)
                 {
@@ -2006,11 +2009,11 @@ out float verticalLoss)
                 {
                     meaw = false;
                 }
+                ZDO zd = ZDOMan.instance.GetZDO(_player.GetZDOID());
+                //ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
+                zd.Set("VMMHM", $"{meaw}");
 
-                ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
-                znv.GetZDO().Set("VMMHM", $"{meaw}");
-
-                _player.Message(MessageHud.MessageType.TopLeft, $"Host Modifier: {meaw}, ZNV: {znv.GetZDO().GetString("VMMHM")}.", 0, (Sprite)null);
+                _player.Message(MessageHud.MessageType.TopLeft, $"Host Modifier: {meaw}, ZNV: {zd.GetString("VMMHM")}.", 0, (Sprite)null);
 
                 path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VMU_Data";
 
@@ -2152,6 +2155,7 @@ out float verticalLoss)
         float elapsed7 = 0f;
         float elapsed8 = 0f;
         float savetime = 0f;
+        float p2psynct = 0f;
         public static bool cs = false;
         public bool us = true;
         public Vector3 ovel = new Vector3(0, 0, 0);
@@ -2183,6 +2187,25 @@ out float verticalLoss)
 
                     if (!active && _player.GetVelocity().magnitude > 1f)
                         active = true;
+
+                    if (p2psynct >= 10.0f)
+                    {
+                        p2psynct = 0f;
+
+                        foreach (ZNet.PlayerInfo pli in ZNet.instance.GetPlayerList())
+                        {
+                            ZDO zd = ZDOMan.instance.GetZDO(pli.m_characterID);
+
+                            if (zd.GetString("p2pdata", "").Contains(_player.GetZDOID().ToString()))
+                                processP2PData(zd, zd.GetString("p2pdata"));
+                        }
+                        
+                    }
+                    else
+                    {
+                        p2psynct += Time.deltaTime;
+                    }
+
 
 
                     if (ostam == -99999f)
@@ -2500,10 +2523,11 @@ out float verticalLoss)
                             int count = 0;
 
 
-                            foreach (Player pl in Player.GetAllPlayers())
+                            foreach (ZNet.PlayerInfo pl in ZNet.instance.GetPlayerList())
                             {
-                                ZNetView tznv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
-                                if (tznv.GetZDO().GetString("VMMHM") == "True")
+                                ZDO zd2 = ZDOMan.instance.GetZDO(pl.m_characterID);
+                                //ZNetView tznv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
+                                if (zd2.GetString("VMMHM") == "True")
                                 {
                                     count++;
                                     break;
@@ -2521,9 +2545,9 @@ out float verticalLoss)
                             {
                                 meaw = false;
                             }
-
-                            ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
-                            znv.GetZDO().Set("VMMHM", $"{meaw}");
+                            ZDO zd = ZDOMan.instance.GetZDO(_player.GetZDOID());
+                            //ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
+                            zd.Set("VMMHM", $"{meaw}");
 
                             _player.Message(MessageHud.MessageType.TopLeft, $"Host modifications set to {meaw}. Check revealed {count} active host modifiers.", 0, (Sprite)null);
                             //Console.print("You subtracted health.");
@@ -2691,6 +2715,11 @@ out float verticalLoss)
             }
 
             parser.WriteFile(filename, data);
+        }
+        
+        public static void processP2PData(ZDO zd, string data)
+        {
+
         }
 
 
