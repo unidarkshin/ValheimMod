@@ -2012,6 +2012,8 @@ out float verticalLoss)
                 {
                     meaw = false;
                 }
+
+
                 //ZDO zd = ZDOMan.instance.GetZDO(_player.GetZDOID());
                 ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
                 znv.GetZDO().Set("VMMHM", $"{meaw}");
@@ -2532,6 +2534,9 @@ out float verticalLoss)
                             foreach (ZNet.PlayerInfo pl in ZNet.instance.GetPlayerList())
                             {
                                 ZDO zd2 = ZDOMan.instance.GetZDO(pl.m_characterID);
+
+                                if (zd2 == null)
+                                    continue;
                                 //ZNetView tznv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
                                 if (zd2.GetString("VMMHM") == "True")
                                 {
@@ -2552,11 +2557,16 @@ out float verticalLoss)
                                 meaw = false;
                             }
                             ZDO zd = ZDOMan.instance.GetZDO(_player.GetZDOID());
-                            //ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
-                            zd.Set("VMMHM", $"{meaw}");
 
-                            _player.Message(MessageHud.MessageType.TopLeft, $"Host modifications set to {meaw}. Check revealed {count} active host modifiers.", 0, (Sprite)null);
-                            //Console.print("You subtracted health.");
+                            //ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
+
+                            if (zd != null)
+                            {
+                                zd.Set("VMMHM", $"{meaw}");
+
+                                _player.Message(MessageHud.MessageType.TopLeft, $"Host modifications set to {meaw}. Check revealed {count} active host modifiers.", 0, (Sprite)null);
+                                //Console.print("You subtracted health.");
+                            }
                         }
 
                         if (Input.GetKeyDown(KeyCode.P))
