@@ -403,6 +403,11 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.CAW))
 
                     return false;
                 }
+                else if (args[0] == "tptoc" && args.Length == 3 && int.TryParse(args[1], out int x) && int.TryParse(args[2], out int z))
+                {
+                    Vector3 pos = new Vector3(x, _player.transform.position.y, z);
+                    _player.TeleportTo(pos, _player.transform.rotation, true);
+                }
                 else if (args[0] == "giveitemtp" && args.Length > 2 && _player != null)
                 {
                     Player p = null;
@@ -1756,7 +1761,8 @@ out float verticalLoss)
                         item.m_shared.m_weight = rndf2(item.m_shared.m_weight + (1 + UnityEngine.Random.Range(0, r + 1)));
                         //item.m_durability = item.m_shared.m_maxDurability;
 
-
+                        if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                            item.m_shared.m_toolTier += 1;
                     }
                     else if (type == 2)
                     {
@@ -1957,7 +1963,7 @@ out float verticalLoss)
             {
    
 
-                if ((rnd <= ((1.0f / (i * i)) * Mathf.Min(1.0f + (0.005f * level), 1.5f) * Mathf.Min(1.0f + (quality * 0.1f), 1.5f))))
+                if ((rnd <= ((1.0f / (i * i)) * Mathf.Min(1.0f + (0.005f * level), 1.5f) * Mathf.Min(1.0f + ((quality - 1) * 0.1f), 1.5f))))
                 {
                     r = i;
                 }
