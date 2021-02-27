@@ -1871,9 +1871,9 @@ out float verticalLoss)
                     item.m_crafterName += item.m_shared.m_name.Substring(item.m_shared.m_name.IndexOf(" (UVO"));
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                UnityEngine.Debug.LogWarning("Fail in AI patch.");
+                UnityEngine.Debug.LogWarning($"Fail in AI patch: {ex.ToString()}");
             }
         }
 
@@ -2195,6 +2195,9 @@ out float verticalLoss)
                         foreach (ZNet.PlayerInfo pli in ZNet.instance.GetPlayerList())
                         {
                             ZDO zd = ZDOMan.instance.GetZDO(pli.m_characterID);
+
+                            if (zd == null)
+                                continue;
 
                             if (zd.GetString("p2pdata", "").Contains(_player.GetZDOID().ToString()))
                                 processP2PData(zd, zd.GetString("p2pdata"));
@@ -2694,7 +2697,7 @@ out float verticalLoss)
             {
 
 
-                UnityEngine.Debug.LogWarning($"Error in Update: {ex.Message}");
+                UnityEngine.Debug.LogWarning($"Error in Update: {ex.ToString()}");
             }
 
 
