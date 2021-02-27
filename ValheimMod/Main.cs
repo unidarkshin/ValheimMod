@@ -2107,8 +2107,8 @@ out float verticalLoss)
                 }
                 catch (Exception ex)
                 {
-                    _player.Message(MessageHud.MessageType.TopLeft, $"VM Error in start: {ex.Message}", 0, (Sprite)null);
-
+                    //_player.Message(MessageHud.MessageType.TopLeft, $"VM Error in start: {ex.Message}", 0, (Sprite)null);
+                    UnityEngine.Debug.LogWarning($"VM Error in start: {ex.Message}");
 
                 }
 
@@ -2125,8 +2125,8 @@ out float verticalLoss)
             }
             catch (Exception ex)
             {
-                _player.Message(MessageHud.MessageType.TopLeft, $"VM Error in patching: {ex.Message}", 0, (Sprite)null);
-
+                //_player.Message(MessageHud.MessageType.TopLeft, $"VM Error in patching: {ex.Message}", 0, (Sprite)null);
+                UnityEngine.Debug.LogWarning($"VM Error in END start: {ex.Message}");
                 /*FileStream fs2 = new FileStream(errorfile, FileMode.OpenOrCreate, FileAccess.ReadWrite);
 
 
