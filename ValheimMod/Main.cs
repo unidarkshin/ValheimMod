@@ -1990,6 +1990,9 @@ out float verticalLoss)
                 foreach (ZNet.PlayerInfo pl in ZNet.instance.GetPlayerList())
                 {
                     ZDO zd2 = ZDOMan.instance.GetZDO(pl.m_characterID);
+
+                    if (zd2 == null)
+                        continue;
                     //ZNetView tznv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(pl) as ZNetView;
                     if (zd2.GetString("VMMHM") == "True")
                     {
