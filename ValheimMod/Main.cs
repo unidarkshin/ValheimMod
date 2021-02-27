@@ -2012,11 +2012,11 @@ out float verticalLoss)
                 {
                     meaw = false;
                 }
-                ZDO zd = ZDOMan.instance.GetZDO(_player.GetZDOID());
-                //ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
-                zd.Set("VMMHM", $"{meaw}");
+                //ZDO zd = ZDOMan.instance.GetZDO(_player.GetZDOID());
+                ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
+                znv.GetZDO().Set("VMMHM", $"{meaw}");
 
-                _player.Message(MessageHud.MessageType.TopLeft, $"Host Modifier: {meaw}, ZNV: {zd.GetString("VMMHM")}.", 0, (Sprite)null);
+                _player.Message(MessageHud.MessageType.TopLeft, $"Host Modifier: {meaw}, ZNV: {znv.GetZDO().GetString("VMMHM", "")}.", 0, (Sprite)null);
 
                 path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VMU_Data";
 
