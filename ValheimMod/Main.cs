@@ -216,10 +216,22 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.CAW))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: typeof(Inventory).GetConstructor(new Type[] { typeof(string), typeof(Sprite), typeof(int), typeof(int)}),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.II))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
 
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
+        public static void II(ref int ___m_width, ref int ___m_height, string name, Sprite bkg, int w, int h)
+        {
+
+            ___m_width = 8;
+            ___m_height = 10;
+        }
 
         public static void CAW(ref Character __instance, ref ZNetView ___m_nview)
         {
@@ -1701,7 +1713,7 @@ out float verticalLoss)
                     if (r > 1)
                     {
                         //oir = 0;
-                        r = r + or + UnityEngine.Random.Range(0, 2);
+                        r = r + or; // + UnityEngine.Random.Range(0, 2);
                     }
 
 
@@ -1767,7 +1779,7 @@ out float verticalLoss)
                     else if (type == 2)
                     {
 
-                        item.m_shared.m_armor = rndf2(item.m_shared.m_armor * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .05f)));
+                        item.m_shared.m_armor = rndf2(item.m_shared.m_armor * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .0078f)));
                         item.m_shared.m_attackForce = rndf2(item.m_shared.m_attackForce * (UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f))));
                         item.m_shared.m_backstabBonus = rndf2(item.m_shared.m_backstabBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
                         item.m_shared.m_blockPower = rndf2(item.m_shared.m_blockPower * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
@@ -1985,8 +1997,10 @@ out float verticalLoss)
 
             try
             {
-
+                
                 _player = Player.m_localPlayer;
+
+                
 
                 pln = _player.GetPlayerName();
 
@@ -2037,7 +2051,7 @@ out float verticalLoss)
                 }
 
                 IniData data;
-
+                
                 if (File.Exists(filename))
                 {
 
