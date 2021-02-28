@@ -418,7 +418,14 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.II))
                 else if (args[0] == "tptoc" && args.Length == 3 && int.TryParse(args[1], out int x) && int.TryParse(args[2], out int z))
                 {
                     Vector3 pos = new Vector3(x, _player.transform.position.y, z);
-                    _player.TeleportTo(pos, _player.transform.rotation, true);
+
+                    if (Physics.Raycast(new Ray(_player.transform.position, -1 * _player.transform.up), out RaycastHit hit))
+                    {
+                        pos.y = hit.point.y + 1.0f;
+                        _player.TeleportTo(pos, _player.transform.rotation, true);
+                    }
+
+                    return false;
                 }
                 else if (args[0] == "giveitemtp" && args.Length > 2 && _player != null)
                 {
@@ -511,7 +518,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.II))
                     }
                 }
 
-                return true;
+                return false;
             }
             catch (Exception ex)
             {
@@ -1975,7 +1982,7 @@ out float verticalLoss)
             {
    
 
-                if ((rnd <= ((1.0f / (i * i)) * Mathf.Min(1.0f + (0.005f * level), 1.5f) * Mathf.Min(1.0f + ((quality - 1) * 0.1f), 1.5f))))
+                if ((rnd <= ((1.0f / (i * i * (1.0f + (i * 0.1f)))) * Mathf.Min(1.0f + (0.005f * level), 1.5f) * Mathf.Min(1.0f + ((quality - 1) * 0.1f), 1.5f))))
                 {
                     r = i;
                 }
@@ -2709,7 +2716,7 @@ out float verticalLoss)
 
                     savetime += Time.deltaTime;
 
-                    if (savetime >= 30f)
+                    if (savetime >= 20f)
                     {
                         savetime = 0f;
                         SaveSkillData();
