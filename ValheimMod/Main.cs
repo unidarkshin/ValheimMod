@@ -420,7 +420,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.II))
                 {
                     Vector3 pos = new Vector3(x, _player.transform.position.y, z);
 
-                    if (Physics.Raycast(new Ray(_player.transform.position, -1 * _player.transform.up), out RaycastHit hit))
+                    if (Physics.Raycast(new Ray(_player.transform.position - new Vector3(0f, 1.0f, 0f), -1 * _player.transform.up), out RaycastHit hit))
                     {
                         pos.y = hit.point.y + 1.0f;
                         _player.TeleportTo(pos, _player.transform.rotation, true);
@@ -926,6 +926,7 @@ out float verticalLoss)
 
         public static bool CGDL(ref CharacterDrop __instance, ref List<KeyValuePair<GameObject, int>> __result)
         {
+            return true;
 
             try
             {
@@ -2232,7 +2233,9 @@ out float verticalLoss)
 
                             for (int i = 0; i < rznv.GetZDO().GetInt("drops", 0); i++)
                             {
-                                rznv.GetZDO().Set("drop_amount" + (object)i, 1);
+                                int amt = rznv.GetZDO().GetInt("drop_amount" + (object)i, 0);
+                                if (amt > 30)
+                                    rznv.GetZDO().Set("drop_amount" + (object)i, UnityEngine.Random.Range(20, 1 + (int)(amt / 10.0)));
                             }
 
                         }
