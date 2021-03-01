@@ -300,6 +300,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.II))
         {
             try
             {
+                
                 //UnityEngine.Debug.Log($"CSL attempting monster incr.");
 
                 /*if (!__instance.IsMonsterFaction())
@@ -2188,6 +2189,7 @@ out float verticalLoss)
         float elapsed8 = 0f;
         float savetime = 0f;
         float p2psynct = 0f;
+        float ragtime = 0f;
         public static bool cs = false;
         public bool us = true;
         public Vector3 ovel = new Vector3(0, 0, 0);
@@ -2208,6 +2210,7 @@ out float verticalLoss)
                 {
 
 
+
                     if (shouldInit)
                     {
                         shouldInit = false;
@@ -2216,6 +2219,30 @@ out float verticalLoss)
 
                     if (iscrafting)
                         iscrafting = false;
+
+                    if (ragtime >= 2.0f)
+                    {
+
+                        foreach (Ragdoll rag in GameObject.FindObjectsOfType<Ragdoll>())
+                        {
+                            ZNetView rznv = typeof(Ragdoll).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(rag) as ZNetView;
+
+                            if (rznv == null)
+                                continue;
+
+                            for (int i = 0; i < rznv.GetZDO().GetInt("drops", 0); i++)
+                            {
+                                rznv.GetZDO().Set("drop_amount" + (object)i, 1);
+                            }
+
+                        }
+
+                        ragtime = 0f;
+                    }
+                    else
+                    {
+                        ragtime += Time.deltaTime;
+                    }
 
                     if (!active && _player.GetVelocity().magnitude > 1f)
                         active = true;
