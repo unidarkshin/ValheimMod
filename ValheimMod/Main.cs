@@ -338,7 +338,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.II))
 
             for (int i = newlevel; i < 8; i++)
             {
-                if (UnityEngine.Random.value <= 0.65f + Mathf.Min(Player.GetAllPlayers().Count * 0.05f, 0.20f))
+                if (UnityEngine.Random.value <= 0.60f + Mathf.Min(Player.GetAllPlayers().Count * 0.025f, 0.20f))
                 {
                     newlevel = i + 1;
                 }
