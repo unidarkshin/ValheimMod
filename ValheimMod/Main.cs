@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Diagnostics;
 
 namespace ValheimMod
@@ -222,15 +223,41 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.II))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+/*            h.Patch(
+original: typeof(InventoryGrid).GetMethod("Awake", BindingFlags.NonPublic | BindingFlags.Instance, Type.DefaultBinder, new Type[] { }, new ParameterModifier[] { }),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGA))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);*/
 
+            //UnityEngine.UI.Scrollbar scr = new UnityEngine.UI.Scrollbar();
             //ZNet.instance.m_serverPlayerLimit = 99;
         }
 
-        public static void II(ref int ___m_width, ref int ___m_height, string name, Sprite bkg, int w, int h)
+        public static void IGA(ref Scrollbar ___m_scrollbar)
         {
+            //___m_width = 16;
+            //___m_height = 4;
 
-            ___m_width = 8;
-            ___m_height = 10;
+            //___m_scrollbar.gameObject.SetActive(true);
+            //___m_scrollbar.enabled = true;
+
+        }
+
+        public static void II(ref int ___m_width, ref int ___m_height, ref Sprite ___m_bkg, string name, Sprite bkg, int w, int h)
+        {
+            try
+            {
+                ___m_width = 8;
+                ___m_height = 10;
+            }
+            catch (Exception ex)
+            {
+
+                UnityEngine.Debug.LogWarning("II failed: " + ex.ToString());
+            }
+            //___m_bkg = GameObject.FindObjectsOfType<Container>()[0].GetInventory().GetBkg();
+            
+
         }
 
         public static void CAW(ref Character __instance, ref ZNetView ___m_nview)
@@ -2707,6 +2734,55 @@ out float verticalLoss)
                         if (Input.GetKeyDown(KeyCode.PageDown)) // Will just unload our DLL
                         {
                             Loader.Unload();
+                        }
+
+                        if (Input.GetKeyDown(KeyCode.N))
+                        {
+                            //InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
+                            //InventoryGui.instance.m_player = InventoryGui.instance.m_container;
+                            //Container c = typeof(InventoryGui).GetField("m_currentContainer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(InventoryGui.instance) as Container;
+                            //GameObject scr = GameObject.FindObjectsOfType<GameObject>().Where(g => g.name.ToLower().Contains("inventory_screen")).SingleOrDefault();
+                            //InventoryGrid gr1 = scr.GetComponentsInChildren<InventoryGrid>().Where(g => g.name.ToLower() == "playergrid").SingleOrDefault();
+                            //InventoryGrid gr2 = scr.GetComponentsInChildren<InventoryGrid>().Where(g => g.name.ToLower() == "containergrid").SingleOrDefault();
+
+                            //gr1 = gr2;
+
+                            //UnityEngine.Debug.LogWarning($"{gr1.name}, {gr2.name}");
+                            /*
+                            foreach (MonoBehaviour go in scr.GetComponents<MonoBehaviour>())
+                            {
+                                UnityEngine.Debug.LogWarning($"Base: {go.name}, {go.GetType()}");
+                            }
+
+                            foreach (MonoBehaviour go in scr.GetComponentsInChildren<MonoBehaviour>())
+                            {
+                                UnityEngine.Debug.LogWarning($"Child: {go.name}, {go.GetType()}");
+                                
+                            }
+
+                            foreach (MonoBehaviour go in scr.GetComponentsInParent<MonoBehaviour>())
+                            {
+                                UnityEngine.Debug.LogWarning($"Parent: {go.name}, {go.GetType()}");
+                            }
+                            */
+
+
+                            /*foreach (Component go in scr.GetComponentsInChildren<Component>())
+                            {
+                                UnityEngine.Debug.LogWarning($"{go.name}");
+                            }
+                            foreach (Component go in scr.GetComponentsInParent<Component>())
+                            {
+                                UnityEngine.Debug.LogWarning($"{go.name}");
+                            }*/
+
+
+                            //typeof(Inventory).GetField("m_bkg", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(_player.GetInventory(), co.GetInventory().GetBkg());
+
+                            //g = InventoryGui.instance.m_container.GetComponentInChildren<InventoryGrid>();
+
+                            //g.ResetView();
+
                         }
 
                         if (elapsed5 >= 10.0f)
