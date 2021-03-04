@@ -2738,16 +2738,92 @@ out float verticalLoss)
 
                         if (Input.GetKeyDown(KeyCode.N))
                         {
+
+                            //spawn object
+                            //objToSpawn = new GameObject("Cool GameObject made from Code");
+                            //Add Components
+                            //objToSpawn.AddComponent<Rigidbody>();
+                            UnityEngine.Debug.LogWarning("2746");
                             //InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
                             //InventoryGui.instance.m_player = InventoryGui.instance.m_container;
                             //Container c = typeof(InventoryGui).GetField("m_currentContainer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(InventoryGui.instance) as Container;
-                            //GameObject scr = GameObject.FindObjectsOfType<GameObject>().Where(g => g.name.ToLower().Contains("inventory_screen")).SingleOrDefault();
-                            //InventoryGrid gr1 = scr.GetComponentsInChildren<InventoryGrid>().Where(g => g.name.ToLower() == "playergrid").SingleOrDefault();
-                            //InventoryGrid gr2 = scr.GetComponentsInChildren<InventoryGrid>().Where(g => g.name.ToLower() == "containergrid").SingleOrDefault();
+                            GameObject scr = GameObject.FindObjectsOfType<GameObject>().Where(g => g.name.ToLower().Contains("inventory_screen")).SingleOrDefault();
+                            InventoryGrid gr1 = scr.GetComponentsInChildren<InventoryGrid>().Where(g => g.name.ToLower() == "playergrid").SingleOrDefault();
+                            GameObject rt = scr.GetComponentsInChildren<GameObject>().Where(g => g.name.ToLower() == "player").SingleOrDefault();
+                            
+                            //RectTransform bkgrt = gr1.GetComponentsInChildren<RectTransform>().Where(g => g.name.ToLower().Contains("bkg")).SingleOrDefault();
+                            //Scrollbar gr2 = scr.GetComponentsInChildren<Scrollbar>().Where(g => g.name.ToLower().Contains("scroll")).SingleOrDefault();
+                            UnityEngine.Debug.LogWarning("2755");
+                            GameObject nip = new GameObject("UVOGO1", typeof(RectTransform), typeof(CanvasRenderer));
+                            UnityEngine.Debug.LogWarning("2757");
+                            //nip.transform.SetParent(gr1.transform);
+                            
+                            UnityEngine.Debug.LogWarning(gr1.transform.parent.gameObject.name);
+                            nip.transform.SetParent(gr1.transform);
+                            //nip.transform.SetParent(gr1.transform.parent.gameObject.transform);
+                            //gr1.transform.SetParent(nip.transform);
+                            UnityEngine.Debug.LogWarning("2759");
+                            RectTransform niprt = nip.GetComponent<RectTransform>();
+                            UnityEngine.Debug.LogWarning("2761");
+                            RectTransform rtpg = gr1.GetComponent<RectTransform>();
+                            niprt.position = rtpg.position;
+                            niprt.sizeDelta = rtpg.sizeDelta; // - new Vector2(20f,20f);
+                            niprt.rotation = rtpg.rotation;
+                            niprt.localPosition = rtpg.localPosition;
+                            niprt.anchoredPosition = rtpg.anchoredPosition;
+                            
+                            
+                            UnityEngine.Debug.LogWarning("2763");
+                            //niprt.sizeDelta = new Vector2(50f, 50f);
+                            UnityEngine.Debug.LogWarning("2765");
 
+                            Mask m = nip.AddComponent<Mask>();
+                            m.gameObject.SetActive(true);
+                            //gr2.handleRect = gr1.m_gridRoot;
+                            
+                            ScrollRect scrb = nip.gameObject.AddComponent(typeof(ScrollRect)) as ScrollRect;
+                            //VerticalLayoutGroup vlg = nip.gameObject.AddComponent(typeof(VerticalLayoutGroup)) as VerticalLayoutGroup;
+                            //scrb = gr2.gameObject.clo;
+                            //vlg.gameObject.SetActive(true);
+                            //scrb.transform.position = gr2.transform.position + (0f, );
+                            scrb.horizontal = false;
+                            scrb.enabled = true;
+                            scrb.scrollSensitivity = 25f;
+                            scrb.content = gr1.GetComponent<RectTransform>();
+                            scrb.viewport = nip.GetComponent<RectTransform>();
+                            scrb.gameObject.SetActive(true);
+                            //scrb.handleRect = gr1.m_gridRoot;
+                            //ContentSizeFitter csf = nip.AddComponent<ContentSizeFitter>();
+                            //csf.verticalFit = ContentSizeFitter.FitMode.MinSize;
+                            //csf.gameObject.SetActive(true);
+
+                            //CanvasGroup cnv = nip.AddComponent<CanvasGroup>();
+                            //cnv.interactable = false;
+                            //cnv.blocksRaycasts = false;
+                            //cnv.alpha = 1f;
+                            //cnv.gameObject.SetActive(true);
+                            
+                            
+                            foreach (Component co in gr1.GetComponentsInChildren<Component>())
+                            {
+                                co.transform.SetParent(nip.transform, true);
+                            }
                             //gr1 = gr2;
 
-                            //UnityEngine.Debug.LogWarning($"{gr1.name}, {gr2.name}");
+                            //gr1.transform.SetParent(nip.transform);
+
+                            //string prt = getHier(gr1.gameObject);
+                            
+                            string prt = "";
+                            int count = 0;
+
+                            foreach (Component co in gr1.GetComponentsInChildren<Component>())
+                            {
+                                prt += $"\n{count} -> {co.name}";
+                                count++;
+                            }
+
+                            UnityEngine.Debug.LogWarning(prt);
                             /*
                             foreach (MonoBehaviour go in scr.GetComponents<MonoBehaviour>())
                             {
@@ -2847,6 +2923,46 @@ out float verticalLoss)
             }
 
 
+        }
+
+        public GameObject oog = null;
+
+        public string getHier(GameObject scr, string prt = "", int level = 0)
+        {
+            if (prt.Length == 0)
+            {
+                prt = $"OG Object: {scr.name}";
+                oog = scr;
+                level = 0;
+            }
+            else
+            {
+                prt += $"\n{addSpaces(level)}Level {level}: {scr.name}";
+            }
+
+            if (scr.GetComponentsInChildren<Component>().Length > 0)
+                level++;
+            else
+                return prt;
+
+            foreach (MonoBehaviour co in scr.GetComponentsInChildren<MonoBehaviour>())
+            {
+                prt += getHier(co.gameObject, prt, level).Substring(prt.Length);
+            }
+
+            return prt;
+        }
+
+        public string addSpaces(int num)
+        {
+            string str = "";
+
+            for (int i = 0; i < num; i++)
+            {
+                str += " ";
+            }
+
+            return str;
         }
 
         public void SaveSkillData()
