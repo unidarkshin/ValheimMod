@@ -243,12 +243,14 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGA))
 
         }
 
+        public static int invrowadd = 4;
+
         public static void II(ref int ___m_width, ref int ___m_height, ref Sprite ___m_bkg, string name, Sprite bkg, int w, int h)
         {
             try
             {
                 ___m_width = 8;
-                ___m_height = 10;
+                ___m_height = 4 + invrowadd;
             }
             catch (Exception ex)
             {
@@ -2754,59 +2756,119 @@ out float verticalLoss)
                             //RectTransform bkgrt = gr1.GetComponentsInChildren<RectTransform>().Where(g => g.name.ToLower().Contains("bkg")).SingleOrDefault();
                             //Scrollbar gr2 = scr.GetComponentsInChildren<Scrollbar>().Where(g => g.name.ToLower().Contains("scroll")).SingleOrDefault();
                             UnityEngine.Debug.LogWarning("2755");
-                            GameObject nip = new GameObject("UVOGO1", typeof(RectTransform), typeof(CanvasRenderer));
+                            GameObject nip = new GameObject("UVOGO1", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                            GameObject nip2 = new GameObject("UVOGO2", typeof(RectTransform));
                             UnityEngine.Debug.LogWarning("2757");
                             //nip.transform.SetParent(gr1.transform);
                             
                             UnityEngine.Debug.LogWarning(gr1.transform.parent.gameObject.name);
                             nip.transform.SetParent(gr1.transform);
+                            nip2.transform.SetParent(nip.transform);
                             //nip.transform.SetParent(gr1.transform.parent.gameObject.transform);
                             //gr1.transform.SetParent(nip.transform);
                             UnityEngine.Debug.LogWarning("2759");
                             RectTransform niprt = nip.GetComponent<RectTransform>();
+                            //niprt = GetCopyOf<RectTransform>()
                             UnityEngine.Debug.LogWarning("2761");
                             RectTransform rtpg = gr1.GetComponent<RectTransform>();
                             niprt.position = rtpg.position;
-                            niprt.sizeDelta = rtpg.sizeDelta; // - new Vector2(20f,20f);
+                            //UnityEngine.Debug.LogWarning(rtpg.sizeDelta);
+                            niprt.sizeDelta = rtpg.sizeDelta;// * new Vector2(1f, 2f);// / 2f;
                             niprt.rotation = rtpg.rotation;
                             niprt.localPosition = rtpg.localPosition;
                             niprt.anchoredPosition = rtpg.anchoredPosition;
+                            niprt.anchorMax = rtpg.anchorMax;
+                            niprt.anchorMin = rtpg.anchorMin;
+                            niprt.eulerAngles = rtpg.eulerAngles;
+                            niprt.localEulerAngles = rtpg.localEulerAngles;
+                            niprt.localRotation = rtpg.localRotation;
+                            niprt.localScale = rtpg.localScale;
+                            niprt.offsetMax = rtpg.offsetMax;
+                            niprt.offsetMin = rtpg.offsetMin;
+                            niprt.pivot = rtpg.pivot;
+
+                            //rtpg.sizeDelta = rtpg.sizeDelta * new Vector2(2f, 2f);
+                            RectTransform niprt2 = nip2.GetComponent<RectTransform>();
+
                             
+
+                            niprt2.anchorMax = new Vector2(1f, 0.95f);
+                            niprt2.anchorMin *= new Vector2(1f, -2f);
+                            niprt2.pivot = new Vector2(0.5f, 0.95f);
+
+                            niprt2.sizeDelta = rtpg.sizeDelta;// * new Vector2(1f, 2f);// / 2f;
+                            niprt2.rotation = rtpg.rotation;
+                            niprt2.localPosition = rtpg.localPosition;
+                            niprt2.anchoredPosition = rtpg.anchoredPosition;
                             
+                            niprt2.eulerAngles = rtpg.eulerAngles;
+                            niprt2.localEulerAngles = rtpg.localEulerAngles;
+                            niprt2.localRotation = rtpg.localRotation;
+                            niprt2.localScale = rtpg.localScale;
+                            niprt2.offsetMax = rtpg.offsetMax;
+                            niprt2.offsetMin = rtpg.offsetMin;
+
+                            //UnityEngine.Debug.LogWarning($"s1 -> {niprt2.sizeDelta}");
+
+                            niprt2.ForceUpdateRectTransforms();
+
+                            //UnityEngine.Debug.LogWarning($"s2 -> {niprt2.sizeDelta}");
+
+                            //ContentSizeFitter csf = nip2.gameObject.AddComponent<ContentSizeFitter>();
+                            //csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                            //csf.gameObject.SetActive(true);
+                            //niprt2.sizeDelta *= new Vector2(1f, 2f);
+                            //UnityEngine.Debug.LogWarning($"s3 -> {niprt2.sizeDelta}");
+
+                            niprt.GetComponent<Image>().gameObject.SetActive(true);
+
                             UnityEngine.Debug.LogWarning("2763");
                             //niprt.sizeDelta = new Vector2(50f, 50f);
                             UnityEngine.Debug.LogWarning("2765");
 
                             Mask m = nip.AddComponent<Mask>();
+                            m.showMaskGraphic = false;
                             m.gameObject.SetActive(true);
                             //gr2.handleRect = gr1.m_gridRoot;
+
                             
-                            ScrollRect scrb = nip.gameObject.AddComponent(typeof(ScrollRect)) as ScrollRect;
-                            //VerticalLayoutGroup vlg = nip.gameObject.AddComponent(typeof(VerticalLayoutGroup)) as VerticalLayoutGroup;
+
+                            ScrollRect scrb = nip.AddComponent(typeof(ScrollRect)) as ScrollRect;
+                            //VerticalLayoutGroup vlg = nip2.gameObject.AddComponent<VerticalLayoutGroup>();
+                            
                             //scrb = gr2.gameObject.clo;
                             //vlg.gameObject.SetActive(true);
                             //scrb.transform.position = gr2.transform.position + (0f, );
                             scrb.horizontal = false;
                             scrb.enabled = true;
                             scrb.scrollSensitivity = 25f;
-                            scrb.content = gr1.GetComponent<RectTransform>();
+                            scrb.content = nip2.GetComponent<RectTransform>();
                             scrb.viewport = nip.GetComponent<RectTransform>();
+                            //scrb.CalculateLayoutInputVertical();
                             scrb.gameObject.SetActive(true);
+                            
                             //scrb.handleRect = gr1.m_gridRoot;
-                            //ContentSizeFitter csf = nip.AddComponent<ContentSizeFitter>();
-                            //csf.verticalFit = ContentSizeFitter.FitMode.MinSize;
-                            //csf.gameObject.SetActive(true);
-
+                            
+                            
                             //CanvasGroup cnv = nip.AddComponent<CanvasGroup>();
                             //cnv.interactable = false;
                             //cnv.blocksRaycasts = false;
                             //cnv.alpha = 1f;
                             //cnv.gameObject.SetActive(true);
-                            
-                            
+
+                            //nip.GetComponent <CanvasRenderer>().
+                            Image image = nip.GetComponent<Image>();
+
+                            var tempColor = image.color;
+                            tempColor.a = 1f;
+                            image.color = tempColor;
+
                             foreach (Component co in gr1.GetComponentsInChildren<Component>())
                             {
-                                co.transform.SetParent(nip.transform, true);
+                                if (nip2.gameObject == co.gameObject)
+                                    continue;
+
+                                co.transform.SetParent(nip2.transform, true);
                             }
                             //gr1 = gr2;
 
@@ -2823,7 +2885,7 @@ out float verticalLoss)
                                 count++;
                             }
 
-                            UnityEngine.Debug.LogWarning(prt);
+                            //UnityEngine.Debug.LogWarning(prt);
                             /*
                             foreach (MonoBehaviour go in scr.GetComponents<MonoBehaviour>())
                             {
@@ -2924,6 +2986,7 @@ out float verticalLoss)
 
 
         }
+      
 
         public GameObject oog = null;
 
