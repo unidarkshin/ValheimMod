@@ -151,11 +151,11 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.WOP))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(WearNTear), "GetMaterialProperties"),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.WGMP))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-);
+);*/
 
             h.Patch(
 original: AccessTools.Method(typeof(Player), "CheckCanRemovePiece", new Type[] { typeof(Piece) }),
@@ -223,14 +223,26 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.II))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
-/*            h.Patch(
-original: typeof(InventoryGrid).GetMethod("Awake", BindingFlags.NonPublic | BindingFlags.Instance, Type.DefaultBinder, new Type[] { }, new ParameterModifier[] { }),
-postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGA))
+            /*h.Patch(
+original: AccessTools.Method(typeof(InventoryGui), "Show", new Type[] { typeof(Container) }),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );*/
 
+            /*            h.Patch(
+            original: typeof(InventoryGrid).GetMethod("Awake", BindingFlags.NonPublic | BindingFlags.Instance, Type.DefaultBinder, new Type[] { }, new ParameterModifier[] { }),
+            postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGA))
+            //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+            );*/
+
             //UnityEngine.UI.Scrollbar scr = new UnityEngine.UI.Scrollbar();
             //ZNet.instance.m_serverPlayerLimit = 99;
+        }
+
+        public static void IGS(Container container)
+        {
+            
+
         }
 
         public static void IGA(ref Scrollbar ___m_scrollbar)
@@ -314,7 +326,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGA))
 
                 for (int i = 0; i < ams.Length; i++)
                 {
-                    if (attr[i] != 0 && !__result.ToLower().Contains(ams[i].ToLower()))
+                    if (attr[i] != 0 && i != 1 && !__result.ToLower().Contains(ams[i].ToLower()))
                         __result += $"\n{ams[i]}: <color=blue>{attr[i]}</color>";
                 }
 
@@ -368,7 +380,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGA))
 
             for (int i = newlevel; i < 8; i++)
             {
-                if (UnityEngine.Random.value <= 0.60f + Mathf.Min(Player.GetAllPlayers().Count * 0.025f, 0.20f))
+                if (UnityEngine.Random.value <= 0.55f + Mathf.Min(Player.GetAllPlayers().Count * 0.025f, 0.25f))
                 {
                     newlevel = i + 1;
                 }
@@ -955,7 +967,7 @@ out float verticalLoss)
 
         public static bool CGDL(ref CharacterDrop __instance, ref List<KeyValuePair<GameObject, int>> __result)
         {
-            return true;
+            //return true;
 
             try
             {
@@ -1585,7 +1597,7 @@ out float verticalLoss)
                         }
                         else if (skl.m_info.m_skill == Skills.SkillType.Bows)
                         {
-                            if (_player.IsSneaking())
+                            if (_player.IsCrouching())
                                 hit.m_damage.m_damage += (hit.m_damage.GetTotalDamage() * 2.5f);
                             else
                                 hit.m_damage.m_damage += hit.m_damage.GetTotalDamage();
@@ -2231,6 +2243,8 @@ out float verticalLoss)
         float ostam = -99999f;
 
         bool showSkills = false;
+
+        bool invScroll = false;
         //Player _playert;
         public void Update()
         {
@@ -2264,7 +2278,7 @@ out float verticalLoss)
                             {
                                 int amt = rznv.GetZDO().GetInt("drop_amount" + (object)i, 0);
                                 if (amt > 30)
-                                    rznv.GetZDO().Set("drop_amount" + (object)i, UnityEngine.Random.Range(20, 1 + (int)(amt / 10.0)));
+                                    rznv.GetZDO().Set("drop_amount" + (object)i, UnityEngine.Random.Range(20, 1 + (int)(amt / 60.0)));
                             }
 
                         }
@@ -2274,6 +2288,11 @@ out float verticalLoss)
                     else
                     {
                         ragtime += Time.deltaTime;
+                    }
+
+                    if (!invScroll && InventoryGui.IsVisible())
+                    {
+                        setupInvScroll();
                     }
 
                     if (!active && _player.GetVelocity().magnitude > 1f)
@@ -2375,17 +2394,17 @@ out float verticalLoss)
                             activechanges = true;
                         }
 
-                        if (_player.GetControlledShip().m_backwardForce != (0.5f + (s.level * 0.005f)))
+                        if (_player.GetControlledShip().m_backwardForce != (0.5f + (s.level * 0.004f)))
                         {
                             Ship sh = _player.GetControlledShip();
-                            sh.m_backwardForce = (0.5f + (s.level * 0.005f));
-                            sh.m_sailForceFactor = (0.05f + (s.level * 0.0005f));
-                            sh.m_stearForce = (0.5f + (s.level * 0.005f));
-                            sh.m_force = 0.60f;
+                            sh.m_backwardForce = (0.5f + (s.level * 0.004f));
+                            sh.m_sailForceFactor = (0.05f + (s.level * 0.0004f));
+                            sh.m_stearForce = (0.5f + (s.level * 0.004f));
+                            sh.m_force = 0.55f;
                             sh.m_waterImpactDamage = Mathf.Max(10.0f - (s.level * 0.07f), 3.0f);
                             sh.m_minWaterImpactForce = (3.5f + (s.level * 0.07f));
                             sh.m_minWaterImpactInterval = (10.0f + (s.level * 0.1f));
-
+                            
                             _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
                         }
                     }
@@ -2401,7 +2420,7 @@ out float verticalLoss)
 
                             float rnd;
 
-                            if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.05f)
+                            if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.03f)
                                 rnd = UnityEngine.Random.Range(50f, 150f);
                             else
                                 rnd = UnityEngine.Random.Range(1.0f, 20.0f);
@@ -2745,145 +2764,21 @@ out float verticalLoss)
                             //objToSpawn = new GameObject("Cool GameObject made from Code");
                             //Add Components
                             //objToSpawn.AddComponent<Rigidbody>();
-                            UnityEngine.Debug.LogWarning("2746");
-                            //InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
-                            //InventoryGui.instance.m_player = InventoryGui.instance.m_container;
-                            //Container c = typeof(InventoryGui).GetField("m_currentContainer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(InventoryGui.instance) as Container;
-                            GameObject scr = GameObject.FindObjectsOfType<GameObject>().Where(g => g.name.ToLower().Contains("inventory_screen")).SingleOrDefault();
-                            InventoryGrid gr1 = scr.GetComponentsInChildren<InventoryGrid>().Where(g => g.name.ToLower() == "playergrid").SingleOrDefault();
-                            GameObject rt = scr.GetComponentsInChildren<GameObject>().Where(g => g.name.ToLower() == "player").SingleOrDefault();
                             
-                            //RectTransform bkgrt = gr1.GetComponentsInChildren<RectTransform>().Where(g => g.name.ToLower().Contains("bkg")).SingleOrDefault();
-                            //Scrollbar gr2 = scr.GetComponentsInChildren<Scrollbar>().Where(g => g.name.ToLower().Contains("scroll")).SingleOrDefault();
-                            UnityEngine.Debug.LogWarning("2755");
-                            GameObject nip = new GameObject("UVOGO1", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                            GameObject nip2 = new GameObject("UVOGO2", typeof(RectTransform));
-                            UnityEngine.Debug.LogWarning("2757");
-                            //nip.transform.SetParent(gr1.transform);
-                            
-                            UnityEngine.Debug.LogWarning(gr1.transform.parent.gameObject.name);
-                            nip.transform.SetParent(gr1.transform);
-                            nip2.transform.SetParent(nip.transform);
-                            //nip.transform.SetParent(gr1.transform.parent.gameObject.transform);
-                            //gr1.transform.SetParent(nip.transform);
-                            UnityEngine.Debug.LogWarning("2759");
-                            RectTransform niprt = nip.GetComponent<RectTransform>();
-                            //niprt = GetCopyOf<RectTransform>()
-                            UnityEngine.Debug.LogWarning("2761");
-                            RectTransform rtpg = gr1.GetComponent<RectTransform>();
-                            niprt.position = rtpg.position;
-                            //UnityEngine.Debug.LogWarning(rtpg.sizeDelta);
-                            niprt.sizeDelta = rtpg.sizeDelta;// * new Vector2(1f, 2f);// / 2f;
-                            niprt.rotation = rtpg.rotation;
-                            niprt.localPosition = rtpg.localPosition;
-                            niprt.anchoredPosition = rtpg.anchoredPosition;
-                            niprt.anchorMax = rtpg.anchorMax;
-                            niprt.anchorMin = rtpg.anchorMin;
-                            niprt.eulerAngles = rtpg.eulerAngles;
-                            niprt.localEulerAngles = rtpg.localEulerAngles;
-                            niprt.localRotation = rtpg.localRotation;
-                            niprt.localScale = rtpg.localScale;
-                            niprt.offsetMax = rtpg.offsetMax;
-                            niprt.offsetMin = rtpg.offsetMin;
-                            niprt.pivot = rtpg.pivot;
-
-                            //rtpg.sizeDelta = rtpg.sizeDelta * new Vector2(2f, 2f);
-                            RectTransform niprt2 = nip2.GetComponent<RectTransform>();
-
-                            
-
-                            niprt2.anchorMax = new Vector2(1f, 0.95f);
-                            niprt2.anchorMin *= new Vector2(1f, -2f);
-                            niprt2.pivot = new Vector2(0.5f, 0.95f);
-
-                            niprt2.sizeDelta = rtpg.sizeDelta;// * new Vector2(1f, 2f);// / 2f;
-                            niprt2.rotation = rtpg.rotation;
-                            niprt2.localPosition = rtpg.localPosition;
-                            niprt2.anchoredPosition = rtpg.anchoredPosition;
-                            
-                            niprt2.eulerAngles = rtpg.eulerAngles;
-                            niprt2.localEulerAngles = rtpg.localEulerAngles;
-                            niprt2.localRotation = rtpg.localRotation;
-                            niprt2.localScale = rtpg.localScale;
-                            niprt2.offsetMax = rtpg.offsetMax;
-                            niprt2.offsetMin = rtpg.offsetMin;
-
-                            //UnityEngine.Debug.LogWarning($"s1 -> {niprt2.sizeDelta}");
-
-                            niprt2.ForceUpdateRectTransforms();
-
-                            //UnityEngine.Debug.LogWarning($"s2 -> {niprt2.sizeDelta}");
-
-                            //ContentSizeFitter csf = nip2.gameObject.AddComponent<ContentSizeFitter>();
-                            //csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-                            //csf.gameObject.SetActive(true);
-                            //niprt2.sizeDelta *= new Vector2(1f, 2f);
-                            //UnityEngine.Debug.LogWarning($"s3 -> {niprt2.sizeDelta}");
-
-                            niprt.GetComponent<Image>().gameObject.SetActive(true);
-
-                            UnityEngine.Debug.LogWarning("2763");
-                            //niprt.sizeDelta = new Vector2(50f, 50f);
-                            UnityEngine.Debug.LogWarning("2765");
-
-                            Mask m = nip.AddComponent<Mask>();
-                            m.showMaskGraphic = false;
-                            m.gameObject.SetActive(true);
-                            //gr2.handleRect = gr1.m_gridRoot;
-
-                            
-
-                            ScrollRect scrb = nip.AddComponent(typeof(ScrollRect)) as ScrollRect;
-                            //VerticalLayoutGroup vlg = nip2.gameObject.AddComponent<VerticalLayoutGroup>();
-                            
-                            //scrb = gr2.gameObject.clo;
-                            //vlg.gameObject.SetActive(true);
-                            //scrb.transform.position = gr2.transform.position + (0f, );
-                            scrb.horizontal = false;
-                            scrb.enabled = true;
-                            scrb.scrollSensitivity = 25f;
-                            scrb.content = nip2.GetComponent<RectTransform>();
-                            scrb.viewport = nip.GetComponent<RectTransform>();
-                            //scrb.CalculateLayoutInputVertical();
-                            scrb.gameObject.SetActive(true);
-                            
-                            //scrb.handleRect = gr1.m_gridRoot;
-                            
-                            
-                            //CanvasGroup cnv = nip.AddComponent<CanvasGroup>();
-                            //cnv.interactable = false;
-                            //cnv.blocksRaycasts = false;
-                            //cnv.alpha = 1f;
-                            //cnv.gameObject.SetActive(true);
-
-                            //nip.GetComponent <CanvasRenderer>().
-                            Image image = nip.GetComponent<Image>();
-
-                            var tempColor = image.color;
-                            tempColor.a = 1f;
-                            image.color = tempColor;
-
-                            foreach (Component co in gr1.GetComponentsInChildren<Component>())
-                            {
-                                if (nip2.gameObject == co.gameObject)
-                                    continue;
-
-                                co.transform.SetParent(nip2.transform, true);
-                            }
                             //gr1 = gr2;
 
                             //gr1.transform.SetParent(nip.transform);
 
                             //string prt = getHier(gr1.gameObject);
                             
-                            string prt = "";
+                            /*string prt = "";
                             int count = 0;
 
                             foreach (Component co in gr1.GetComponentsInChildren<Component>())
                             {
                                 prt += $"\n{count} -> {co.name}";
                                 count++;
-                            }
+                            }*/
 
                             //UnityEngine.Debug.LogWarning(prt);
                             /*
@@ -2985,6 +2880,132 @@ out float verticalLoss)
             }
 
 
+        }
+
+        public void setupInvScroll()
+        {
+            try
+            {
+                //UnityEngine.Debug.LogWarning("2746");
+                //InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
+                //InventoryGui.instance.m_player = InventoryGui.instance.m_container;
+                //Container c = typeof(InventoryGui).GetField("m_currentContainer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(InventoryGui.instance) as Container;
+
+                GameObject scr = GameObject.FindObjectsOfType<GameObject>().Where(g => g.name.ToLower().Contains("inventory_screen")).SingleOrDefault();
+
+
+                InventoryGrid gr1 = scr.GetComponentsInChildren<InventoryGrid>().Where(g => g.name.ToLower() == "playergrid").SingleOrDefault();
+                GameObject rt = scr.GetComponentsInChildren<GameObject>().Where(g => g.name.ToLower() == "player").SingleOrDefault();
+
+                //RectTransform bkgrt = gr1.GetComponentsInChildren<RectTransform>().Where(g => g.name.ToLower().Contains("bkg")).SingleOrDefault();
+                //Scrollbar gr2 = scr.GetComponentsInChildren<Scrollbar>().Where(g => g.name.ToLower().Contains("scroll")).SingleOrDefault();
+                //UnityEngine.Debug.LogWarning("2755");
+                GameObject nip = new GameObject("UVOGO1", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                GameObject nip2 = new GameObject("UVOGO2", typeof(RectTransform));
+                //UnityEngine.Debug.LogWarning("2757");
+                //nip.transform.SetParent(gr1.transform);
+
+                UnityEngine.Debug.LogWarning(gr1.transform.parent.gameObject.name);
+                nip.transform.SetParent(gr1.transform);
+                nip2.transform.SetParent(nip.transform);
+                //nip.transform.SetParent(gr1.transform.parent.gameObject.transform);
+                //gr1.transform.SetParent(nip.transform);
+                //UnityEngine.Debug.LogWarning("2759");
+                RectTransform niprt = nip.GetComponent<RectTransform>();
+                //niprt = GetCopyOf<RectTransform>()
+                //UnityEngine.Debug.LogWarning("2761");
+                RectTransform rtpg = gr1.GetComponent<RectTransform>();
+                niprt.position = rtpg.position;
+                //UnityEngine.Debug.LogWarning(rtpg.sizeDelta);
+                niprt.sizeDelta = rtpg.sizeDelta;// * new Vector2(1f, 2f);// / 2f;
+                niprt.rotation = rtpg.rotation;
+                niprt.localPosition = rtpg.localPosition;
+                niprt.anchoredPosition = rtpg.anchoredPosition;
+                niprt.anchorMax = rtpg.anchorMax;
+                niprt.anchorMin = rtpg.anchorMin;
+                niprt.eulerAngles = rtpg.eulerAngles;
+                niprt.localEulerAngles = rtpg.localEulerAngles;
+                niprt.localRotation = rtpg.localRotation;
+                niprt.localScale = rtpg.localScale;
+                niprt.offsetMax = rtpg.offsetMax;
+                niprt.offsetMin = rtpg.offsetMin;
+                niprt.pivot = rtpg.pivot;
+
+                //rtpg.sizeDelta = rtpg.sizeDelta * new Vector2(2f, 2f);
+                RectTransform niprt2 = nip2.GetComponent<RectTransform>();
+
+
+
+                niprt2.anchorMax = new Vector2(1f, 1.0f);
+                niprt2.anchorMin *= new Vector2(0f, 0f - (invrowadd / 2.0f));
+                niprt2.pivot = new Vector2(0.5f, 1.0f);
+
+                niprt2.sizeDelta = rtpg.sizeDelta;// * new Vector2(1f, 2f);// / 2f;
+                niprt2.rotation = rtpg.rotation;
+                niprt2.localPosition = rtpg.localPosition;
+                niprt2.anchoredPosition = rtpg.anchoredPosition;
+
+                niprt2.eulerAngles = rtpg.eulerAngles;
+                niprt2.localEulerAngles = rtpg.localEulerAngles;
+                niprt2.localRotation = rtpg.localRotation;
+                niprt2.localScale = rtpg.localScale;
+                niprt2.offsetMax = rtpg.offsetMax;
+                niprt2.offsetMin = rtpg.offsetMin;
+
+                //UnityEngine.Debug.LogWarning($"s1 -> {niprt2.sizeDelta}");
+
+                niprt2.ForceUpdateRectTransforms();
+
+
+                niprt.GetComponent<Image>().gameObject.SetActive(true);
+
+                //UnityEngine.Debug.LogWarning("2763");
+                //niprt.sizeDelta = new Vector2(50f, 50f);
+                //UnityEngine.Debug.LogWarning("2765");
+
+                Mask m = nip.AddComponent<Mask>();
+                m.showMaskGraphic = false;
+                m.gameObject.SetActive(true);
+
+
+
+
+                ScrollRect scrb = nip.AddComponent(typeof(ScrollRect)) as ScrollRect;
+                //VerticalLayoutGroup vlg = nip2.gameObject.AddComponent<VerticalLayoutGroup>();
+
+                //scrb = gr2.gameObject.clo;
+                //vlg.gameObject.SetActive(true);
+                //scrb.transform.position = gr2.transform.position + (0f, );
+                scrb.horizontal = false;
+                scrb.enabled = true;
+                scrb.scrollSensitivity = 25f;
+                //scrb.verticalScrollbar = new Scrollbar()
+                scrb.content = nip2.GetComponent<RectTransform>();
+                scrb.viewport = nip.GetComponent<RectTransform>();
+                //scrb.CalculateLayoutInputVertical();
+                scrb.gameObject.SetActive(true);
+
+
+                Image image = nip.GetComponent<Image>();
+
+                var tempColor = image.color;
+                tempColor.a = 1f;
+                image.color = tempColor;
+
+                foreach (Component co in gr1.GetComponentsInChildren<Component>())
+                {
+                    if (nip2.gameObject == co.gameObject)
+                        continue;
+
+                    co.transform.SetParent(nip2.transform, true);
+                }
+
+                invScroll = true;
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("InvScrollSetup failed: " + ex.ToString());
+            }
         }
       
 
