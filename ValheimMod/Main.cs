@@ -298,7 +298,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
         {
             try
             {
-                if (__instance == null || !__instance.IsMonsterFaction() || __instance.m_name.Contains(" (UVO") || ___m_nview.GetZDO().GetBool("cmod", false))
+                if (!cdata.strongerMonsters || __instance == null || !__instance.IsMonsterFaction() || __instance.m_name.Contains(" (UVO") || ___m_nview.GetZDO().GetBool("cmod", false))
                     return;
 
                 ___m_nview.GetZDO().Set("cmod", true);
@@ -332,6 +332,9 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
         {
             try
             {
+                if (!cdata.showExtraItemAttrs)
+                    return;
+
                 ItemDrop.ItemData.ItemType it = item.m_shared.m_itemType;
                 int type;
 
@@ -400,7 +403,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
 
             for (int i = newlevel; i < 8; i++)
             {
-                if (UnityEngine.Random.value <= 0.55f + Mathf.Min(Player.GetAllPlayers().Count * 0.025f, 0.25f))
+                if (UnityEngine.Random.value <= cdata.initialMonsterUpgradeChance + Mathf.Min(Player.GetAllPlayers().Count * cdata.bonusMonsterUpgradeChancePerPlayer, cdata.maxPlayerBonusMonsterUpgradeChance))
                 {
                     newlevel = i + 1;
                 }
@@ -418,6 +421,8 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
         {
             try
             {
+                if (!cdata.lesserCraftingRestrictions)
+                    return;
 
                 __instance.m_craftRequireFire = false;
                 __instance.m_craftRequireRoof = false;
@@ -915,6 +920,9 @@ out float verticalLoss)
         {
             try
             {
+                if (!cdata.removeBuildRestrictions)
+                    return;
+
                 bool cb = true;
                 HashSet<string> mkm = typeof(Player).GetField("m_knownMaterial", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance) as HashSet<string>;
                 foreach (Piece.Requirement resource in piece.m_resources)
@@ -958,7 +966,8 @@ out float verticalLoss)
         {
             try
             {
-
+                if (!cdata.removeBuildRestrictions)
+                    return;
                 //var etype = ;
                 AccessTools.Field(typeof(Player), "m_placementStatus").SetValue(__instance, Enum.GetValues(AccessTools.Field(typeof(Player), "m_placementStatus").GetUnderlyingType()).GetValue(0));
 
@@ -991,6 +1000,8 @@ out float verticalLoss)
 
             try
             {
+                if (!cdata.adjustMonsterDrops)
+                    return true;
 
                 Character c = __instance.GetComponent<Character>();
 
@@ -1022,12 +1033,16 @@ out float verticalLoss)
                             if (drop.m_onePerPlayer)
                                 num2 = ZNet.instance.GetNrOfPlayers();
                             if (num2 > 0)
+                            {
+                                num2 = num2 * cdata.itemDropAmountModifier;
+
                                 keyValuePairList.Add(new KeyValuePair<GameObject, int>(drop.m_prefab, num2));
+                            }
                         }
                     }
                 }
 
-                if (UnityEngine.Random.value <= (0.001f * level * level))
+                if (UnityEngine.Random.value <= (0.001f * level * level) * cdata.uniqueItemChanceModifier)
                 {
                     GameObject it = ObjectDB.instance.m_items[UnityEngine.Random.Range(0, ObjectDB.instance.m_items.Count)];
                     ItemDrop itd = it.GetComponent<ItemDrop>();
@@ -1520,6 +1535,8 @@ out float verticalLoss)
         {
             try
             {
+                if (!cdata.damageModifiers)
+                    return;
 
                 foreach (ItemDrop.ItemData item in _player.GetInventory().GetEquipedtems())
                 {
@@ -1700,7 +1717,7 @@ out float verticalLoss)
             {
                 EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
 
-                waveFactor = 1f + (env.m_windMax * 0.06f);
+                waveFactor = 1f + ((env.m_windMax * 0.06f) * cdata.waveFactorMultiplier);
             }
             catch
             {
@@ -1727,7 +1744,7 @@ out float verticalLoss)
         {
             try
             {
-                if (!iscrafting)
+                if (!iscrafting || !cdata.itemRarityAndRandomization)
                 {
                     cupgitem = null;
                     return;
@@ -3266,6 +3283,19 @@ out float verticalLoss)
         public int SSN = 12;
         public string Message = "hey";
         internal int extraInvRows;
+        internal bool strongerMonsters;
+        internal bool showExtraItemAttrs;
+        internal int bonusMonsterUpgradeChancePerPlayer;
+        internal int initialMonsterUpgradeChance;
+        internal int maxPlayerBonusMonsterUpgradeChance;
+        internal bool lesserCraftingRestrictions;
+        internal bool removeBuildRestrictions;
+        internal int itemDropAmountModifier;
+        internal float uniqueItemChanceModifier;
+        internal bool adjustMonsterDrops;
+        internal bool damageModifiers;
+        internal float waveFactorMultiplier;
+        internal bool itemRarityAndRandomization;
     }
 }
 
