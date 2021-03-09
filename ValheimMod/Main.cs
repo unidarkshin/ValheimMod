@@ -906,7 +906,7 @@ out float verticalLoss)
 
                 int xp = 1 + ((1 * ((int)__instance.m_materialType) + 1) * (1 + (int)(reqttl / 5)) * (1 + (int)(b.level / 20)));
 
-                b.xp = b.xp + xp;
+                b.xp = b.xp + (int)(xp * cdata.buildingXPModifier);
 
             }
             catch (Exception ex)
@@ -1034,7 +1034,7 @@ out float verticalLoss)
                                 num2 = ZNet.instance.GetNrOfPlayers();
                             if (num2 > 0)
                             {
-                                num2 = num2 * cdata.itemDropAmountModifier;
+                                num2 = (int)(num2 * cdata.itemDropAmountModifier);
 
                                 keyValuePairList.Add(new KeyValuePair<GameObject, int>(drop.m_prefab, num2));
                             }
@@ -1942,16 +1942,18 @@ out float verticalLoss)
                     if (item.m_shared.m_name.Contains(" (UVO"))
                     {
                         item.m_shared.m_name = item.m_shared.m_name.Substring(0, item.m_shared.m_name.IndexOf(" (UVO"));
+                        int newr = or;
 
-                        int newr = Mathf.Max(or - UnityEngine.Random.Range(1, 3), 1);
-
+                        if (cdata.allowUpgradeFailRarityDegradation)
+                            newr = Mathf.Max(or - UnityEngine.Random.Range(1, 3), 1);
+                        
                         string str = $" (UVO: R{newr})";
                         item.m_shared.m_name += str;
 
                         if (type == 1)
-                            item.m_shared.m_damages.Modify(0.85f);
+                            item.m_shared.m_damages.Modify(cdata.upgradeFailDamageReduction);
                         else if (type == 2)
-                            item.m_shared.m_armor = Mathf.Round(item.m_shared.m_armor * 0.85f);
+                            item.m_shared.m_armor = Mathf.Round(item.m_shared.m_armor * cdata.upgradeFailArmorReduction);
                     }
                 }
 
@@ -1960,7 +1962,7 @@ out float verticalLoss)
                 else
                     xp = xp + (int)(r * r * (0.5 * or));
 
-                c.xp = c.xp + xp;
+                c.xp = c.xp + (int)(xp * cdata.craftingXPModifier);
 
                 cupgitem = null;
                 iscrafting = false;
@@ -2061,11 +2063,11 @@ out float verticalLoss)
 
             int r = 1;
 
-            for (int i = 2; i < 101; i++)
+            for (int i = 2; i < cdata.maxItemRarityValue; i++)
             {
    
 
-                if ((rnd <= ((1.0f / (i * i * (1.0f + (i * 0.1f)))) * Mathf.Min(1.0f + (0.005f * level), 1.5f) * Mathf.Min(1.0f + ((quality - 1) * 0.1f), 1.5f))))
+                if ((rnd <= ((1.0f / ((i * i * (1.0f + (i * 0.1f))) * cdata.itemRarityChanceBaseModifier)) * (Mathf.Min(1.0f + (0.005f * level), 1.5f) * cdata.itemRarityChanceCraftingLevelModifier) * (Mathf.Min(1.0f + ((quality - 1) * 0.1f), 1.5f) * cdata.itemRarityChanceItemQualityModifier))))
                 {
                     r = i;
                 }
@@ -2328,7 +2330,7 @@ out float verticalLoss)
                             {
                                 int amt = rznv.GetZDO().GetInt("drop_amount" + (object)i, 0);
                                 if (amt > 30)
-                                    rznv.GetZDO().Set("drop_amount" + (object)i, UnityEngine.Random.Range(20, 1 + (int)(amt / 60.0)));
+                                    rznv.GetZDO().Set("drop_amount" + (object)i, UnityEngine.Random.Range(20, 1 + (int)(amt * cdata.largeItemDropReductionModifier)));
                             }
 
                         }
@@ -2398,7 +2400,7 @@ out float verticalLoss)
                             if (extra < 1)
                                 extra = 1;
 
-                            a.xp = a.xp + 1 + (int)Mathf.Round(stc * 0.000025f * (extra));
+                            a.xp = a.xp + (int)((1 + (int)Mathf.Round(stc * 0.000025f * (extra))) * cdata.agilityXPModifier);
                             //a.updateEffects();
                         }
 
@@ -2433,7 +2435,7 @@ out float verticalLoss)
 
                             EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
 
-                            s.xp = s.xp + 1 + (int)(env.m_windMax / 5.0) + (int)(s.level * 0.8);
+                            s.xp = s.xp + (int)(1 + (int)(env.m_windMax / 5.0) + (int)(s.level * 0.8) * cdata.sailingXPModifier);
 
                             activechanges = true;
                         }
@@ -2444,16 +2446,16 @@ out float verticalLoss)
                             activechanges = true;
                         }
 
-                        if (_player.GetControlledShip().m_backwardForce != (0.5f + (s.level * 0.004f)))
+                        if (_player.GetControlledShip().m_backwardForce != (0.5f + (s.level * 0.004f)) && cdata.allowShipForceAdjustments)
                         {
                             Ship sh = _player.GetControlledShip();
-                            sh.m_backwardForce = (0.5f + (s.level * 0.004f));
-                            sh.m_sailForceFactor = (0.05f + (s.level * 0.0004f));
-                            sh.m_stearForce = (0.5f + (s.level * 0.004f));
-                            sh.m_force = 0.55f;
-                            sh.m_waterImpactDamage = Mathf.Max(10.0f - (s.level * 0.07f), 3.0f);
-                            sh.m_minWaterImpactForce = (3.5f + (s.level * 0.07f));
-                            sh.m_minWaterImpactInterval = (10.0f + (s.level * 0.1f));
+                            sh.m_backwardForce = (0.5f + (s.level * 0.004f)) * cdata.shipForwardsBackwardsForceModifier;
+                            sh.m_sailForceFactor = (0.05f + (s.level * 0.0004f)) * cdata.shipSailForceModifier;
+                            sh.m_stearForce = (0.5f + (s.level * 0.004f)) * cdata.shipSteerForceModifier;
+                            sh.m_force = 0.55f * cdata.shipVerticalForceModifier;
+                            sh.m_waterImpactDamage = Mathf.Max(10.0f - (s.level * 0.07f), 3.0f) * cdata.shipWaterDamageModifier;
+                            sh.m_minWaterImpactForce = (3.5f + (s.level * 0.07f)) * cdata.shipMinWaterForceToTakeDamageModifier;
+                            sh.m_minWaterImpactInterval = (10.0f + (s.level * 0.1f)) * cdata.shipMinIntervalToTakeDamageModifier;
                             
                             _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
                         }
@@ -2464,16 +2466,16 @@ out float verticalLoss)
                     if (elapsed4 >= 300f)
                     {
 
-                        if (meaw)
+                        if (meaw && cdata.allowWindModification)
                         {
                             EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
 
                             float rnd;
 
-                            if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.03f)
-                                rnd = UnityEngine.Random.Range(50f, 150f);
+                            if (cdata.allowSuperWinds && UnityEngine.Random.Range(0.0f, 1.0f) < 0.03f)
+                                rnd = UnityEngine.Random.Range(cdata.superWindMinSpeed, cdata.superWindMaxSpeed);
                             else
-                                rnd = UnityEngine.Random.Range(1.0f, 20.0f);
+                                rnd = UnityEngine.Random.Range(cdata.normalWindMinSpeed, cdata.normalWindMaxSpeed);
 
                             ZNetView znv = typeof(Player).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_player) as ZNetView;
 
@@ -2534,7 +2536,7 @@ out float verticalLoss)
 
                                 Skill w = skills.Where(sk => sk.name.ToLower() == "weight").FirstOrDefault();
 
-                                w.xp = w.xp + 1 + (int)(ratio * (float)w.level);
+                                w.xp = w.xp + (int)((1 + (int)(ratio * (float)w.level)) * cdata.weightXPModifier);
 
                             }
 
@@ -2613,27 +2615,29 @@ out float verticalLoss)
 
                             //    _player.Message(MessageHud.MessageType.TopLeft, $"VM Error(Enemy Modifiers): {ex.Message}", 0, (Sprite)null);
                             //}
-
-                            foreach (Character c in Character.GetAllCharacters())
+                            if (cdata.allowUpgradedMonsterNameChanges)
                             {
-                                if (c.IsMonsterFaction())
+                                foreach (Character c in Character.GetAllCharacters())
                                 {
-                                    ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
-
-                                    int lev = znv.GetZDO().GetInt("level", 0);
-                                    
-                                    if (lev > 0 && !c.m_name.Contains(" (UVO"))
+                                    if (c.IsMonsterFaction())
                                     {
-                                        if (lev > 3)
+                                        ZNetView znv = typeof(Character).GetField("m_nview", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(c) as ZNetView;
+
+                                        int lev = znv.GetZDO().GetInt("level", 0);
+
+                                        if (lev > 0 && !c.m_name.Contains(" (UVO"))
                                         {
-                                            //int lev = znv.GetZDO().GetInt("VMMML");
-                                            c.m_name += $" (UVO: {lev})";
+                                            if (lev > 3)
+                                            {
+                                                //int lev = znv.GetZDO().GetInt("VMMML");
+                                                c.m_name += $" (UVO: {lev})";
 
-                                            UnityEngine.Debug.LogWarning($"Enemy: {c.m_name} -> Name updated.");
+                                                UnityEngine.Debug.LogWarning($"Enemy: {c.m_name} -> Name updated.");
+                                            }
+                                            //continue;
                                         }
-                                        //continue;
-                                    }
 
+                                    }
                                 }
                             }
 
@@ -2771,7 +2775,7 @@ out float verticalLoss)
 
                             _player.GetInventory().AddItem(component.m_itemData);
                         }
-                        if (Input.GetKeyDown(KeyCode.Delete))
+                        if (Input.GetKeyDown(KeyCode.Delete) && cdata.allowDeleteItemKey)
                         {
                             InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
                             ItemDrop.ItemData it = g.GetItem(new Vector2i((int)Input.mousePosition.x, (int)Input.mousePosition.y));
@@ -2797,7 +2801,7 @@ out float verticalLoss)
 
                         }
 
-                        if (Input.GetKeyDown(KeyCode.PageDown)) // Will just unload our DLL
+                        if (Input.GetKeyDown(KeyCode.PageDown) && cdata.allowUninjectDLLKey) // Will just unload our DLL
                         {
                             Loader.Unload();
                         }
@@ -2900,7 +2904,7 @@ out float verticalLoss)
 
                     savetime += Time.deltaTime;
 
-                    if (savetime >= 20f)
+                    if (savetime >= cdata.saveSkillDataInterval)
                     {
                         savetime = 0f;
                         SaveSkillData();
@@ -2945,118 +2949,121 @@ out float verticalLoss)
         {
             try
             {
-                //UnityEngine.Debug.LogWarning("2746");
-                //InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
-                //InventoryGui.instance.m_player = InventoryGui.instance.m_container;
-                //Container c = typeof(InventoryGui).GetField("m_currentContainer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(InventoryGui.instance) as Container;
-
-                GameObject scr = GameObject.FindObjectsOfType<GameObject>().Where(g => g.name.ToLower().Contains("inventory_screen")).SingleOrDefault();
-
-
-                InventoryGrid gr1 = scr.GetComponentsInChildren<InventoryGrid>().Where(g => g.name.ToLower() == "playergrid").SingleOrDefault();
-                GameObject rt = scr.GetComponentsInChildren<GameObject>().Where(g => g.name.ToLower() == "player").SingleOrDefault();
-
-                //RectTransform bkgrt = gr1.GetComponentsInChildren<RectTransform>().Where(g => g.name.ToLower().Contains("bkg")).SingleOrDefault();
-                //Scrollbar gr2 = scr.GetComponentsInChildren<Scrollbar>().Where(g => g.name.ToLower().Contains("scroll")).SingleOrDefault();
-                //UnityEngine.Debug.LogWarning("2755");
-                GameObject nip = new GameObject("UVOGO1", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                GameObject nip2 = new GameObject("UVOGO2", typeof(RectTransform));
-                //UnityEngine.Debug.LogWarning("2757");
-                //nip.transform.SetParent(gr1.transform);
-
-                UnityEngine.Debug.LogWarning(gr1.transform.parent.gameObject.name);
-                nip.transform.SetParent(gr1.transform);
-                nip2.transform.SetParent(nip.transform);
-                //nip.transform.SetParent(gr1.transform.parent.gameObject.transform);
-                //gr1.transform.SetParent(nip.transform);
-                //UnityEngine.Debug.LogWarning("2759");
-                RectTransform niprt = nip.GetComponent<RectTransform>();
-                //niprt = GetCopyOf<RectTransform>()
-                //UnityEngine.Debug.LogWarning("2761");
-                RectTransform rtpg = gr1.GetComponent<RectTransform>();
-                niprt.position = rtpg.position;
-                //UnityEngine.Debug.LogWarning(rtpg.sizeDelta);
-                niprt.sizeDelta = rtpg.sizeDelta;// * new Vector2(1f, 2f);// / 2f;
-                niprt.rotation = rtpg.rotation;
-                niprt.localPosition = rtpg.localPosition;
-                niprt.anchoredPosition = rtpg.anchoredPosition;
-                niprt.anchorMax = rtpg.anchorMax;
-                niprt.anchorMin = rtpg.anchorMin;
-                niprt.eulerAngles = rtpg.eulerAngles;
-                niprt.localEulerAngles = rtpg.localEulerAngles;
-                niprt.localRotation = rtpg.localRotation;
-                niprt.localScale = rtpg.localScale;
-                niprt.offsetMax = rtpg.offsetMax;
-                niprt.offsetMin = rtpg.offsetMin;
-                niprt.pivot = rtpg.pivot;
-
-                //rtpg.sizeDelta = rtpg.sizeDelta * new Vector2(2f, 2f);
-                RectTransform niprt2 = nip2.GetComponent<RectTransform>();
-
-
-
-                niprt2.anchorMax = new Vector2(1f, 1.025f);
-                niprt2.anchorMin *= new Vector2(0f, 0f - (invrowadd / 2.0f));
-                niprt2.pivot = new Vector2(0.5f, 1.025f);
-
-                niprt2.sizeDelta = rtpg.sizeDelta;// * new Vector2(1f, 2f);// / 2f;
-                niprt2.rotation = rtpg.rotation;
-                niprt2.localPosition = rtpg.localPosition;
-                niprt2.anchoredPosition = rtpg.anchoredPosition;
-
-                niprt2.eulerAngles = rtpg.eulerAngles;
-                niprt2.localEulerAngles = rtpg.localEulerAngles;
-                niprt2.localRotation = rtpg.localRotation;
-                niprt2.localScale = rtpg.localScale;
-                niprt2.offsetMax = rtpg.offsetMax;
-                niprt2.offsetMin = rtpg.offsetMin;
-
-                //UnityEngine.Debug.LogWarning($"s1 -> {niprt2.sizeDelta}");
-
-                niprt2.ForceUpdateRectTransforms();
-
-
-                niprt.GetComponent<Image>().gameObject.SetActive(true);
-
-                //UnityEngine.Debug.LogWarning("2763");
-                //niprt.sizeDelta = new Vector2(50f, 50f);
-                //UnityEngine.Debug.LogWarning("2765");
-
-                Mask m = nip.AddComponent<Mask>();
-                m.showMaskGraphic = false;
-                m.gameObject.SetActive(true);
-
-
-
-
-                ScrollRect scrb = nip.AddComponent(typeof(ScrollRect)) as ScrollRect;
-                //VerticalLayoutGroup vlg = nip2.gameObject.AddComponent<VerticalLayoutGroup>();
-
-                //scrb = gr2.gameObject.clo;
-                //vlg.gameObject.SetActive(true);
-                //scrb.transform.position = gr2.transform.position + (0f, );
-                scrb.horizontal = false;
-                scrb.enabled = true;
-                scrb.scrollSensitivity = 25f;
-                //scrb.verticalScrollbar = new Scrollbar()
-                scrb.content = nip2.GetComponent<RectTransform>();
-                scrb.viewport = nip.GetComponent<RectTransform>();
-                //scrb.CalculateLayoutInputVertical();
-                scrb.gameObject.SetActive(true);
-
-
-                Image image = nip.GetComponent<Image>();
-
-                var tempColor = image.color;
-                tempColor.a = 1f;
-                image.color = tempColor;
-
-                foreach (Component co in gr1.GetComponentsInChildren<Component>())
+                if (cdata.allowInventoryScrolling)
                 {
-                    if (nip2.gameObject == co.gameObject)
-                        continue;
+                    //UnityEngine.Debug.LogWarning("2746");
+                    //InventoryGrid g = InventoryGui.instance.m_player.GetComponentInChildren<InventoryGrid>();
+                    //InventoryGui.instance.m_player = InventoryGui.instance.m_container;
+                    //Container c = typeof(InventoryGui).GetField("m_currentContainer", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(InventoryGui.instance) as Container;
 
-                    co.transform.SetParent(nip2.transform, true);
+                    GameObject scr = GameObject.FindObjectsOfType<GameObject>().Where(g => g.name.ToLower().Contains("inventory_screen")).SingleOrDefault();
+
+
+                    InventoryGrid gr1 = scr.GetComponentsInChildren<InventoryGrid>().Where(g => g.name.ToLower() == "playergrid").SingleOrDefault();
+                    GameObject rt = scr.GetComponentsInChildren<GameObject>().Where(g => g.name.ToLower() == "player").SingleOrDefault();
+
+                    //RectTransform bkgrt = gr1.GetComponentsInChildren<RectTransform>().Where(g => g.name.ToLower().Contains("bkg")).SingleOrDefault();
+                    //Scrollbar gr2 = scr.GetComponentsInChildren<Scrollbar>().Where(g => g.name.ToLower().Contains("scroll")).SingleOrDefault();
+                    //UnityEngine.Debug.LogWarning("2755");
+                    GameObject nip = new GameObject("UVOGO1", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                    GameObject nip2 = new GameObject("UVOGO2", typeof(RectTransform));
+                    //UnityEngine.Debug.LogWarning("2757");
+                    //nip.transform.SetParent(gr1.transform);
+
+                    UnityEngine.Debug.LogWarning(gr1.transform.parent.gameObject.name);
+                    nip.transform.SetParent(gr1.transform);
+                    nip2.transform.SetParent(nip.transform);
+                    //nip.transform.SetParent(gr1.transform.parent.gameObject.transform);
+                    //gr1.transform.SetParent(nip.transform);
+                    //UnityEngine.Debug.LogWarning("2759");
+                    RectTransform niprt = nip.GetComponent<RectTransform>();
+                    //niprt = GetCopyOf<RectTransform>()
+                    //UnityEngine.Debug.LogWarning("2761");
+                    RectTransform rtpg = gr1.GetComponent<RectTransform>();
+                    niprt.position = rtpg.position;
+                    //UnityEngine.Debug.LogWarning(rtpg.sizeDelta);
+                    niprt.sizeDelta = rtpg.sizeDelta;// * new Vector2(1f, 2f);// / 2f;
+                    niprt.rotation = rtpg.rotation;
+                    niprt.localPosition = rtpg.localPosition;
+                    niprt.anchoredPosition = rtpg.anchoredPosition;
+                    niprt.anchorMax = rtpg.anchorMax;
+                    niprt.anchorMin = rtpg.anchorMin;
+                    niprt.eulerAngles = rtpg.eulerAngles;
+                    niprt.localEulerAngles = rtpg.localEulerAngles;
+                    niprt.localRotation = rtpg.localRotation;
+                    niprt.localScale = rtpg.localScale;
+                    niprt.offsetMax = rtpg.offsetMax;
+                    niprt.offsetMin = rtpg.offsetMin;
+                    niprt.pivot = rtpg.pivot;
+
+                    //rtpg.sizeDelta = rtpg.sizeDelta * new Vector2(2f, 2f);
+                    RectTransform niprt2 = nip2.GetComponent<RectTransform>();
+
+
+
+                    niprt2.anchorMax = new Vector2(1f, 1.025f);
+                    niprt2.anchorMin *= new Vector2(0f, 0f - (invrowadd / 2.0f));
+                    niprt2.pivot = new Vector2(0.5f, 1.025f);
+
+                    niprt2.sizeDelta = rtpg.sizeDelta;// * new Vector2(1f, 2f);// / 2f;
+                    niprt2.rotation = rtpg.rotation;
+                    niprt2.localPosition = rtpg.localPosition;
+                    niprt2.anchoredPosition = rtpg.anchoredPosition;
+
+                    niprt2.eulerAngles = rtpg.eulerAngles;
+                    niprt2.localEulerAngles = rtpg.localEulerAngles;
+                    niprt2.localRotation = rtpg.localRotation;
+                    niprt2.localScale = rtpg.localScale;
+                    niprt2.offsetMax = rtpg.offsetMax;
+                    niprt2.offsetMin = rtpg.offsetMin;
+
+                    //UnityEngine.Debug.LogWarning($"s1 -> {niprt2.sizeDelta}");
+
+                    niprt2.ForceUpdateRectTransforms();
+
+
+                    niprt.GetComponent<Image>().gameObject.SetActive(true);
+
+                    //UnityEngine.Debug.LogWarning("2763");
+                    //niprt.sizeDelta = new Vector2(50f, 50f);
+                    //UnityEngine.Debug.LogWarning("2765");
+
+                    Mask m = nip.AddComponent<Mask>();
+                    m.showMaskGraphic = false;
+                    m.gameObject.SetActive(true);
+
+
+
+
+                    ScrollRect scrb = nip.AddComponent(typeof(ScrollRect)) as ScrollRect;
+                    //VerticalLayoutGroup vlg = nip2.gameObject.AddComponent<VerticalLayoutGroup>();
+
+                    //scrb = gr2.gameObject.clo;
+                    //vlg.gameObject.SetActive(true);
+                    //scrb.transform.position = gr2.transform.position + (0f, );
+                    scrb.horizontal = false;
+                    scrb.enabled = true;
+                    scrb.scrollSensitivity = 25f;
+                    //scrb.verticalScrollbar = new Scrollbar()
+                    scrb.content = nip2.GetComponent<RectTransform>();
+                    scrb.viewport = nip.GetComponent<RectTransform>();
+                    //scrb.CalculateLayoutInputVertical();
+                    scrb.gameObject.SetActive(true);
+
+
+                    Image image = nip.GetComponent<Image>();
+
+                    var tempColor = image.color;
+                    tempColor.a = 1f;
+                    image.color = tempColor;
+
+                    foreach (Component co in gr1.GetComponentsInChildren<Component>())
+                    {
+                        if (nip2.gameObject == co.gameObject)
+                            continue;
+
+                        co.transform.SetParent(nip2.transform, true);
+                    }
                 }
 
                 invScroll = true;
@@ -3172,6 +3179,9 @@ out float verticalLoss)
         }
 
         private int XP;
+        private bool allowWeightSkillStackIncrease;
+        private float extraStaminaRegenPerAgilityLevelModifier;
+
         public int xp
         {
             get { return XP; }
@@ -3225,14 +3235,16 @@ out float verticalLoss)
 
         public void updateEffects()
         {
-            if (name.ToLower() == "weight")
+            if (name.ToLower() == "weight" && Main.cdata.allowWeightSkillEffects)
             {
-                updateStacks();
-                Main._player.m_maxCarryWeight = 300f + (5f * (float)level);
+                if (Main.cdata.allowWeightSkillStackIncrease)
+                    updateStacks();
+
+                Main._player.m_maxCarryWeight = 300f + ((5f * (float)level) * Main.cdata.extraWeightPerWeightLevelModifier);
             }
             if (name.ToLower() == "agility")
             {
-                Main._player.m_staminaRegen = 5f + (level * 0.1f);
+                Main._player.m_staminaRegen = 5f + ((level * 0.1f) * Main.cdata.extraStaminaRegenPerAgilityLevelModifier);
             }
         }
 
@@ -3251,7 +3263,7 @@ out float verticalLoss)
                         continue;
 
                     if (Main.oms.TryGetValue(item.m_itemData.m_shared.m_name, out int ms))
-                        item.m_itemData.m_shared.m_maxStackSize = ms * (1 + (level / 10));
+                        item.m_itemData.m_shared.m_maxStackSize = ms * (int)((1 + (level / 10)) * Main.cdata.weightLevelStackSizeModifier);
 
 
                 }
@@ -3264,7 +3276,7 @@ out float verticalLoss)
                         continue;
 
                     if (Main.oms.TryGetValue(item.m_shared.m_name, out int ms))
-                        item.m_shared.m_maxStackSize = ms * (1 + (level / 10));
+                        item.m_shared.m_maxStackSize = ms * (int)((1 + (level / 10)) * Main.cdata.weightLevelStackSizeModifier);
 
                 }
                 typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Main._player.GetInventory(), items);
@@ -3279,23 +3291,57 @@ out float verticalLoss)
     [System.Serializable]
     public class configData
     {
-        public int Id = 5;
-        public int SSN = 12;
-        public string Message = "hey";
-        internal int extraInvRows;
-        internal bool strongerMonsters;
-        internal bool showExtraItemAttrs;
-        internal int bonusMonsterUpgradeChancePerPlayer;
-        internal int initialMonsterUpgradeChance;
-        internal int maxPlayerBonusMonsterUpgradeChance;
-        internal bool lesserCraftingRestrictions;
-        internal bool removeBuildRestrictions;
-        internal int itemDropAmountModifier;
-        internal float uniqueItemChanceModifier;
-        internal bool adjustMonsterDrops;
-        internal bool damageModifiers;
-        internal float waveFactorMultiplier;
-        internal bool itemRarityAndRandomization;
+        public int extraInvRows = 4;
+        public bool strongerMonsters = true;
+        public bool showExtraItemAttrs = true;
+        public float bonusMonsterUpgradeChancePerPlayer = 0.025f;
+        public float initialMonsterUpgradeChance = 0.55f;
+        public float maxPlayerBonusMonsterUpgradeChance = 0.25f;
+        public bool lesserCraftingRestrictions = true;
+        public bool removeBuildRestrictions = true;
+        public float itemDropAmountModifier = 1.0f;
+        public float uniqueItemChanceModifier = 1.0f;
+        public bool adjustMonsterDrops = true;
+        public bool damageModifiers = true;
+        public float waveFactorMultiplier = 1.0f;
+        public bool itemRarityAndRandomization = true;
+        public bool allowUpgradeFailRarityDegradation = true;
+        public float upgradeFailDamageReduction = 0.85f;
+        public float upgradeFailArmorReduction = 0.85f;
+        public float craftingXPModifier = 1.0f;
+        public float itemRarityChanceBaseModifier = 1.0f;
+        public float itemRarityChanceCraftingLevelModifier = 1.0f;
+        public float itemRarityChanceItemQualityModifier = 1.0f;
+        public int maxItemRarityValue = 101;
+        public float largeItemDropReductionModifier = 1.0f;
+        public bool allowInventoryScrolling = true;
+        public float agilityXPModifier = 1.0f;
+        public float sailingXPModifier = 1.0f;
+        public bool allowShipForceAdjustments = true;
+        public float shipForwardsBackwardsForceModifier = 1.0f;
+        public float shipSailForceModifier = 1.0f;
+        public float shipSteerForceModifier = 1.0f;
+        public float shipVerticalForceModifier = 1.0f;
+        public float shipWaterDamageModifier = 1.0f;
+        public float shipMinWaterForceToTakeDamageModifier = 1.0f;
+        public float shipMinIntervalToTakeDamageModifier = 1.0f;
+        public bool allowSuperWinds = true;
+        public float superWindMinSpeed = 100f;
+        public float superWindMaxSpeed = 200f;
+        public bool allowWindModification = true;
+        public float normalWindMinSpeed = 1f;
+        public float normalWindMaxSpeed = 20f;
+        public float weightXPModifier = 1.0f;
+        public bool allowUpgradedMonsterNameChanges = true;
+        public bool allowDeleteItemKey = true;
+        public bool allowUninjectDLLKey = false;
+        public float saveSkillDataInterval = 20f;
+        public bool allowWeightSkillEffects = true;
+        public float extraWeightPerWeightLevelModifier = 1.0f;
+        public float extraStaminaRegenPerAgilityLevelModifier = 1.0f;
+        public bool allowWeightSkillStackIncrease = true;
+        public float weightLevelStackSizeModifier = 1.0f;
+        public float buildingXPModifier = 1.0f;
     }
 }
 
