@@ -15,6 +15,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Diagnostics;
 
+
 namespace ValheimMod
 {
     [BepInPlugin("org.bepinex.plugins.vmu", "vmu", "1.0.0.0")]
@@ -32,6 +33,7 @@ namespace ValheimMod
 
         string path;
         string filename;
+        string configname;
         string errorfile;
 
         public static Dictionary<string, int> oms = new Dictionary<string, int>();
@@ -48,9 +50,27 @@ namespace ValheimMod
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AllocConsole();*/
 
+        public static configData cdata;
+
         public void Awake()
         {
             UnityEngine.Debug.LogWarning("UVO Loading!");
+
+            configname = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VMU_Data" + $"/VM_Config.json";
+
+            try
+            {
+                cdata = JsonUtility.FromJson<configData>(File.ReadAllText(configname));
+                UnityEngine.Debug.LogWarning($"Loaded UVO configuration successfully!");
+            }
+            catch
+            {
+                cdata = new configData();
+                saveConfig();
+                UnityEngine.Debug.LogWarning($"UVO Config not found, new configuration created.");
+            }
+
+            invrowadd = cdata.extraInvRows;
 
             var h = new Harmony("unidarkshin_vm");
 
@@ -2004,6 +2024,7 @@ out float verticalLoss)
             otime = 0f;
             path = "";
             filename = "";
+            configname = "";
             errorfile = "";
 
             //oms = new Dictionary<string, int>();
@@ -2013,6 +2034,8 @@ out float verticalLoss)
             shouldInit = true;
 
             skills = new List<Skill>();
+
+            //cdata = new configData();
         }
 
         public static int GenerateItemRarity(int or, int level, int quality)
@@ -2093,7 +2116,10 @@ out float verticalLoss)
                 path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VMU_Data";
 
                 filename = path + $"/{_player.GetPlayerName()}_VM_Data.ini";
+                configname = path + $"/VM_Config.json";
                 errorfile = path + $"/VM_Error.ini";
+
+                
 
                 if (!Directory.Exists(path))
                 {
@@ -2250,6 +2276,13 @@ out float verticalLoss)
         {
             try
             {
+
+                if (Input.GetKeyDown(KeyCode.K))
+                {
+
+                    
+                }
+
                 if (Player.m_localPlayer != null)
                 {
 
@@ -2592,12 +2625,7 @@ out float verticalLoss)
 
                         }
 
-                        if (Input.GetKeyDown(KeyCode.K))
-                        {
-                            //_player.SetHealth(_player.GetHealth() + 1);
-                            //_player.m_maxCarryWeight = 
-                            //wsl += 1;
-                        }
+                        
 
                         if (Input.GetKeyDown(KeyCode.L))
                         {
@@ -2882,6 +2910,20 @@ out float verticalLoss)
 
         }
 
+        public void saveConfig()
+        {
+            try
+            {
+                string json = JsonUtility.ToJson(cdata, true);
+                //write string to file
+                System.IO.File.WriteAllText(configname, json);
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning($"Write json failed: {ex.ToString()}");
+            }
+        }
+
         public void setupInvScroll()
         {
             try
@@ -2936,9 +2978,9 @@ out float verticalLoss)
 
 
 
-                niprt2.anchorMax = new Vector2(1f, 1.0f);
+                niprt2.anchorMax = new Vector2(1f, 1.025f);
                 niprt2.anchorMin *= new Vector2(0f, 0f - (invrowadd / 2.0f));
-                niprt2.pivot = new Vector2(0.5f, 1.0f);
+                niprt2.pivot = new Vector2(0.5f, 1.025f);
 
                 niprt2.sizeDelta = rtpg.sizeDelta;// * new Vector2(1f, 2f);// / 2f;
                 niprt2.rotation = rtpg.rotation;
@@ -3212,9 +3254,18 @@ out float verticalLoss)
             }
             catch
             {
-
+               
             }
         }
+    }
+
+    [System.Serializable]
+    public class configData
+    {
+        public int Id = 5;
+        public int SSN = 12;
+        public string Message = "hey";
+        internal int extraInvRows;
     }
 }
 
