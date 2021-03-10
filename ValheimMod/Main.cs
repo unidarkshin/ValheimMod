@@ -32,7 +32,7 @@ namespace ValheimMod
         public Main M;
 
         string path;
-        string filename;
+        public static string filename;
         string configname;
         string errorfile;
 
@@ -51,6 +51,13 @@ namespace ValheimMod
         static extern bool AllocConsole();*/
 
         public static configData cdata;
+
+        //public static int WeightSkillId = 2123;
+        //public static Skills.SkillType WeightSkill = (Skills.SkillType)Main.WeightSkillId;
+        //public static Skills.SkillDef WeightSkillDef;
+
+        public static int startSkillID = 2123;
+        public static List<string> sDescs = new List<string> { "Moving with encumbrance over time will increase your max weight and stack size.", "Using large amounts of stamina allows you regenerate stamina faster."};
 
         public void Awake()
         {
@@ -72,6 +79,16 @@ namespace ValheimMod
             }
 
             invrowadd = cdata.extraInvRowsPlayer;
+
+            Texture2D texture = Texture2D.blackTexture;
+
+            Main.WeightSkillDef = new Skills.SkillDef()
+            {
+                m_skill = (Skills.SkillType)Main.WeightSkillId,
+                m_icon = Sprite.Create(Texture2D.blackTexture, new Rect(0.0f, 0.0f, (float)texture.width, (float)texture.height), new Vector2(0.5f, 0.5f)),
+                m_description = "Moving with encumbrance over time will increase your max weight and stack size.",
+                m_increseStep = 1f
+            };
 
             var h = new Harmony("unidarkshin_vm");
 
@@ -270,6 +287,87 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
 
             //UnityEngine.UI.Scrollbar scr = new UnityEngine.UI.Scrollbar();
             //ZNet.instance.m_serverPlayerLimit = 99;
+
+            h.Patch(
+original: AccessTools.Method(typeof(Skills), "GetSkillDef", new Type[] { typeof(Skills.SkillType) }),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.SGSD))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+            h.Patch(
+original: AccessTools.Method(typeof(PlayerProfile), "LoadPlayerData", new Type[] { typeof(Player) }),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.PPLPD))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+            h.Patch(
+original: AccessTools.Method(typeof(Localization), "SetupLanguage", new Type[] { typeof(string) }),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.LSL))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+            h.Patch(
+original: AccessTools.Method(typeof(PlayerProfile), "SavePlayerData", new Type[] { typeof(Player) }),
+postfix: new HarmonyMethod(typeof(Main), nameof(Main.PPSPD))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+            h.Patch(
+original: AccessTools.Method(typeof(Skills), "IsSkillValid", new Type[] { typeof(Skills.SkillType) }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+        }
+
+        public static bool SISV(Skills __instance, Skills.SkillType type, ref bool __result)
+        {
+            if (type != WeightSkill)
+                return true;
+            __result = true;
+            return false;
+        }
+
+
+        public static void PPSPD(PlayerProfile __instance, Player player)
+        {
+
+            saveSkillData();
+
+        }
+
+
+        public static void LSL(Localization __instance, string language)
+        {
+            if (!(language == "English"))
+                return;
+            AccessTools.Method(typeof(Localization), "AddWord", (System.Type[])null, (System.Type[])null).Invoke((object)__instance, new object[2]
+            {
+        (object) $"skill_2123",
+        (object) "Weight"
+            });
+        }
+
+
+        public static void SGSD(
+      Skills __instance,
+      Skills.SkillType type,
+      ref Skills.SkillDef __result)
+        {
+            if (type == WeightSkill)
+                __result = WeightSkillDef;
+        }
+
+        public static void PPLPD(PlayerProfile __instance, Player player)
+        {
+            SkillData sk = loadSkillData(WeightSkillId);
+            Skills.Skill skill = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)player.GetSkills(), new object[1]
+            {
+        (object) WeightSkill
+            });
+            skill.m_level = (float)sk.Level;
+            skill.m_accumulator = sk.Progress;
+
         }
 
         public static bool CTAW(ref Container __instance, ref int ___m_width, ref int ___m_height)
@@ -316,7 +414,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
 
         public static void IGS(Container container)
         {
-            
+
 
         }
 
@@ -345,7 +443,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
                 UnityEngine.Debug.LogWarning("II failed: " + ex.ToString());
             }
             //___m_bkg = GameObject.FindObjectsOfType<Container>()[0].GetInventory().GetBkg();
-            
+
 
         }
 
@@ -391,8 +489,8 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
         {
             try
             {
-                if (!cdata.showExtraItemAttrs)
-                    return;
+                //if (!cdata.showExtraItemAttrs)
+                return;
 
                 ItemDrop.ItemData.ItemType it = item.m_shared.m_itemType;
                 int type;
@@ -419,11 +517,11 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
             }
         }
 
-            public static bool CFU(ref Character __instance, ref ZNetView ___m_nview)
+        public static bool CFU(ref Character __instance, ref ZNetView ___m_nview)
         {
             try
             {
-                
+
                 //UnityEngine.Debug.Log($"CSL attempting monster incr.");
 
                 /*if (!__instance.IsMonsterFaction())
@@ -443,7 +541,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
                     __instance.SetLevel(lev);
                 }
                     ___m_nview.GetZDO().Set("VMMML", lev);*/
-                
+
                 //UnityEngine.Debug.Log($"CSL monster incr. {__instance.GetHoverName()}, {lev}");
 
                 return true;
@@ -1205,11 +1303,11 @@ out float verticalLoss)
                 if (znv == null)
                     return true;
 
-                    ItemDrop.SaveToZDO(component.m_itemData, znv.GetZDO());
-                
+                ItemDrop.SaveToZDO(component.m_itemData, znv.GetZDO());
+
                 __result = component;
 
-                
+
 
                 //UnityEngine.Debug.LogWarning($"item drop: {znv.GetZDO().GetString("attriname", "..")}, {znv.GetZDO().GetFloat("attr3", -56.2f)}");
 
@@ -1672,7 +1770,7 @@ out float verticalLoss)
                             }
                         }
                     }
-                   
+
                 }
                 else if (__instance.m_destructibleType == DestructibleType.Character)
                 {
@@ -1803,7 +1901,7 @@ out float verticalLoss)
         {
             try
             {
-                if (!iscrafting || !cdata.itemRarityAndRandomization)
+                if (!iscrafting)// || !cdata.itemRarityAndRandomization)
                 {
                     cupgitem = null;
                     return;
@@ -1823,7 +1921,7 @@ out float verticalLoss)
 
                 ItemDrop.ItemData.ItemType it = item.m_shared.m_itemType;
                 int type = 0;
-                
+
                 if (it == ItemDrop.ItemData.ItemType.Bow || it == ItemDrop.ItemData.ItemType.OneHandedWeapon || it == ItemDrop.ItemData.ItemType.TwoHandedWeapon || it == ItemDrop.ItemData.ItemType.Tool)
                     type = 1;
                 else if (it == ItemDrop.ItemData.ItemType.Chest || it == ItemDrop.ItemData.ItemType.Hands || it == ItemDrop.ItemData.ItemType.Helmet || it == ItemDrop.ItemData.ItemType.Legs || it == ItemDrop.ItemData.ItemType.Shoulder || it == ItemDrop.ItemData.ItemType.Shield)
@@ -2003,16 +2101,16 @@ out float verticalLoss)
                         item.m_shared.m_name = item.m_shared.m_name.Substring(0, item.m_shared.m_name.IndexOf(" (UVO"));
                         int newr = or;
 
-                        if (cdata.allowUpgradeFailRarityDegradation)
-                            newr = Mathf.Max(or - UnityEngine.Random.Range(1, 3), 1);
-                        
+                        //if (cdata.allowUpgradeFailRarityDegradation)
+                        newr = Mathf.Max(or - UnityEngine.Random.Range(1, 3), 1);
+
                         string str = $" (UVO: R{newr})";
                         item.m_shared.m_name += str;
 
-                        if (type == 1)
+                        /*if (type == 1)
                             item.m_shared.m_damages.Modify(cdata.upgradeFailDamageReduction);
                         else if (type == 2)
-                            item.m_shared.m_armor = Mathf.Round(item.m_shared.m_armor * cdata.upgradeFailArmorReduction);
+                            item.m_shared.m_armor = Mathf.Round(item.m_shared.m_armor * cdata.upgradeFailArmorReduction);*/
                     }
                 }
 
@@ -2031,7 +2129,7 @@ out float verticalLoss)
 
                 if (item.m_shared.m_name.Contains(" (UVO"))
                 {
-                    if(item.m_crafterName.Contains(" (UVO"))
+                    if (item.m_crafterName.Contains(" (UVO"))
                         item.m_crafterName = item.m_crafterName.Substring(0, item.m_crafterName.IndexOf(" (UVO"));
 
                     item.m_crafterName += item.m_shared.m_name.Substring(item.m_shared.m_name.IndexOf(" (UVO"));
@@ -2122,7 +2220,7 @@ out float verticalLoss)
 
             int r = 1;
 
-            for (int i = 2; i < cdata.maxItemRarityValue; i++)
+            /*for (int i = 2; i < cdata.maxItemRarityValue; i++)
             {
    
 
@@ -2135,7 +2233,7 @@ out float verticalLoss)
                     break;
                 }
 
-            }
+            }*/
 
             //UnityEngine.Debug.LogWarning($"GIR: rnd={rnd}, r={r}");
             return r;
@@ -2148,10 +2246,10 @@ out float verticalLoss)
 
             try
             {
-                
+
                 _player = Player.m_localPlayer;
 
-                
+
 
                 pln = _player.GetPlayerName();
 
@@ -2197,7 +2295,7 @@ out float verticalLoss)
                 configname = path + $"/VM_Config.json";
                 errorfile = path + $"/VM_Error.ini";
 
-                
+
 
                 if (!Directory.Exists(path))
                 {
@@ -2205,7 +2303,7 @@ out float verticalLoss)
                 }
 
                 IniData data;
-                
+
                 if (File.Exists(filename))
                 {
 
@@ -2358,7 +2456,7 @@ out float verticalLoss)
                 if (Input.GetKeyDown(KeyCode.K))
                 {
 
-                    
+
                 }
 
                 if (Player.m_localPlayer != null)
@@ -2423,7 +2521,7 @@ out float verticalLoss)
                             if (zd.GetString("p2pdata", "").Contains(_player.GetZDOID().ToString()))
                                 processP2PData(zd, zd.GetString("p2pdata"));
                         }
-                        
+
                     }
                     else
                     {
@@ -2515,7 +2613,7 @@ out float verticalLoss)
                             sh.m_waterImpactDamage = Mathf.Max(10.0f - (s.level * 0.07f), 3.0f) * cdata.shipWaterDamageModifier;
                             sh.m_minWaterImpactForce = (3.5f + (s.level * 0.07f)) * cdata.shipMinWaterForceToTakeDamageModifier;
                             sh.m_minWaterImpactInterval = (10.0f + (s.level * 0.1f)) * cdata.shipMinIntervalToTakeDamageModifier;
-                            
+
                             _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
                         }
                     }
@@ -2701,11 +2799,11 @@ out float verticalLoss)
                             }
 
 
-                            
+
 
                         }
 
-                        
+
 
                         if (Input.GetKeyDown(KeyCode.L))
                         {
@@ -2872,13 +2970,13 @@ out float verticalLoss)
                             //objToSpawn = new GameObject("Cool GameObject made from Code");
                             //Add Components
                             //objToSpawn.AddComponent<Rigidbody>();
-                            
+
                             //gr1 = gr2;
 
                             //gr1.transform.SetParent(nip.transform);
 
                             //string prt = getHier(gr1.gameObject);
-                            
+
                             /*string prt = "";
                             int count = 0;
 
@@ -2953,7 +3051,7 @@ out float verticalLoss)
                                 }
                             }
 
-                            
+
                         }
                         else
                         {
@@ -3132,7 +3230,7 @@ out float verticalLoss)
                 UnityEngine.Debug.LogWarning("InvScrollSetup failed: " + ex.ToString());
             }
         }
-      
+
 
         public GameObject oog = null;
 
@@ -3189,9 +3287,9 @@ out float verticalLoss)
             }
 
             parser.WriteFile(filename, data);
-            
+
         }
-        
+
         public static void processP2PData(ZDO zd, string data)
         {
 
@@ -3219,9 +3317,55 @@ out float verticalLoss)
             }
         }
 
+        public static SkillData loadSkillData(int id)
+        {
+            SkillData sk;
+
+            try
+            {
+                SkillData[] sks = JsonHelper.FromJson<SkillData>(File.ReadAllText(filename));
+                sk = sks.Where(s => s.ID == id).Single();
+            }
+            catch
+            {
+                sk = new SkillData();
+                sk.ID = id;
+            }
+
+            return sk;
+        }
+
+        public static void saveSkillData()
+        {
+
+        }
+
     }
 
-    public class Skill
+    public class skillDef
+    {
+        public int ID;
+        public Skills.SkillType sType;
+        public Skills.SkillDef sDef;
+
+        skillDef(int id, Skills.SkillType stype)
+        {
+            ID = id;
+            sType = stype;
+
+            Texture2D texture = Texture2D.blackTexture;
+
+            sDef = new Skills.SkillDef()
+            {
+                m_skill = (Skills.SkillType)ID,
+                m_icon = Sprite.Create(texture, new Rect(0.0f, 0.0f, (float)texture.width, (float)texture.height), new Vector2(0.5f, 0.5f)),
+                m_description = sDescs[ID - Main.startSkillID],
+                m_increseStep = 1f
+            };
+        }
+    }
+
+public class Skill
     {
         public string name;
 
@@ -3238,8 +3382,6 @@ out float verticalLoss)
         }
 
         private int XP;
-        private bool allowWeightSkillStackIncrease;
-        private float extraStaminaRegenPerAgilityLevelModifier;
 
         public int xp
         {
@@ -3347,12 +3489,47 @@ out float verticalLoss)
         }
     }
 
+    public class SkillData
+    {
+        public int ID = 0;
+        public int Level = 0;
+        public float Progress = 0.0f;
+    }
+
+    public static class JsonHelper
+    {
+        public static T[] FromJson<T>(string json)
+        {
+            Wrapper<T> wrapper = JsonUtility.FromJson<Wrapper<T>>(json);
+            return wrapper.Items;
+        }
+
+        public static string ToJson<T>(T[] array)
+        {
+            Wrapper<T> wrapper = new Wrapper<T>();
+            wrapper.Items = array;
+            return JsonUtility.ToJson(wrapper);
+        }
+
+        public static string ToJson<T>(T[] array, bool prettyPrint)
+        {
+            Wrapper<T> wrapper = new Wrapper<T>();
+            wrapper.Items = array;
+            return JsonUtility.ToJson(wrapper, prettyPrint);
+        }
+
+        [Serializable]
+        private class Wrapper<T>
+        {
+            public T[] Items;
+        }
+    }
+
     [System.Serializable]
     public class configData
     {
         public int extraInvRowsPlayer = 4;
         public bool strongerMonsters = true;
-        public bool showExtraItemAttrs = true;
         public float bonusMonsterUpgradeChancePerPlayer = 0.025f;
         public float initialMonsterUpgradeChance = 0.55f;
         public float maxPlayerBonusMonsterUpgradeChance = 0.25f;
@@ -3363,15 +3540,7 @@ out float verticalLoss)
         public bool adjustMonsterDrops = true;
         public bool damageModifiers = true;
         public float waveFactorMultiplier = 1.0f;
-        public bool itemRarityAndRandomization = true;
-        public bool allowUpgradeFailRarityDegradation = true;
-        public float upgradeFailDamageReduction = 0.85f;
-        public float upgradeFailArmorReduction = 0.85f;
         public float craftingXPModifier = 1.0f;
-        public float itemRarityChanceBaseModifier = 1.0f;
-        public float itemRarityChanceCraftingLevelModifier = 1.0f;
-        public float itemRarityChanceItemQualityModifier = 1.0f;
-        public int maxItemRarityValue = 101;
         public float largeItemDropReductionModifier = 1.0f;
         public bool allowInventoryScrolling = true;
         public float agilityXPModifier = 1.0f;
