@@ -61,6 +61,7 @@ namespace ValheimMod
             try
             {
                 cdata = JsonUtility.FromJson<configData>(File.ReadAllText(configname));
+                saveConfig();
                 UnityEngine.Debug.LogWarning($"Loaded UVO configuration successfully!");
             }
             catch
@@ -70,7 +71,7 @@ namespace ValheimMod
                 UnityEngine.Debug.LogWarning($"UVO Config not found, new configuration created.");
             }
 
-            invrowadd = cdata.extraInvRows;
+            invrowadd = cdata.extraInvRowsPlayer;
 
             var h = new Harmony("unidarkshin_vm");
 
@@ -92,25 +93,25 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.DDM))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
 );
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(InventoryGui), "DoCrafting"),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.DC))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
-);
+);*/
 
             Type[] aitypes = { typeof(ItemDrop.ItemData) };
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(Inventory), "AddItem", aitypes),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.AI))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
-);
+);*/
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(Inventory), "Save"),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.ISV))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
-);
+);*/
 
             /*h.Patch(
 original: AccessTools.Method(typeof(Inventory), "Load"),
@@ -118,19 +119,19 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
 );*/
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(Inventory), "Load"),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.ILD)),
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-);
+);*/
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(ItemDrop), "DropItem"),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.IDI))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-);
+);*/
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(ItemDrop), "LoadFromZDO"),
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILZDO))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
@@ -139,7 +140,7 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILZDO))
 original: AccessTools.Method(typeof(ItemDrop), "SaveToZDO"),
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.ISZDO))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-);
+);*/
 
             h.Patch(
 original: AccessTools.Method(typeof(CharacterDrop), "GenerateDropList"),
@@ -159,11 +160,11 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.PHR))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(Inventory), "GetAllItems", new Type[] { typeof(string), typeof(List<ItemDrop.ItemData>) }),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.IGAI))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-);
+);*/
 
             h.Patch(
 original: AccessTools.Method(typeof(WearNTear), "OnPlaced", new Type[] { }),
@@ -195,11 +196,11 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CJ))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(ObjectDB), "GetRecipe", new Type[] { typeof(ItemDrop.ItemData) }),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.OGR))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-);
+);*/
 
             h.Patch(
 original: AccessTools.Method(typeof(Player), "UpdateCrouch", new Type[] { typeof(float) }),
@@ -225,11 +226,11 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.CSS))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(ItemDrop.ItemData), "GetTooltip", new Type[] { typeof(ItemDrop.ItemData), typeof(int), typeof(bool) }),
 postfix: new HarmonyMethod(typeof(Main), nameof(Main.IDGTT))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-);
+);*/
 
             h.Patch(
 original: AccessTools.Method(typeof(Character), "Awake", new Type[] { }),
@@ -238,10 +239,22 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.CAW))
 );
 
             h.Patch(
-original: typeof(Inventory).GetConstructor(new Type[] { typeof(string), typeof(Sprite), typeof(int), typeof(int)}),
-postfix: new HarmonyMethod(typeof(Main), nameof(Main.II))
+original: AccessTools.Method(typeof(Humanoid), "Awake", new Type[] { }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.HAW))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
+
+            h.Patch(
+original: AccessTools.Method(typeof(Container), "Awake", new Type[] { }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.CTAW))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+            /*            h.Patch(
+            original: typeof(Inventory).GetConstructor(new Type[] { typeof(string), typeof(Sprite), typeof(int), typeof(int)}),
+            postfix: new HarmonyMethod(typeof(Main), nameof(Main.II))
+            //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+            );*/
 
             /*h.Patch(
 original: AccessTools.Method(typeof(InventoryGui), "Show", new Type[] { typeof(Container) }),
@@ -257,6 +270,48 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
 
             //UnityEngine.UI.Scrollbar scr = new UnityEngine.UI.Scrollbar();
             //ZNet.instance.m_serverPlayerLimit = 99;
+        }
+
+        public static bool CTAW(ref Container __instance, ref int ___m_width, ref int ___m_height)
+        {
+            try
+            {
+                if (__instance == null || !cdata.overrideChestInventorySize || cdata.overrideInvWidthChest == 0 || cdata.overrideInvHeightChest == 0)
+                    return true;
+
+
+                ___m_width = cdata.overrideInvWidthChest;
+                ___m_height = cdata.overrideInvHeightChest;
+
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("CTAW failed: " + ex.ToString());
+                return true;
+            }
+        }
+
+        public static bool HAW(ref Humanoid __instance)
+        {
+            try
+            {
+                if (!__instance.IsPlayer())
+                    return true;
+
+
+                typeof(Humanoid).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(__instance, new Inventory("Inventory", (Sprite)null, 8, 4 + cdata.extraInvRowsPlayer));
+
+
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("HAW failed: " + ex.ToString());
+                return true;
+            }
         }
 
         public static void IGS(Container container)
@@ -305,8 +360,12 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
 
                 string on = __instance.m_name;
                 int ol = __instance.GetLevel();
+                int lev;
 
-                int lev = getMonsterUpgrade(ol);
+                if (__instance.m_name.ToLower().Contains("blob"))
+                    lev = getMonsterUpgrade(ol, 4, 0.5f);
+                else
+                    lev = getMonsterUpgrade(ol, 8);
 
                 __instance.SetLevel(lev);
                 __instance.m_speed = __instance.m_speed * (1.0f + (lev / 10.0f));
@@ -397,13 +456,13 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.IGS))
             }
         }
 
-        public static int getMonsterUpgrade(int level)
+        public static int getMonsterUpgrade(int level, int maxLevel, float mod = 1.0f)
         {
             int newlevel = level;
 
-            for (int i = newlevel; i < 8; i++)
+            for (int i = newlevel; i < maxLevel; i++)
             {
-                if (UnityEngine.Random.value <= cdata.initialMonsterUpgradeChance + Mathf.Min(Player.GetAllPlayers().Count * cdata.bonusMonsterUpgradeChancePerPlayer, cdata.maxPlayerBonusMonsterUpgradeChance))
+                if (UnityEngine.Random.value <= (cdata.initialMonsterUpgradeChance + Mathf.Min(Player.GetAllPlayers().Count * cdata.bonusMonsterUpgradeChancePerPlayer, cdata.maxPlayerBonusMonsterUpgradeChance)) * mod)
                 {
                     newlevel = i + 1;
                 }
@@ -3291,7 +3350,7 @@ out float verticalLoss)
     [System.Serializable]
     public class configData
     {
-        public int extraInvRows = 4;
+        public int extraInvRowsPlayer = 4;
         public bool strongerMonsters = true;
         public bool showExtraItemAttrs = true;
         public float bonusMonsterUpgradeChancePerPlayer = 0.025f;
@@ -3342,6 +3401,9 @@ out float verticalLoss)
         public bool allowWeightSkillStackIncrease = true;
         public float weightLevelStackSizeModifier = 1.0f;
         public float buildingXPModifier = 1.0f;
+        public int overrideInvWidthChest = 8;
+        public int overrideInvHeightChest = 4;
+        public bool overrideChestInventorySize = true;
     }
 }
 
