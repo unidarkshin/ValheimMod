@@ -44,7 +44,7 @@ namespace ValheimMod
 
         public static List<Skill> skills = new List<Skill>();
 
-        public string[] snames = { "Weight", "Agility", "Sailing", "Crafting", "Building" };
+        public static string[] snames = { "Weight", "Agility", "Sailing", "Crafting", "Building" };
 
         /*[DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -57,7 +57,8 @@ namespace ValheimMod
         //public static Skills.SkillDef WeightSkillDef;
 
         public static int startSkillID = 2123;
-        public static List<string> sDescs = new List<string> { "Moving with encumbrance over time will increase your max weight and stack size.", "Using large amounts of stamina allows you regenerate stamina faster."};
+        public static List<string> sDescs = new List<string> { "Moving with encumbrance over time will increase your max weight and stack size.", "Using large amounts of stamina allows you regenerate stamina faster.", "Continuous sailing makes your boat faster.", "Crafting items reduces your resource cost to make them.", "Building over time will allow you to build structures with less support." };
+        public static List<skillDef> sDefs = new List<skillDef>();
 
         public void Awake()
         {
@@ -80,7 +81,13 @@ namespace ValheimMod
 
             invrowadd = cdata.extraInvRowsPlayer;
 
-            Texture2D texture = Texture2D.blackTexture;
+            for (int i = 0; i < snames.Length; i++)
+            {
+                sDefs.Add(new skillDef(startSkillID + i));
+            }
+
+
+            /*Texture2D texture = Texture2D.blackTexture;
 
             Main.WeightSkillDef = new Skills.SkillDef()
             {
@@ -88,7 +95,7 @@ namespace ValheimMod
                 m_icon = Sprite.Create(Texture2D.blackTexture, new Rect(0.0f, 0.0f, (float)texture.width, (float)texture.height), new Vector2(0.5f, 0.5f)),
                 m_description = "Moving with encumbrance over time will increase your max weight and stack size.",
                 m_increseStep = 1f
-            };
+            };*/
 
             var h = new Harmony("unidarkshin_vm");
 
@@ -322,10 +329,18 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
 
         public static bool SISV(Skills __instance, Skills.SkillType type, ref bool __result)
         {
-            if (type != WeightSkill)
-                return true;
-            __result = true;
-            return false;
+
+            foreach (skillDef sd in sDefs)
+            {
+                if (type == sd.sType)
+                {
+                    __result = true;
+                    return false;
+                }
+                    
+            }
+
+            return true;
         }
 
 
@@ -341,11 +356,16 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
         {
             if (!(language == "English"))
                 return;
-            AccessTools.Method(typeof(Localization), "AddWord", (System.Type[])null, (System.Type[])null).Invoke((object)__instance, new object[2]
+
+            foreach (skillDef sd in sDefs)
             {
-        (object) $"skill_2123",
-        (object) "Weight"
-            });
+
+                AccessTools.Method(typeof(Localization), "AddWord", (System.Type[])null, (System.Type[])null).Invoke((object)__instance, new object[2]
+                {
+        (object) $"skill_{sd.ID}",
+        (object) sd.name
+                });
+            }
         }
 
 
@@ -354,8 +374,14 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
       Skills.SkillType type,
       ref Skills.SkillDef __result)
         {
-            if (type == WeightSkill)
-                __result = WeightSkillDef;
+            foreach (skillDef sd in sDefs)
+            {
+                if (type == sd.sType)
+                {
+                    __result = sd.sDef;
+                    break;
+                }
+            }
         }
 
         public static void PPLPD(PlayerProfile __instance, Player player)
@@ -3317,27 +3343,75 @@ out float verticalLoss)
             }
         }
 
-        public static SkillData loadSkillData(int id)
+        public static SkillData[] loadSkillData()
         {
-            SkillData sk;
+            SkillData[] sks = new SkillData[sDefs.Count];
 
             try
             {
-                SkillData[] sks = JsonHelper.FromJson<SkillData>(File.ReadAllText(filename));
-                sk = sks.Where(s => s.ID == id).Single();
+                sks = JsonHelper.FromJson<SkillData>(File.ReadAllText(filename));
             }
             catch
             {
-                sk = new SkillData();
-                sk.ID = id;
+                int i = 0;
+
+                foreach (skillDef sd in sDefs)
+                {
+                    sks[i] = new SkillData();
+                    sks[i].ID = sd.ID;
+
+                    i++;
+                }
             }
 
-            return sk;
+            return sks;
         }
 
-        public static void saveSkillData()
+        public static void saveSkillData(Player player)
         {
+            SkillData[] sks = new SkillData[sDefs.Count];
 
+            try
+            {
+                sks = new SkillData[sDefs.Count];
+
+                int i = 0;
+
+                foreach (skillDef sd in sDefs)
+                {
+                    sks[i] = new SkillData();
+
+                    Skills.Skill skill = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)player.GetSkills(), new object[1]
+                    {
+                        (object) sd.sType
+                    });
+
+                    sks[i].ID = sd.ID;
+                    sks[i].Level = (int)skill.m_level;
+                    sks[i].Progress = skill.m_accumulator;
+                        
+                    i++;
+                }
+
+
+            }
+            catch
+            {
+                sks = new SkillData[sDefs.Count];
+
+                int i = 0;
+
+                foreach (skillDef sd in sDefs)
+                {
+                    sks[i] = new SkillData();
+
+                    sks[i].ID = sd.ID;
+
+                    i++;
+                }
+            }
+
+            File.WriteAllText(filename, JsonHelper.ToJson<SkillData>(sks, true));
         }
 
     }
@@ -3347,11 +3421,12 @@ out float verticalLoss)
         public int ID;
         public Skills.SkillType sType;
         public Skills.SkillDef sDef;
+        public string name;
 
-        skillDef(int id, Skills.SkillType stype)
+        public skillDef(int id)
         {
             ID = id;
-            sType = stype;
+            sType = (Skills.SkillType)ID;
 
             Texture2D texture = Texture2D.blackTexture;
 
@@ -3359,9 +3434,11 @@ out float verticalLoss)
             {
                 m_skill = (Skills.SkillType)ID,
                 m_icon = Sprite.Create(texture, new Rect(0.0f, 0.0f, (float)texture.width, (float)texture.height), new Vector2(0.5f, 0.5f)),
-                m_description = sDescs[ID - Main.startSkillID],
+                m_description = Main.sDescs[ID - Main.startSkillID],
                 m_increseStep = 1f
             };
+
+            name = Main.snames[ID - Main.startSkillID];
         }
     }
 
@@ -3492,7 +3569,7 @@ public class Skill
     public class SkillData
     {
         public int ID = 0;
-        public int Level = 0;
+        public int Level = 1;
         public float Progress = 0.0f;
     }
 
