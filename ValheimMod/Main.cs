@@ -42,7 +42,7 @@ namespace ValheimMod
 
         public static bool shouldInit = true;
 
-        public static List<Skill> skills = new List<Skill>();
+        //public static List<Skill> skills = new List<Skill>();
 
         public static string[] snames = { "Weight", "Agility", "Sailing", "Crafting", "Building" };
 
@@ -64,7 +64,13 @@ namespace ValheimMod
         {
             UnityEngine.Debug.LogWarning("UVO Loading!");
 
-            configname = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VMU_Data" + $"/VM_Config.json";
+            path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VMU_Data";
+
+            filename = path + $"/{_player.GetPlayerName()}_VM_Data.json";
+            configname = path + $"/VM_Config.json";
+            errorfile = path + $"/VM_Error.ini";
+
+            //configname = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VMU_Data" + $"/VM_Config.json";
 
             try
             {
@@ -347,7 +353,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
         public static void PPSPD(PlayerProfile __instance, Player player)
         {
 
-            saveSkillData();
+            saveSkillData(player);
 
         }
 
@@ -386,13 +392,19 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
 
         public static void PPLPD(PlayerProfile __instance, Player player)
         {
-            SkillData sk = loadSkillData(WeightSkillId);
-            Skills.Skill skill = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)player.GetSkills(), new object[1]
+            SkillData[] sks = loadSkillData();
+
+            foreach (SkillData sk in sks)
             {
-        (object) WeightSkill
-            });
-            skill.m_level = (float)sk.Level;
-            skill.m_accumulator = sk.Progress;
+
+                Skills.Skill skill = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)player.GetSkills(), new object[1]
+                {
+        (object) (Skills.SkillType)sk.ID
+                });
+                skill.m_level = (float)sk.Level;
+                skill.m_accumulator = sk.Progress;
+
+            }
 
         }
 
@@ -781,7 +793,12 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
         {
             try
             {
-                Skill a = skills.Where(sk => sk.name.ToLower() == "agility").FirstOrDefault();
+                //Skill a = skills.Where(sk => sk.name.ToLower() == "agility").FirstOrDefault();
+
+                Skills.Skill a = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+                {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Agility").SingleOrDefault().sType
+                });
 
                 if (a == null)
                     return true;
@@ -792,7 +809,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
                     if (!itemData.m_equiped)
                         ___m_totalWeight += itemData.GetWeight();
                     else
-                        ___m_totalWeight += (itemData.GetWeight() / (1.0f + (a.level * 0.04f)));
+                        ___m_totalWeight += (itemData.GetWeight() / (1.0f + (a.m_level * 0.04f)));
                 }
 
                 return false;
@@ -884,7 +901,10 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
 
                     jc++;
                 }*/
-                Skill a = skills.Where(sk => sk.name.ToLower() == "agility").FirstOrDefault();
+                Skills.Skill a = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+                {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Agility").SingleOrDefault().sType
+                });
 
                 if (a == null)
                     return;
@@ -900,9 +920,12 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
 
         public static int getMaxJumps()
         {
-            Skill a = skills.Where(sk => sk.name.ToLower() == "agility").FirstOrDefault();
+            Skills.Skill a = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+                {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Agility").SingleOrDefault().sType
+                });
 
-            return (a.level / 2);
+            return (int)(a.m_level / 2);
         }
 
         public static ItemDrop.ItemData cupgitem = null;
@@ -1022,7 +1045,10 @@ out float verticalLoss)
 
             try
             {
-                Skill b = skills.Where(sk => sk.name.ToLower() == "building").FirstOrDefault();
+                Skills.Skill b = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+                {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Building").SingleOrDefault().sType
+                });
 
                 if (b == null)
                     return true;
@@ -1030,29 +1056,29 @@ out float verticalLoss)
                 switch (__instance.m_materialType)
                 {
                     case WearNTear.MaterialType.Wood:
-                        maxSupport = 100f * (1.0f + (b.level * 0.01f));
-                        minSupport = 10f / (1.0f + (b.level * 0.01f));
-                        verticalLoss = 0.125f / (1.0f + (b.level * 0.01f));
-                        horizontalLoss = 0.2f / (1.0f + (b.level * 0.01f));
+                        maxSupport = 100f * (1.0f + (b.m_level * 0.01f));
+                        minSupport = 10f / (1.0f + (b.m_level * 0.01f));
+                        verticalLoss = 0.125f / (1.0f + (b.m_level * 0.01f));
+                        horizontalLoss = 0.2f / (1.0f + (b.m_level * 0.01f));
                         //UnityEngine.Debug.LogWarning($"WGMP W: maxs = {maxSupport}, mins = {minSupport}");
                         break;
                     case WearNTear.MaterialType.Stone:
-                        maxSupport = 1000f * (1.0f + (b.level * 0.01f));
-                        minSupport = 50f / (1.0f + (b.level * 0.01f));
-                        verticalLoss = 0.125f / (1.0f + (b.level * 0.012f));
-                        horizontalLoss = 1f / (1.0f + (b.level * 0.01f));
+                        maxSupport = 1000f * (1.0f + (b.m_level * 0.01f));
+                        minSupport = 50f / (1.0f + (b.m_level * 0.01f));
+                        verticalLoss = 0.125f / (1.0f + (b.m_level * 0.012f));
+                        horizontalLoss = 1f / (1.0f + (b.m_level * 0.01f));
                         break;
                     case WearNTear.MaterialType.Iron:
-                        maxSupport = 1500f * (1.0f + (b.level * 0.01f));
-                        minSupport = 20f / (1.0f + (b.level * 0.01f));
-                        verticalLoss = 0.07692308f / (1.0f + (b.level * 0.01f));
-                        horizontalLoss = 0.07692308f / (1.0f + (b.level * 0.01f));
+                        maxSupport = 1500f * (1.0f + (b.m_level * 0.01f));
+                        minSupport = 20f / (1.0f + (b.m_level * 0.01f));
+                        verticalLoss = 0.07692308f / (1.0f + (b.m_level * 0.01f));
+                        horizontalLoss = 0.07692308f / (1.0f + (b.m_level * 0.01f));
                         break;
                     case WearNTear.MaterialType.HardWood:
-                        maxSupport = 140f * (1.0f + (b.level * 0.01f));
-                        minSupport = 10f / (1.0f + (b.level * 0.01f));
-                        verticalLoss = 0.1f / (1.0f + (b.level * 0.01f));
-                        horizontalLoss = 0.1666667f / (1.0f + (b.level * 0.01f));
+                        maxSupport = 140f * (1.0f + (b.m_level * 0.01f));
+                        minSupport = 10f / (1.0f + (b.m_level * 0.01f));
+                        verticalLoss = 0.1f / (1.0f + (b.m_level * 0.01f));
+                        horizontalLoss = 0.1666667f / (1.0f + (b.m_level * 0.01f));
                         break;
                     default:
                         maxSupport = 0.0f;
@@ -1077,7 +1103,11 @@ out float verticalLoss)
             try
             {
 
-                Skill b = skills.Where(sk => sk.name.ToLower() == "building").FirstOrDefault();
+                Skills.Skill b = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+                {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Building").SingleOrDefault().sType
+                });
+
                 Piece p = __instance.GetComponent<Piece>();
 
                 int reqttl = 1;
@@ -1087,9 +1117,9 @@ out float verticalLoss)
                     reqttl += pr.m_amount;
                 }
 
-                int xp = 1 + ((1 * ((int)__instance.m_materialType) + 1) * (1 + (int)(reqttl / 5)) * (1 + (int)(b.level / 20)));
+                int xp = 1 + (((((int)__instance.m_materialType + 1) * ((int)__instance.m_materialType + 1)) + 1) * (1 + (int)(reqttl / 5)));
 
-                b.xp = b.xp + (int)(xp * cdata.buildingXPModifier);
+                b.Raise((xp / 2000.0f) * cdata.buildingXPModifier);
 
             }
             catch (Exception ex)
@@ -1941,7 +1971,7 @@ out float verticalLoss)
 
 
 
-                Skill c = skills.Where(sk => sk.name.ToLower() == "crafting").FirstOrDefault();
+                Skill c = new Skill("", 1, 1);// = skills.Where(sk => sk.name.ToLower() == "crafting").FirstOrDefault();
 
                 int xp = 1 + (int)(c.level / 10.0);
 
@@ -2235,7 +2265,7 @@ out float verticalLoss)
 
             shouldInit = true;
 
-            skills = new List<Skill>();
+            //skills = new List<Skill>();
 
             //cdata = new configData();
         }
@@ -2315,9 +2345,9 @@ out float verticalLoss)
 
                 _player.Message(MessageHud.MessageType.TopLeft, $"Host Modifier: {meaw}, ZNV: {znv.GetZDO().GetString("VMMHM", "")}.", 0, (Sprite)null);
 
-                path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VMU_Data";
+                /*path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VMU_Data";
 
-                filename = path + $"/{_player.GetPlayerName()}_VM_Data.ini";
+                filename = path + $"/{_player.GetPlayerName()}_VM_Data.json";
                 configname = path + $"/VM_Config.json";
                 errorfile = path + $"/VM_Error.ini";
 
@@ -2378,7 +2408,7 @@ out float verticalLoss)
                     parser.WriteFile(filename, data);
 
                 }
-
+                */
 
                 otime = Time.time;
 
@@ -2419,10 +2449,9 @@ out float verticalLoss)
                 //wsxp = twsxp;
 
 
-                foreach (Skill sk in skills)
-                {
-                    sk.updateEffects();
-                }
+                
+                updateEffects();
+                
 
 
             }
@@ -2574,16 +2603,17 @@ out float verticalLoss)
                     if (elapsed6 >= 30f)
                     {
 
+                        Skills.Skill a = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+                                    {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Agility").SingleOrDefault().sType
+                                    });
 
-                        Skill a = skills.Where(sk => sk.name.ToLower() == "agility").FirstOrDefault();
                         if (active && a != null)
                         {
-                            int extra = a.level / 2;
 
-                            if (extra < 1)
-                                extra = 1;
+                            a.Raise(((stc * 0.000025f) / 500.0f) * cdata.agilityXPModifier);
 
-                            a.xp = a.xp + (int)((1 + (int)Mathf.Round(stc * 0.000025f * (extra))) * cdata.agilityXPModifier);
+                            //a.xp = a.xp + (int)((1 + (int)Mathf.Round(stc * 0.000025f * (extra))) * cdata.agilityXPModifier);
                             //a.updateEffects();
                         }
 
@@ -2610,7 +2640,10 @@ out float verticalLoss)
                     {
                         elapsed7 += Time.deltaTime;
 
-                        Skill s = skills.Where(sk => sk.name.ToLower() == "sailing").FirstOrDefault();
+                        Skills.Skill s = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+            {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Sailing").SingleOrDefault().sType
+            });
 
                         if (elapsed7 >= 30f && active)
                         {
@@ -2618,7 +2651,9 @@ out float verticalLoss)
 
                             EnvSetup env = EnvMan.instance.GetCurrentEnvironment();
 
-                            s.xp = s.xp + (int)(1 + (int)(env.m_windMax / 5.0) + (int)(s.level * 0.8) * cdata.sailingXPModifier);
+                            int xp = (int)((1 + (env.m_windMax / 10.0)));
+
+                            s.Raise((xp / 300.0f) * cdata.sailingXPModifier);
 
                             activechanges = true;
                         }
@@ -2629,16 +2664,16 @@ out float verticalLoss)
                             activechanges = true;
                         }
 
-                        if (_player.GetControlledShip().m_backwardForce != (0.5f + (s.level * 0.004f)) && cdata.allowShipForceAdjustments)
+                        if (_player.GetControlledShip().m_backwardForce != (0.5f + (s.m_level * 0.004f)) && cdata.allowShipForceAdjustments)
                         {
                             Ship sh = _player.GetControlledShip();
-                            sh.m_backwardForce = (0.5f + (s.level * 0.004f)) * cdata.shipForwardsBackwardsForceModifier;
-                            sh.m_sailForceFactor = (0.05f + (s.level * 0.0004f)) * cdata.shipSailForceModifier;
-                            sh.m_stearForce = (0.5f + (s.level * 0.004f)) * cdata.shipSteerForceModifier;
+                            sh.m_backwardForce = (0.5f + (s.m_level * 0.004f)) * cdata.shipForwardsBackwardsForceModifier;
+                            sh.m_sailForceFactor = (0.05f + (s.m_level * 0.0004f)) * cdata.shipSailForceModifier;
+                            sh.m_stearForce = (0.5f + (s.m_level * 0.004f)) * cdata.shipSteerForceModifier;
                             sh.m_force = 0.55f * cdata.shipVerticalForceModifier;
-                            sh.m_waterImpactDamage = Mathf.Max(10.0f - (s.level * 0.07f), 3.0f) * cdata.shipWaterDamageModifier;
-                            sh.m_minWaterImpactForce = (3.5f + (s.level * 0.07f)) * cdata.shipMinWaterForceToTakeDamageModifier;
-                            sh.m_minWaterImpactInterval = (10.0f + (s.level * 0.1f)) * cdata.shipMinIntervalToTakeDamageModifier;
+                            sh.m_waterImpactDamage = Mathf.Max(10.0f - (s.m_level * 0.07f), 3.0f) * cdata.shipWaterDamageModifier;
+                            sh.m_minWaterImpactForce = (3.5f + (s.m_level * 0.07f)) * cdata.shipMinWaterForceToTakeDamageModifier;
+                            sh.m_minWaterImpactInterval = (10.0f + (s.m_level * 0.1f)) * cdata.shipMinIntervalToTakeDamageModifier;
 
                             _player.Message(MessageHud.MessageType.TopLeft, $"Modified boat forces.", 0, (Sprite)null);
                         }
@@ -2686,10 +2721,7 @@ out float verticalLoss)
 
                         if (elapsed8 >= 30f || us)
                         {
-                            foreach (Skill sk in skills)
-                            {
-                                sk.updateEffects();
-                            }
+                            updateEffects();
 
                             us = false;
                             elapsed8 = 0f;
@@ -2717,9 +2749,13 @@ out float verticalLoss)
                                     ratio = 1.0f;
                                 }
 
-                                Skill w = skills.Where(sk => sk.name.ToLower() == "weight").FirstOrDefault();
+                                Skills.Skill w = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+            {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Weight").SingleOrDefault().sType
+            });
 
-                                w.xp = w.xp + (int)((1 + (int)(ratio * (float)w.level)) * cdata.weightXPModifier);
+                                w.Raise((ratio / 100.0f) * cdata.weightXPModifier);
+                                //w.xp = w.xp + (int)((1 + (int)(ratio * (float)w.level)) * cdata.weightXPModifier);
 
                             }
 
@@ -3085,13 +3121,13 @@ out float verticalLoss)
                         }
                     }
 
-                    savetime += Time.deltaTime;
+                    /*savetime += Time.deltaTime;
 
                     if (savetime >= cdata.saveSkillDataInterval)
                     {
                         savetime = 0f;
                         SaveSkillData();
-                    }
+                    }*/
 
 
                 }
@@ -3298,7 +3334,7 @@ out float verticalLoss)
             return str;
         }
 
-        public void SaveSkillData()
+        /*public void SaveSkillData()
         {
             int i = 1;
 
@@ -3314,7 +3350,7 @@ out float verticalLoss)
 
             parser.WriteFile(filename, data);
 
-        }
+        }*/
 
         public static void processP2PData(ZDO zd, string data)
         {
@@ -3333,12 +3369,12 @@ out float verticalLoss)
 
                 int i = 1;
 
-                foreach (Skill skill in skills)
+                /*foreach (Skill skill in skills)
                 {
                     GUI.Label(new Rect(ox, 40 + oy + (i * sep), 100f, 60f), $"{skill.name} -> \nLevel: {skill.level} \nXP: {skill.xp}/{skill.requiredXP()}");
 
                     i++;
-                }
+                }*/
                 //GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, 150f, 50f), "GAME INJECTED"); // Should work and when injected you will see this text in the middle of the screen
             }
         }
@@ -3414,6 +3450,76 @@ out float verticalLoss)
             File.WriteAllText(filename, JsonHelper.ToJson<SkillData>(sks, true));
         }
 
+        public void updateEffects()
+        {
+            Skills.Skill w = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+            {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Weight").SingleOrDefault().sType
+            });
+
+            if (w != null && Main.cdata.allowWeightSkillEffects)
+            {
+                if (Main.cdata.allowWeightSkillStackIncrease)
+                    updateStacks();
+
+                Main._player.m_maxCarryWeight = 300f + ((5f * w.m_level) * Main.cdata.extraWeightPerWeightLevelModifier);
+            }
+
+            Skills.Skill a = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+            {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Agility").SingleOrDefault().sType
+            });
+
+            if (a != null)
+            {
+                Main._player.m_staminaRegen = 5f + ((a.m_level * 0.1f) * Main.cdata.extraStaminaRegenPerAgilityLevelModifier);
+            }
+        }
+
+        public void updateStacks()
+        {
+            try
+            {
+
+                Skills.Skill w = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+            {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Weight").SingleOrDefault().sType
+            });
+
+                foreach (GameObject go in ObjectDB.instance.m_items)
+                {
+
+
+                    ItemDrop item = go.GetComponent<ItemDrop>();
+
+                    if (item.m_itemData.m_shared.m_maxStackSize == 1)
+                        continue;
+
+                    if (Main.oms.TryGetValue(item.m_itemData.m_shared.m_name, out int ms))
+                        item.m_itemData.m_shared.m_maxStackSize = ms * (int)((1 + (w.m_level / 10)) * Main.cdata.weightLevelStackSizeModifier);
+
+
+                }
+
+                List<ItemDrop.ItemData> items = Main._player.GetInventory().GetAllItems();
+
+                foreach (ItemDrop.ItemData item in items)
+                {
+                    if (item.m_shared.m_maxStackSize == 1)
+                        continue;
+
+                    if (Main.oms.TryGetValue(item.m_shared.m_name, out int ms))
+                        item.m_shared.m_maxStackSize = ms * (int)((1 + (w.m_level / 10)) * Main.cdata.weightLevelStackSizeModifier);
+
+                }
+                typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Main._player.GetInventory(), items);
+            }
+            catch
+            {
+
+            }
+        }
+
     }
 
     public class skillDef
@@ -3454,7 +3560,7 @@ public class Skill
             {
                 Level = value;
 
-                updateEffects();
+                //updateEffects();
             }
         }
 
@@ -3511,61 +3617,10 @@ public class Skill
 
         }
 
-        public void updateEffects()
-        {
-            if (name.ToLower() == "weight" && Main.cdata.allowWeightSkillEffects)
-            {
-                if (Main.cdata.allowWeightSkillStackIncrease)
-                    updateStacks();
 
-                Main._player.m_maxCarryWeight = 300f + ((5f * (float)level) * Main.cdata.extraWeightPerWeightLevelModifier);
-            }
-            if (name.ToLower() == "agility")
-            {
-                Main._player.m_staminaRegen = 5f + ((level * 0.1f) * Main.cdata.extraStaminaRegenPerAgilityLevelModifier);
-            }
-        }
-
-        public void updateStacks()
-        {
-            try
-            {
-
-                foreach (GameObject go in ObjectDB.instance.m_items)
-                {
-
-
-                    ItemDrop item = go.GetComponent<ItemDrop>();
-
-                    if (item.m_itemData.m_shared.m_maxStackSize == 1)
-                        continue;
-
-                    if (Main.oms.TryGetValue(item.m_itemData.m_shared.m_name, out int ms))
-                        item.m_itemData.m_shared.m_maxStackSize = ms * (int)((1 + (level / 10)) * Main.cdata.weightLevelStackSizeModifier);
-
-
-                }
-
-                List<ItemDrop.ItemData> items = Main._player.GetInventory().GetAllItems();
-
-                foreach (ItemDrop.ItemData item in items)
-                {
-                    if (item.m_shared.m_maxStackSize == 1)
-                        continue;
-
-                    if (Main.oms.TryGetValue(item.m_shared.m_name, out int ms))
-                        item.m_shared.m_maxStackSize = ms * (int)((1 + (level / 10)) * Main.cdata.weightLevelStackSizeModifier);
-
-                }
-                typeof(Inventory).GetField("m_inventory", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Main._player.GetInventory(), items);
-            }
-            catch
-            {
-               
-            }
-        }
     }
 
+    [Serializable]
     public class SkillData
     {
         public int ID = 0;
@@ -3608,7 +3663,7 @@ public class Skill
         public int extraInvRowsPlayer = 4;
         public bool strongerMonsters = true;
         public float bonusMonsterUpgradeChancePerPlayer = 0.025f;
-        public float initialMonsterUpgradeChance = 0.55f;
+        public float initialMonsterUpgradeChance = 0.45f;
         public float maxPlayerBonusMonsterUpgradeChance = 0.25f;
         public bool lesserCraftingRestrictions = true;
         public bool removeBuildRestrictions = true;
