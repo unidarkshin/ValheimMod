@@ -31,7 +31,7 @@ namespace ValheimMod
 
         public Main M;
 
-        string path;
+        public static string path;
         public static string filename;
         string configname;
         string errorfile;
@@ -66,7 +66,7 @@ namespace ValheimMod
 
             path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VMU_Data";
 
-            filename = path + $"/{_player.GetPlayerName()}_VM_Data.json";
+            
             configname = path + $"/VM_Config.json";
             errorfile = path + $"/VM_Error.ini";
 
@@ -238,11 +238,11 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.PUC))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
-            h.Patch(
+            /*h.Patch(
 original: AccessTools.Method(typeof(Inventory), "UpdateTotalWeight", new Type[] { }),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.IUTW))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-);
+);*/
 
             h.Patch(
 original: AccessTools.Method(typeof(Chat), "InputText", new Type[] { }),
@@ -392,9 +392,9 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
 
         public static void PPLPD(PlayerProfile __instance, Player player)
         {
-            SkillData[] sks = loadSkillData();
-
-            foreach (SkillData sk in sks)
+            skillData[] sks = loadSkillData(player);
+            //UnityEngine.Debug.LogWarning(sks.Length);
+            foreach (skillData sk in sks)
             {
 
                 Skills.Skill skill = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)player.GetSkills(), new object[1]
@@ -3379,21 +3379,28 @@ out float verticalLoss)
             }
         }
 
-        public static SkillData[] loadSkillData()
+        public static skillData[] loadSkillData(Player player)
         {
-            SkillData[] sks = new SkillData[sDefs.Count];
+            //if (filename.Length == 0)
+            filename = path + $"/{player.GetPlayerName()}_VM_Data.json";
+
+            skillData[] sks;
+            //skillData[] sks = new skillData[sDefs.Count];
 
             try
             {
-                sks = JsonHelper.FromJson<SkillData>(File.ReadAllText(filename));
+                sks = JsonHelper.FromJson<skillData>(File.ReadAllText(filename));
             }
             catch
             {
+
+                sks = new skillData[sDefs.Count];
+
                 int i = 0;
 
                 foreach (skillDef sd in sDefs)
                 {
-                    sks[i] = new SkillData();
+                    sks[i] = new skillData();
                     sks[i].ID = sd.ID;
 
                     i++;
@@ -3405,17 +3412,21 @@ out float verticalLoss)
 
         public static void saveSkillData(Player player)
         {
-            SkillData[] sks = new SkillData[sDefs.Count];
+
+            //if (filename.Length == 0)
+            filename = path + $"/{player.GetPlayerName()}_VM_Data.json";
+
+            skillData[] sks = new skillData[sDefs.Count];
 
             try
             {
-                sks = new SkillData[sDefs.Count];
+                sks = new skillData[sDefs.Count];
 
                 int i = 0;
 
                 foreach (skillDef sd in sDefs)
                 {
-                    sks[i] = new SkillData();
+                    sks[i] = new skillData();
 
                     Skills.Skill skill = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)player.GetSkills(), new object[1]
                     {
@@ -3433,21 +3444,23 @@ out float verticalLoss)
             }
             catch
             {
-                sks = new SkillData[sDefs.Count];
+                sks = new skillData[sDefs.Count];
 
                 int i = 0;
 
                 foreach (skillDef sd in sDefs)
                 {
-                    sks[i] = new SkillData();
-
+                    sks[i] = new skillData();
+                    
                     sks[i].ID = sd.ID;
 
                     i++;
                 }
             }
 
-            File.WriteAllText(filename, JsonHelper.ToJson<SkillData>(sks, true));
+            UnityEngine.Debug.LogWarning($"{sks.Length}, {sks[4].Level}");
+
+            File.WriteAllText(filename, JsonHelper.ToJson<skillData>(sks, true));
         }
 
         public void updateEffects()
@@ -3621,7 +3634,7 @@ public class Skill
     }
 
     [Serializable]
-    public class SkillData
+    public class skillData
     {
         public int ID = 0;
         public int Level = 1;
