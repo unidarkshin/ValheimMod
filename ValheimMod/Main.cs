@@ -14,7 +14,11 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Diagnostics;
-
+using Newtonsoft.Json;
+using System.Runtime.Serialization;
+using System.Xml.Linq;
+using EpicLoot;
+using Common;
 
 namespace ValheimMod
 {
@@ -22,7 +26,7 @@ namespace ValheimMod
     class Main : BaseUnityPlugin
     {
         public static FileIniDataParser parser = new FileIniDataParser();
-
+        
         public static Player _player;
         public string pln;
         public float otime;
@@ -123,19 +127,19 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.DDM))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
 );
 
-            /*h.Patch(
+            h.Patch(
 original: AccessTools.Method(typeof(InventoryGui), "DoCrafting"),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.DC))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
-);*/
+);
 
             Type[] aitypes = { typeof(ItemDrop.ItemData) };
 
-            /*h.Patch(
+            h.Patch(
 original: AccessTools.Method(typeof(Inventory), "AddItem", aitypes),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.AI))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.CW2))
-);*/
+);
 
             /*h.Patch(
 original: AccessTools.Method(typeof(Inventory), "Save"),
@@ -331,6 +335,34 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: AccessTools.Method(typeof(Character), "OnDeath", new Type[] { }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.COD))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+        }
+
+        public static bool COD(Character __instance, ref ZNetView ___m_nview)
+        {
+            try
+            {
+                if (__instance == null || !__instance.IsMonsterFaction() || ___m_nview.GetZDO().GetBool("ELS"))
+                    return true;
+
+                if (UnityEngine.Random.value <= 0.002f * (__instance.GetLevel() * (__instance.GetLevel() * 0.5f)))
+                {
+                    ___m_nview.GetZDO().Set("ELS", true);
+                    generateEpicLoot();
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("COD failed: " + ex.ToString());
+                return true;
+            }
         }
 
         public static bool SISV(Skills __instance, Skills.SkillType type, ref bool __result)
@@ -392,18 +424,36 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.SISV))
 
         public static void PPLPD(PlayerProfile __instance, Player player)
         {
-            skillData[] sks = loadSkillData(player);
+            List<skillData> sks = loadSkillData(player);
             //UnityEngine.Debug.LogWarning(sks.Length);
-            foreach (skillData sk in sks)
+
+            if (sks != null && sks.Count > 0)
             {
-
-                Skills.Skill skill = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)player.GetSkills(), new object[1]
+                foreach (skillData sk in sks)
                 {
-        (object) (Skills.SkillType)sk.ID
-                });
-                skill.m_level = (float)sk.Level;
-                skill.m_accumulator = sk.Progress;
 
+                    Skills.Skill skill = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)player.GetSkills(), new object[1]
+                    {
+        (object) (Skills.SkillType)sk.ID
+                    });
+                    skill.m_level = (float)sk.Level;
+                    skill.m_accumulator = sk.Progress;
+
+                }
+            }
+            else
+            {
+                foreach (skillDef sd in sDefs)
+                {
+
+                    Skills.Skill skill = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)player.GetSkills(), new object[1]
+                    {
+        (object) (Skills.SkillType)sd.ID
+                    });
+                    skill.m_level = 1f;
+                    skill.m_accumulator = 0f;
+
+                }
             }
 
         }
@@ -1957,6 +2007,57 @@ out float verticalLoss)
         {
             try
             {
+                if (!iscrafting)
+                    return;
+
+                Skills.Skill c = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+                                    {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Crafting").SingleOrDefault().sType
+                                    });
+
+                if (c != null)
+                {
+                    int ttlres = 1;
+
+                    foreach (Piece.Requirement res in ObjectDB.instance.GetRecipe(item).m_resources)
+                    {
+                        ttlres += res.m_amount;
+                    }
+
+                    float rarity = 1f;
+
+                    if (UnityEngine.Random.value <= 0.005f * Mathf.Min(0.05f * ttlres, 1.0f) * (c.m_level * 0.02f))
+                    {
+                        rarity = generateEpicLoot();
+
+                        if (rarity == 1)
+                            rarity = 1.5f;
+                    }
+                    
+
+                    c.Raise((0.002f * (1f + (ttlres / 10.0f))) * (rarity * rarity) * cdata.craftingXPModifier);
+
+                    
+                    
+                }
+
+                iscrafting = false;
+            }
+            catch (Exception ex)
+            {
+            
+                UnityEngine.Debug.LogWarning($"Fail in AI patch: {ex.ToString()}");
+
+                iscrafting = false;
+            }
+        }
+
+                public static void AI2(ref ItemDrop.ItemData item)
+        {
+            try
+            {
+
+                
                 if (!iscrafting)// || !cdata.itemRarityAndRandomization)
                 {
                     cupgitem = null;
@@ -2190,6 +2291,7 @@ out float verticalLoss)
 
                     item.m_crafterName += item.m_shared.m_name.Substring(item.m_shared.m_name.IndexOf(" (UVO"));
                 }
+    
             }
             catch (Exception ex)
             {
@@ -3084,6 +3186,7 @@ out float verticalLoss)
 
                             //g.ResetView();
 
+                            generateEpicLoot();
                         }
 
                         if (elapsed5 >= 10.0f)
@@ -3379,28 +3482,30 @@ out float verticalLoss)
             }
         }
 
-        public static skillData[] loadSkillData(Player player)
+        public static List<skillData> loadSkillData(Player player)
         {
             //if (filename.Length == 0)
             filename = path + $"/{player.GetPlayerName()}_VM_Data.json";
 
-            skillData[] sks;
+            List<skillData> sks;
             //skillData[] sks = new skillData[sDefs.Count];
 
             try
             {
-                sks = JsonHelper.FromJson<skillData>(File.ReadAllText(filename));
+
+                sks = JsonConvert.DeserializeObject<List<skillData>>(File.ReadAllText(filename));
+                //sks = JsonConvert.FromJson<skillData>(File.ReadAllText(filename));
             }
             catch
             {
 
-                sks = new skillData[sDefs.Count];
+                sks = new List<skillData>();
 
                 int i = 0;
 
                 foreach (skillDef sd in sDefs)
                 {
-                    sks[i] = new skillData();
+                    sks.Add(new skillData());
                     sks[i].ID = sd.ID;
 
                     i++;
@@ -3416,17 +3521,16 @@ out float verticalLoss)
             //if (filename.Length == 0)
             filename = path + $"/{player.GetPlayerName()}_VM_Data.json";
 
-            skillData[] sks = new skillData[sDefs.Count];
+            List<skillData> sks = new List<skillData>();
 
             try
             {
-                sks = new skillData[sDefs.Count];
 
                 int i = 0;
 
                 foreach (skillDef sd in sDefs)
                 {
-                    sks[i] = new skillData();
+                    sks.Add(new skillData());
 
                     Skills.Skill skill = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)player.GetSkills(), new object[1]
                     {
@@ -3444,23 +3548,36 @@ out float verticalLoss)
             }
             catch
             {
-                sks = new skillData[sDefs.Count];
+                sks = new List<skillData>();
 
                 int i = 0;
 
                 foreach (skillDef sd in sDefs)
                 {
-                    sks[i] = new skillData();
+                    sks.Add(new skillData());
                     
                     sks[i].ID = sd.ID;
-
+                    
                     i++;
                 }
             }
 
-            UnityEngine.Debug.LogWarning($"{sks.Length}, {sks[4].Level}");
+            //UnityEngine.Debug.LogWarning($"{sks.Length}, {sks[4].Level}");
 
-            File.WriteAllText(filename, JsonHelper.ToJson<skillData>(sks, true));
+            try
+            {
+
+                if (!File.Exists(filename))
+                    File.Create(filename);
+
+                string json = JsonConvert.SerializeObject(sks, Formatting.Indented);
+                File.WriteAllText(filename, json);
+                //File.WriteAllText(filename, JsonHelper.ToJson<skillData>(sks, true));
+            }
+            catch (Exception ex)
+            {
+                File.WriteAllText(path + "/err.txt", ex.Message + "\n\n" + ex.ToString());
+            }
         }
 
         public void updateEffects()
@@ -3531,6 +3648,66 @@ out float verticalLoss)
             {
 
             }
+        }
+
+        public static float generateEpicLoot(int level = 1)
+        {
+            List<GameObject> gameObjectList = new List<GameObject>();
+            List<string> list = ObjectDB.instance.m_items.Where<GameObject>((Func<GameObject, bool>)(x => EpicLoot.EpicLoot.CanBeMagicItem(x.GetComponent<ItemDrop>().m_itemData))).Select<GameObject, string>((Func<GameObject, string>)(x => x.name)).ToList<string>();
+            if ((UnityEngine.Object)Player.m_localPlayer == (UnityEngine.Object)null)
+                return 1;
+
+            string name = "random";
+            if (name == "random")
+                name = new WeightedRandomCollection<string>(new System.Random(), (IEnumerable<string>)list, (Func<string, float>)(x => 1f)).Roll();
+            if ((UnityEngine.Object)ObjectDB.instance.GetItemPrefab(name) == (UnityEngine.Object)null)
+            {
+                //__instance.AddString("> Could not find item: " + name);
+                //break;
+            }
+            //__instance.AddString(string.Format("  {0} - rarity: [{1}], item: {2}", (object)(index + 1), (object)string.Join<int>(", ", (IEnumerable<int>)numArray), (object)name));
+            LootTable lootTable1 = new LootTable();
+            lootTable1.Object = "Console";
+            lootTable1.Drops = new int[1][]
+            {
+          new int[2]{ 1, 1 }
+            };
+            int[] numArray = new int[4] { 1, 1, 1, 1 };
+            float rnd = UnityEngine.Random.value;
+
+            float rarity = 1f;
+
+            if (rnd <= 0.005f)
+            {
+                numArray = new int[4] { 0, 0, 0, 1 };
+                rarity = 4f;
+            }
+            else if (rnd <= 0.05f)
+            {
+                numArray = new int[4] { 0, 0, 1, 0 };
+                rarity = 3f;
+            }
+            else if (rnd <= 0.20f)
+            {
+                numArray = new int[4] { 0, 1, 0, 0 };
+                rarity = 2f;
+            }
+            else if (rnd <= 1.0f)
+            {
+                numArray = new int[4] { 1, 0, 0, 0 };
+            }
+
+
+            lootTable1.Loot = new LootDrop[1]
+            {
+          new LootDrop() { Item = name, Rarity = numArray }
+            };
+            LootTable lootTable2 = lootTable1;
+            Vector3 insideUnitSphere = UnityEngine.Random.insideUnitSphere;
+            Vector3 dropPoint = Player.m_localPlayer.transform.position + Player.m_localPlayer.transform.forward * 3f + Vector3.up * 1.5f + insideUnitSphere;
+            LootRoller.RollLootTableAndSpawnObjects(lootTable2, level, lootTable2.Object, dropPoint);
+
+            return rarity;
         }
 
     }
@@ -3633,14 +3810,14 @@ public class Skill
 
     }
 
-    [Serializable]
+    //[Serializable]
     public class skillData
     {
         public int ID = 0;
         public int Level = 1;
         public float Progress = 0.0f;
     }
-
+    /*
     public static class JsonHelper
     {
         public static T[] FromJson<T>(string json)
@@ -3669,7 +3846,7 @@ public class Skill
             public T[] Items;
         }
     }
-
+    */
     [System.Serializable]
     public class configData
     {
