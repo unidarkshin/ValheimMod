@@ -48,7 +48,7 @@ namespace ValheimMod
 
         //public static List<Skill> skills = new List<Skill>();
 
-        public static string[] snames = { "Weight", "Agility", "Sailing", "Crafting", "Building" };
+        public static string[] snames = { "Weight", "Agility", "Sailing", "Crafting", "Building", "Slayer" };
 
         /*[DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -206,11 +206,11 @@ postfix: new HarmonyMethod(typeof(Main), nameof(Main.WOP))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
-            /*h.Patch(
+            h.Patch(
 original: AccessTools.Method(typeof(WearNTear), "GetMaterialProperties"),
 prefix: new HarmonyMethod(typeof(Main), nameof(Main.WGMP))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
-);*/
+);
 
             h.Patch(
 original: AccessTools.Method(typeof(Player), "CheckCanRemovePiece", new Type[] { typeof(Piece) }),
@@ -341,16 +341,117 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.COD))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: AccessTools.Method(typeof(Inventory), "TopFirst", new Type[] { typeof(ItemDrop.ItemData) }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.ITF))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+            h.Patch(
+original: AccessTools.Method(typeof(WearNTear), "Awake", new Type[] { }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.WNTAW))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
         }
 
-        public static bool COD(Character __instance, ref ZNetView ___m_nview)
+        public static bool WNTAW(WearNTear __instance, ref ZNetView ___m_nview)
+        {
+            try
+            {
+                if (___m_nview == null)
+                    return true;
+
+                Skills.Skill b = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+                {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Building").SingleOrDefault().sType
+                });
+
+                if (b == null)
+                    return true;
+
+                float maxSupport = 0f;
+                float minSupport = 0f;
+                float verticalLoss = 0f;
+                float horizontalLoss = 0f;
+
+                switch (__instance.m_materialType)
+                {
+                    case WearNTear.MaterialType.Wood:
+                        maxSupport = 100f * (1.0f + (b.m_level * 0.01f));
+                        minSupport = 10f / (1.0f + (b.m_level * 0.01f));
+                        verticalLoss = 0.125f / (1.0f + (b.m_level * 0.01f));
+                        horizontalLoss = 0.2f / (1.0f + (b.m_level * 0.01f));
+                        //UnityEngine.Debug.LogWarning($"WGMP W: maxs = {maxSupport}, mins = {minSupport}");
+                        break;
+                    case WearNTear.MaterialType.Stone:
+                        maxSupport = 1000f * (1.0f + (b.m_level * 0.01f));
+                        minSupport = 50f / (1.0f + (b.m_level * 0.01f));
+                        verticalLoss = 0.125f / (1.0f + (b.m_level * 0.012f));
+                        horizontalLoss = 1f / (1.0f + (b.m_level * 0.01f));
+                        break;
+                    case WearNTear.MaterialType.Iron:
+                        maxSupport = 1500f * (1.0f + (b.m_level * 0.01f));
+                        minSupport = 20f / (1.0f + (b.m_level * 0.01f));
+                        verticalLoss = 0.07692308f / (1.0f + (b.m_level * 0.01f));
+                        horizontalLoss = 0.07692308f / (1.0f + (b.m_level * 0.01f));
+                        break;
+                    case WearNTear.MaterialType.HardWood:
+                        maxSupport = 140f * (1.0f + (b.m_level * 0.01f));
+                        minSupport = 10f / (1.0f + (b.m_level * 0.01f));
+                        verticalLoss = 0.1f / (1.0f + (b.m_level * 0.01f));
+                        horizontalLoss = 0.1666667f / (1.0f + (b.m_level * 0.01f));
+                        break;
+                    default:
+                        maxSupport = 0.0f;
+                        minSupport = 0.0f;
+                        verticalLoss = 0.0f;
+                        horizontalLoss = 0.0f;
+                        break;
+                }
+
+                ___m_nview.GetZDO().Set("UVOSUP", $"{maxSupport},{minSupport},{verticalLoss},{horizontalLoss}");
+
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("WNTAW failed: " + ex.ToString());
+
+                return true;
+            }
+        }
+
+            public static bool ITF(ItemDrop.ItemData item, ref bool __result)
+        {
+            __result = true;
+
+            return false;
+        }
+
+            public static bool COD(Character __instance, ref ZNetView ___m_nview)
         {
             try
             {
                 if (__instance == null || !__instance.IsMonsterFaction() || ___m_nview.GetZDO().GetBool("ELS"))
                     return true;
 
-                if (UnityEngine.Random.value <= 0.002f * (__instance.GetLevel() * (__instance.GetLevel() * 0.5f)))
+                Skills.Skill sl = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
+                {
+        (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Slayer").SingleOrDefault().sType
+                });
+
+                if (sl == null)
+                    return true;
+
+                if (__instance.GetLevel() > 3)
+                {
+                    sl.Raise(0.001f * (__instance.GetLevel() * (__instance.GetLevel() * 0.5f)));
+                }
+
+
+                if (UnityEngine.Random.value <= 0.002f * (__instance.GetLevel() * (__instance.GetLevel() * 0.5f)) * (sl.m_level * 0.02f))
                 {
                     ___m_nview.GetZDO().Set("ELS", true);
                     generateEpicLoot();
@@ -1085,7 +1186,7 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.COD))
 out float maxSupport,
 out float minSupport,
 out float horizontalLoss,
-out float verticalLoss)
+out float verticalLoss, ZNetView ___m_nview)
         {
 
             maxSupport = 0.0f;
@@ -1093,8 +1194,23 @@ out float verticalLoss)
             verticalLoss = 0.0f;
             horizontalLoss = 0.0f;
 
+            string str = ___m_nview.GetZDO().GetString("UVOSUP");
+            if (str.Length <= 0)
+                return false;
+
             try
             {
+                string[] sarr = str.Split(',');
+
+                if (sarr.Length < 4)
+                    return false;
+
+                maxSupport = float.Parse(sarr[0]);
+                minSupport = float.Parse(sarr[1]);
+                verticalLoss = float.Parse(sarr[2]);
+                horizontalLoss = float.Parse(sarr[3]);
+
+                /*
                 Skills.Skill b = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)_player.GetSkills(), new object[1]
                 {
         (object) (Skills.SkillType)sDefs.Where(sd => sd.name == "Building").SingleOrDefault().sType
@@ -1137,6 +1253,7 @@ out float verticalLoss)
                         horizontalLoss = 0.0f;
                         break;
                 }
+                */
                 return false;
             }
             catch (Exception ex)
@@ -1144,7 +1261,7 @@ out float verticalLoss)
                 UnityEngine.Debug.LogWarning("WGMP failed: " + ex.ToString());
 
 
-                return true;
+                return false;
             }
         }
 
