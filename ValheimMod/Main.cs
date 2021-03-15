@@ -61,7 +61,7 @@ namespace ValheimMod
         //public static Skills.SkillDef WeightSkillDef;
 
         public static int startSkillID = 2123;
-        public static List<string> sDescs = new List<string> { "Moving with encumbrance over time will increase your max weight and stack size.", "Using large amounts of stamina allows you regenerate stamina faster.", "Continuous sailing makes your boat faster.", "Crafting items reduces your resource cost to make them.", "Building over time will allow you to build structures with less support." };
+        public static List<string> sDescs = new List<string> { "Moving with encumbrance over time will increase your max weight and stack size.", "Using large amounts of stamina allows you regenerate stamina faster.", "Continuous sailing makes your boat faster.", "Crafting items reduces your resource cost to make them.", "Building over time will allow you to build structures with less support.", "The more strong monsters you kill, the better your loot table." };
         public static List<skillDef> sDefs = new List<skillDef>();
 
         public void Awake()
