@@ -541,6 +541,19 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.WNTAW))
                     skill.m_accumulator = sk.Progress;
 
                 }
+
+                if (sks.Count < snames.Length)
+                {
+                    for (int i = sks.Count - 1; i < snames.Length; i++)
+                    {
+                        Skills.Skill skill = (Skills.Skill)AccessTools.Method(typeof(Skills), "GetSkill", (System.Type[])null, (System.Type[])null).Invoke((object)player.GetSkills(), new object[1]
+                    {
+        (object) (Skills.SkillType)sDefs[i].ID
+                    });
+                        skill.m_level = 1.0f;
+                        skill.m_accumulator = 0.0f;
+                    }
+                }
             }
             else
             {
