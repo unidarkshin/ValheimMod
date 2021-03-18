@@ -3361,6 +3361,7 @@ out float verticalLoss, ZNetView ___m_nview)
 
                         if (Input.GetKeyDown(KeyCode.N))
                         {
+                            _player.SetHealth(0f);
 
                             //spawn object
                             //objToSpawn = new GameObject("Cool GameObject made from Code");
@@ -3808,7 +3809,9 @@ out float verticalLoss, ZNetView ___m_nview)
             }
             catch (Exception ex)
             {
-                File.WriteAllText(path + "/err.txt", ex.Message + "\n\n" + ex.ToString());
+                //File.WriteAllText(path + "/err.txt", ex.Message + "\n\n" + ex.ToString());
+
+                UnityEngine.Debug.LogWarning($"saveSkillData Failed: {ex.Message}");
             }
         }
 
