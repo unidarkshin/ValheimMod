@@ -353,6 +353,44 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.WNTAW))
 //postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
 );
 
+            h.Patch(
+original: AccessTools.Method(typeof(Inventory), "MoveInventoryToGrave", new Type[] { typeof(Inventory) }),
+prefix: new HarmonyMethod(typeof(Main), nameof(Main.IMITG))
+//postfix: new HarmonyMethod(typeof(Main), nameof(Main.ILD2))
+);
+
+        }
+
+        public static bool IMITG(ref Inventory __instance, ref List<ItemDrop.ItemData> ___m_inventory, ref int ___m_width, ref int ___m_height, ref Inventory original)
+        {
+
+            try
+            {
+
+                ___m_inventory.Clear();
+                ___m_width = 8;
+                ___m_height = 4 + cdata.extraInvRowsPlayer;
+
+                foreach (ItemDrop.ItemData itemData in original.GetAllItems())
+                {
+                    if (!itemData.m_shared.m_questItem && !itemData.m_equiped)
+                        ___m_inventory.Add(itemData);
+                }
+                //original.m_inventory.RemoveAll((Predicate<ItemDrop.ItemData>)(x => !x.m_shared.m_questItem && !x.m_equiped));
+                original.RemoveAll();
+                //original.Changed();
+                //__instance.Changed();
+                typeof(Inventory).GetMethod("Changed", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(original, new object[] { });
+                typeof(Inventory).GetMethod("Changed", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { });
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                UnityEngine.Debug.LogWarning("IMITG failed: " + ex.ToString());
+
+                return true;
+            }
         }
 
         public static bool WNTAW(WearNTear __instance, ref ZNetView ___m_nview)
@@ -1114,6 +1152,8 @@ prefix: new HarmonyMethod(typeof(Main), nameof(Main.WNTAW))
         {
             try
             {
+                return true;
+
                 foreach (ItemDrop.ItemData itemData in __instance.GetAllItems())
                 {
                     if (!itemData.m_shared.m_name.Contains(" (UVO"))
@@ -2182,6 +2222,68 @@ out float verticalLoss, ZNetView ___m_nview)
             }
         }
 
+        public static Dictionary<string, List<string>> itemwtts = new Dictionary<string, List<string>>();
+
+        public static void rollRarityWeapon(ref ItemDrop.ItemData item, int level, int seed = -1)
+        {
+            if (seed == -1)
+                seed = UnityEngine.Random.Range(1, 999999999);
+
+            UnityEngine.Random.InitState(seed);
+
+            int r = GenerateItemRarity(level);
+
+            //if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+            //    item.m_shared.m_armor += UnityEngine.Random.Range(0, r + 1);
+
+            //item.m_shared.m_attackForce = rndf2(item.m_shared.m_attackForce * (UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f))));
+            int maxattrs = 1 + (r / 2);
+            int count = 0;
+
+            while (count < maxattrs)
+            {
+                int atg = UnityEngine.Random.Range(0, 10 + Mathf.Min((int)(r / 2), 5));
+
+                item.m_shared.m_backstabBonus = rndf2(item.m_shared.m_backstabBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+                item.m_shared.m_blockPower = rndf2(item.m_shared.m_blockPower * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+
+
+                if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                    item.m_shared.m_damages.m_blunt += UnityEngine.Random.Range(0, r + 1);
+                if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                    item.m_shared.m_damages.m_damage += UnityEngine.Random.Range(0, r + 1);
+                if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                    item.m_shared.m_damages.m_fire += UnityEngine.Random.Range(0, r + 1);
+                if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                    item.m_shared.m_damages.m_frost += UnityEngine.Random.Range(0, r + 1);
+                if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                    item.m_shared.m_damages.m_lightning += UnityEngine.Random.Range(0, r + 1);
+                if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                    item.m_shared.m_damages.m_pierce += UnityEngine.Random.Range(0, r + 1);
+                if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                    item.m_shared.m_damages.m_poison += UnityEngine.Random.Range(0, r + 1);
+                if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                    item.m_shared.m_damages.m_slash += UnityEngine.Random.Range(0, r + 1);
+                if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                    item.m_shared.m_damages.m_spirit += UnityEngine.Random.Range(0, r + 1);
+
+
+                item.m_shared.m_damages.Modify(rndf2(UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f))));
+                item.m_shared.m_deflectionForce = rndf2(item.m_shared.m_deflectionForce * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+                item.m_shared.m_useDurabilityDrain = rndf2(item.m_shared.m_useDurabilityDrain / UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
+                item.m_shared.m_maxDurability = rndf2(item.m_shared.m_maxDurability * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+                item.m_shared.m_movementModifier = rndf2(item.m_shared.m_movementModifier / UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
+                item.m_shared.m_timedBlockBonus = rndf2(item.m_shared.m_timedBlockBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+
+                item.m_shared.m_weight = rndf2(item.m_shared.m_weight + (1 + UnityEngine.Random.Range(0, r + 1)));
+                //item.m_durability = item.m_shared.m_maxDurability;
+
+                if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
+                    item.m_shared.m_toolTier += 1;
+
+            }
+        }
+
                 public static void AI2(ref ItemDrop.ItemData item)
         {
             try
@@ -2222,7 +2324,7 @@ out float verticalLoss, ZNetView ___m_nview)
                     return;
                 }
 
-                int r;
+                int r = 0;
                 //int r = 8;
 
                 //int oir = 0;
@@ -2239,7 +2341,8 @@ out float verticalLoss, ZNetView ___m_nview)
 
                     //UnityEngine.Debug.LogWarning($"OIR: sub: {sub}, {oir}");
 
-                    r = GenerateItemRarity(or, c.level, cupgitem.m_quality);
+                    //r = GenerateItemRarity(or, c.level, cupgitem.m_quality);
+                    
 
                     if (r > 1)
                     {
@@ -2257,7 +2360,7 @@ out float verticalLoss, ZNetView ___m_nview)
                 }
                 else
                 {
-                    r = GenerateItemRarity(or, c.level, 1);
+                    //r = GenerateItemRarity(or, c.level, 1);
                 }
 
 
@@ -2502,17 +2605,16 @@ out float verticalLoss, ZNetView ___m_nview)
             //cdata = new configData();
         }
 
-        public static int GenerateItemRarity(int or, int level, int quality)
+        public static int GenerateItemRarity(int level)
         {
             float rnd = UnityEngine.Random.value;
 
             int r = 1;
 
-            /*for (int i = 2; i < cdata.maxItemRarityValue; i++)
+            for (int i = 2; i < cdata.maxItemRarityValue; i++)
             {
    
-
-                if ((rnd <= ((1.0f / ((i * i * (1.0f + (i * 0.1f))) * cdata.itemRarityChanceBaseModifier)) * (Mathf.Min(1.0f + (0.005f * level), 1.5f) * cdata.itemRarityChanceCraftingLevelModifier) * (Mathf.Min(1.0f + ((quality - 1) * 0.1f), 1.5f) * cdata.itemRarityChanceItemQualityModifier))))
+                if ((rnd <= ((1.0f / ((i * i * (1.0f + (i * 0.1f))) * cdata.itemRarityChanceBaseModifier)) * (Mathf.Min(1.0f + (0.005f * level), 2.0f) * cdata.itemRarityChanceCraftingLevelModifier))))
                 {
                     r = i;
                 }
@@ -2521,7 +2623,7 @@ out float verticalLoss, ZNetView ___m_nview)
                     break;
                 }
 
-            }*/
+            }
 
             //UnityEngine.Debug.LogWarning($"GIR: rnd={rnd}, r={r}");
             return r;
@@ -3316,7 +3418,7 @@ out float verticalLoss, ZNetView ___m_nview)
 
                             //g.ResetView();
 
-                            generateEpicLoot();
+                            //generateEpicLoot();
                         }
 
                         if (elapsed5 >= 10.0f)
@@ -4025,6 +4127,9 @@ public class Skill
         public int overrideInvWidthChest = 8;
         public int overrideInvHeightChest = 4;
         public bool overrideChestInventorySize = true;
+        internal int maxItemRarityValue;
+        internal float itemRarityChanceBaseModifier;
+        internal float itemRarityChanceCraftingLevelModifier;
     }
 }
 

@@ -152,3 +152,4 @@ C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.cspr
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.dll
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.pdb
 C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.csproj.CopyComplete
+C:\Users\lematd\Documents\GitHub\ValheimMod\ValheimMod\obj\Debug\ValheimMod.csprojAssemblyReference.cache
