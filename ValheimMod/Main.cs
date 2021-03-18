@@ -70,6 +70,9 @@ namespace ValheimMod
 
             path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VMU_Data";
 
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
             
             configname = path + $"/VM_Config.json";
             errorfile = path + $"/VM_Error.ini";
@@ -2222,7 +2225,7 @@ out float verticalLoss, ZNetView ___m_nview)
             }
         }
 
-        public static Dictionary<string, List<string>> itemwtts = new Dictionary<string, List<string>>();
+        public static Dictionary<string, string> itemwtts = new Dictionary<string, string>();
 
         public static void rollRarityWeapon(ref ItemDrop.ItemData item, int level, int seed = -1)
         {
@@ -2242,10 +2245,24 @@ out float verticalLoss, ZNetView ___m_nview)
 
             while (count < maxattrs)
             {
-                int atg = UnityEngine.Random.Range(0, 10 + Mathf.Min((int)(r / 2), 5));
+                //int atg = UnityEngine.Random.Range(0, 10 + Mathf.Min((int)(r / 2), 5));
+
+                int a = GetRandomWeightedNumber();
+
+                if (a == 0)
+                {
+                    float f = rndf2(UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
+                    item.m_shared.m_damages.Modify(f);
+                    itemwtts.Add("All Damage", " * " + f.ToString());
+                }
+                else if (a == 1)
+                {
+                    float f = UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f));
+                    item.m_shared.m_blockPower = rndf2(item.m_shared.m_blockPower * f);
+                }
 
                 item.m_shared.m_backstabBonus = rndf2(item.m_shared.m_backstabBonus * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
-                item.m_shared.m_blockPower = rndf2(item.m_shared.m_blockPower * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
+                
 
 
                 if (UnityEngine.Random.value < Mathf.Min(r * r * 0.0015f, 0.25f))
@@ -2268,7 +2285,7 @@ out float verticalLoss, ZNetView ___m_nview)
                     item.m_shared.m_damages.m_spirit += UnityEngine.Random.Range(0, r + 1);
 
 
-                item.m_shared.m_damages.Modify(rndf2(UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f))));
+                
                 item.m_shared.m_deflectionForce = rndf2(item.m_shared.m_deflectionForce * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
                 item.m_shared.m_useDurabilityDrain = rndf2(item.m_shared.m_useDurabilityDrain / UnityEngine.Random.Range(1.0f, 1.0f + (r * r * 0.0078f)));
                 item.m_shared.m_maxDurability = rndf2(item.m_shared.m_maxDurability * UnityEngine.Random.Range(1.0f, 1.0f + (r * r * .01f)));
@@ -2284,7 +2301,27 @@ out float verticalLoss, ZNetView ___m_nview)
             }
         }
 
-                public static void AI2(ref ItemDrop.ItemData item)
+        public static int[] wweights = { 5, 5, 10, 10, 10, 10, 10, 10, 10, 10, 20, 40 };
+
+        public static int GetRandomWeightedNumber()
+        {
+            int sum_of_weight = 0;
+            for (int i = 0; i < wweights.Length; i++)
+            {
+                sum_of_weight += wweights[i];
+            }
+            int rnd = UnityEngine.Random.Range(0, sum_of_weight);
+            for (int i = 0; i < wweights.Length; i++)
+            {
+                if (rnd < wweights[i])
+                    return i;
+                rnd -= wweights[i];
+            }
+
+            return -1;
+        }
+
+        public static void AI2(ref ItemDrop.ItemData item)
         {
             try
             {
@@ -2589,10 +2626,10 @@ out float verticalLoss, ZNetView ___m_nview)
             _player = null;
             pln = "";
             otime = 0f;
-            path = "";
-            filename = "";
-            configname = "";
-            errorfile = "";
+            //path = "";
+            //filename = "";
+            //configname = "";
+            //errorfile = "";
 
             //oms = new Dictionary<string, int>();
 
